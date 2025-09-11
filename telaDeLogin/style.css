@@ -1,0 +1,49 @@
+/* Centraliza a imagem e torna o layout adaptável (responsivo) */
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #313131;
+}
+
+img {
+    max-width: 90vw;
+    max-height: 80vh;
+    width: auto;
+    height: auto;
+    display: block;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.soccer-ball {
+    width: 20vw;
+    max-width: 120px;
+    min-width: 60px;
+    height: 20vw;
+    max-height: 120px;
+    min-height: 60px;
+    background: url('bolaverde 3.png') no-repeat center;
+    background-size: cover;
+    animation: spin 2s linear infinite;
+}
+
+/* Ajusta para telas muito pequenas */
+@media (max-width: 400px) {
+    .soccer-ball {
+        width: 40vw;
+        height: 40vw;
+        min-width: 40px;
+        min-height: 40px;
+    }
+}
