@@ -4,17 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>App de Usuários</title>
+    <link rel="stylesheet" href="imagens/iconeUser.png">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header class="barra-superior">
         <button class="menu-button">
-            <img src="TresPontos.png" alt="Menu">
+            <img src="imagens/TresPontos.png" alt="Menu">
         </button> 
         
         <div class="search-container">
             <input placeholder="Pesquisar" class="search-input" type="text">
-            <img src="lupa.png" alt="Ícone de pesquisa" class="search-icon"> 
+            <img src="imagens/lupa.png" alt="Ícone de pesquisa" class="search-icon"> 
         </div>
     </header>
 
@@ -23,7 +24,7 @@
         <div id="usuarios-container">
             <!-- Usuário padrão -->
             <div class="usuario-card">
-                <img class="usuario-foto" src="iconeUser.png" alt="Foto do usuário">
+                <img class="usuario-foto" src="imagens/iconeUser.png" alt="Foto do usuário">
                 <div class="usuario-info">
                     <h3 class="usuario-nome">tobermann</h3>
                     <p class="usuario-idade">150 anos</p>
@@ -38,10 +39,16 @@
     <div class="floating-button-container">
         <div class="floating-button-bar"></div>
         <button id="adicionarUsuarioBtn" class="floating-button">
-            <img src="bolaLogo.png" alt="Adicionar usuário">
+            <img src="imagens/bolaLogo.png" alt="Adicionar usuário">
         </button>
     </div>
-
+    <div class="entadaUserBotao-container">
+        <div class="entadaUserBotao-bar"></div>
+        <button id="entadaUserBotao" class="entadaUserBotao-button">
+            <a href="http://127.0.0.1:3000/TelaDeUsuario/TelaUser.html?serverWindowId=fbcdebf2-1ace-45f0-9e90-cf826abb30b5">
+                <img src="imagens/BotaoUsuario.ico" alt="Adicionar usuário">
+            </a>
+        </button>
     <script src="script.js"></script>
 </body>
 </html>
