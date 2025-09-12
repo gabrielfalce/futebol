@@ -1,0 +1,108 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    margin: 0;
+    padding: 0;
+}
+
+#mainScreen {
+    text-align: center;
+    margin-top: 60px;
+}
+
+button {
+    background: #25d366;
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 10px 0;
+    transition: background 0.2s;
+}
+
+button:hover {
+    background: #128c7e;
+}
+
+.modal {
+    display: none; /* Mostre com display: flex via JS */
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 32px 24px;
+    border-radius: 10px;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.2);
+    position: relative;
+    width: 90%;
+    max-width: 420px;
+    text-align: center;
+}
+
+.close-button {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: transparent;
+    color: #333;
+    font-size: 28px;
+    border: none;
+    cursor: pointer;
+}
+
+#image, #preview {
+    display: block;
+    max-width: 100%;
+    max-height: 220px;
+    margin: 18px auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    background: #eee;
+}
+
+input[type="file"] {
+    margin: 16px 0;
+}
+#imagem0111 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 220px;
+    background: #f0f0f0;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+#imagem0111 #preview {
+    max-width: 100%;
+    max-height: 220px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    background: #eee;
+}
+@media (max-width: 600px) {
+    .modal-content {
+        padding: 18px 6px;
+        max-width: 98vw;
+        font-size: 15px;
+    }
+    button {
+        width: 100%;
+        font-size: 15px;
+        padding: 12px 0;
+    }
+    #mainScreen {
+        margin-top: 24px;
+        padding: 0 4px;
+    }
+    #image, #preview {
+        max-height: 140px;
+    }
+}

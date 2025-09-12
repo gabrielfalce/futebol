@@ -2,29 +2,44 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Tela de Usuário</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cortar Imagem como no WhatsApp</title>
+    <!-- Inclua o CSS do Cropper.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+    <!-- Inclua o CSS personalizado -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <table align="center" style="height: 100vh; width: 100vw;">
-        <tr>
-            <td style="vertical-align: middle;">
-                <table>
-                    <tr>
-                        <td>
-                            <button></button>
-                        </td>
-                        <td>
-                            <div style="position: relative; width: 260px; height: 180px;">
-                                <img src="https://via.placeholder.com/260x180.png?text=Imagem" alt="Imagem" width="260" height="180">
-                                <div style="position: absolute; top: 16px; left: 0; width: 100%; text-align: center; color: #fff; font-size: 24px; font-weight: bold;">
-                                    Texto de Exemplo
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
+    <!-- Tela normal -->
+    <div id="mainScreen">
+        <h2>Tela Principal</h2>
+        <div id="imagem0111" >
+             <img id="preview" src="" alt="Prévia da imagem cortada">
+        </div>
+        <button id="openModalButton">Abrir Editor de Imagem</button>
+    </div>
+
+
+
+
+
+
+    <!-- segunda parte -->
+    <!-- Modal de corte de imagem -->
+    <div id="cropModal" class="modal">
+        <div class="modal-content">
+            <button id="closeModalButton" class="close-button">&times;</button>
+            <h2>Cortar Imagem como no WhatsApp</h2>
+            <input type="file" id="imageInput" accept="image/*">
+            <img id="image" src="" alt="Imagem para cortar">
+            <button id="cropButton" style="display: none;">Cortar Imagem</button>
+            <h3>Prévia da Imagem Cortada</h3>
+        </div>
+    </div>
+
+    <!-- Inclua o JavaScript do Cropper.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <!-- Inclua o JavaScript personalizado -->
+    <script src="script.js"></script>
 </body>
 </html>
