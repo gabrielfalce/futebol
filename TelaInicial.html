@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App de Usuários</title>
+    <link rel="stylesheet" href="iconeUser.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="barra-superior">
+        <button class="menu-button">
+            <img src="TresPontos.png" alt="Menu">
+        </button> 
+        
+        <div class="search-container">
+            <input placeholder="Pesquisar" class="search-input" type="text">
+            <img src="lupa.png" alt="Ícone de pesquisa" class="search-icon"> 
+        </div>
+    </header>
+
+    <main class="content">
+        <!-- Container de usuários -->
+        <div id="usuarios-container">
+            <!-- Usuário padrão -->
+            <div class="usuario-card">
+                <img class="usuario-foto" src="iconeUser.png" alt="Foto do usuário">
+                <div class="usuario-info">
+                    <h3 class="usuario-nome">tobermann</h3>
+                    <p class="usuario-idade">150 anos</p>
+                    <p class="usuario-cidade">mesopotamia</p>
+                </div>
+            </div>
+            <!-- Novos usuários serão adicionados aqui via JavaScript -->
+        </div>
+    </main>
+
+    <!-- Botão flutuante para adicionar usuários -->
+    <div class="floating-button-container">
+        <div class="floating-button-bar"></div>
+        <button id="adicionarUsuarioBtn" class="floating-button">
+            <img src="bolaLogo.png" alt="Adicionar usuário">
+        </button>
+    </div>
+    <div class="entadaUserBotao-container">
+        <div class="entadaUserBotao-bar"></div>
+        <button id="entadaUserBotao" class="entadaUserBotao-button">
+            <a href="TelaDeUsuario/TelaUser.html">
+                <img src="BotaoUsuario.ico" alt="Adicionar usuário">
+            </a>
+        </button>
+    <script src="script.js"></script>
+</body>
+</html>
