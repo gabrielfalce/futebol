@@ -1,59 +1,49 @@
-import sqlite3
-from sqlite3 import Error
+from supabase import create_client, Client
+import os
 
-# Cria conexão com o banco de dados
-def criar_conexao():
-    conn = None
-    try:
-        conn = sqlite3.connect('database.db')  # Arquivo do banco de dados
-        print("Conexão com SQLite estabelecida!")
-        return conn
-    except Error as e:
-        print(f"Erro ao conectar ao SQLite: {e}")
-    return conn
+# As variáveis de ambiente do Supabase devem ser configuradas no Vercel.
+# Para desenvolvimento local, você pode precisar de um arquivo .env e uma biblioteca como python-dotenv.
+# Exemplo de como carregar localmente (se usar python-dotenv):
+# from dotenv import load_dotenv
+# load_dotenv()
 
-# Cria a tabela de usuários
-def criar_tabela_usuarios():
-    conn = criar_conexao()
-    cursor = conn.cursor()
-    
-    try:
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS usuarios (
-                nome TEXT PRIMARY KEY,
-                email TEXT UNIQUE NOT NULL,
-                senha TEXT NOT NULL,
-                data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-        """)
-        conn.commit()
-        print("Tabela 'usuarios' criada com sucesso!")
-    except Error as e:
-        print(f"Erro ao criar tabela: {e}")
-    finally:
-        if conn:
-            conn.close()
+SUPABASE_URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
+SUPABASE_ANON_KEY = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
 
-# Insere um novo usuário
+# Inicializa o cliente Supabase
+supabase: Client = None
+if SUPABASE_URL and SUPABASE_ANON_KEY:
+    supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+else:
+    print("AVISO: Variáveis de ambiente do Supabase (NEXT_PUBLIC_SUPABASE_URL ou NEXT_PUBLIC_SUPABASE_ANON_KEY) não configuradas.")
+    print("A inserção de usuários no Supabase não funcionará sem elas.")
+
 def inserir_usuario(nome, email, senha):
-    conn = criar_conexao()
-    cursor = conn.cursor()
-    
-    try:
-        cursor.execute("""
-            INSERT INTO usuarios (nome, email, senha)
-            VALUES (?, ?, ?)
-        """, (nome, email, senha))
-        conn.commit()
-        print("Usuário cadastrado com sucesso!")
-        return True
-    except sqlite3.IntegrityError as e:
-        print(f"Erro ao cadastrar: {e}")
+    if supabase is None:
+        print("Erro: Cliente Supabase não inicializado. Verifique as variáveis de ambiente.")
         return False
-    finally:
-        if conn:
-            conn.close()
 
-# Chamada para criar a tabela automaticamente
-if __name__ == "__main__":
-    criar_tabela_usuarios()
+    try:
+        # ATENÇÃO: Para um sistema de autenticação real, você DEVE fazer o hash da senha
+        # antes de armazená-la. O Supabase Auth lida com isso automaticamente.
+        # Se você não usar o Supabase Auth, implemente o hashing da senha aqui.
+        response = supabase.table("usuarios").insert({
+            "nome": nome,
+            "email": email,
+            "senha": senha, # Senha em texto puro, APENAS para demonstração. NÃO USE EM PRODUÇÃO!
+            "created_at": "now()" # O Supabase preencherá o timestamp automaticamente se o tipo for TIMESTAMP WITH TIME ZONE e tiver DEFAULT now()
+        }).execute()
+
+        # O Supabase retorna um objeto com 'data' e 'error'
+        # A propriedade 'data' pode ser uma lista vazia se a inserção for bem-sucedida mas não retornar dados.
+        # Verificamos 'error' para saber se houve falha.
+        if response.error:
+            print("Erro ao inserir usuário no Supabase:", response.error.message)
+            return False
+        else:
+            print("Usuário inserido com sucesso no Supabase.")
+            return True
+
+    except Exception as e:
+        print(f"Erro inesperado ao inserir usuário no Supabase: {e}")
+        return False
