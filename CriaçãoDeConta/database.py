@@ -1,12 +1,6 @@
 from supabase import create_client, Client
 import os
 
-# As variáveis de ambiente do Supabase devem ser configuradas no Vercel.
-# Para desenvolvimento local, você pode precisar de um arquivo .env e uma biblioteca como python-dotenv.
-# Exemplo de como carregar localmente (se usar python-dotenv):
-# from dotenv import load_dotenv
-# load_dotenv()
-
 SUPABASE_URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
 SUPABASE_ANON_KEY = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
 
@@ -24,9 +18,7 @@ def inserir_usuario(nome, email, senha):
         return False
 
     try:
-        # ATENÇÃO: Para um sistema de autenticação real, você DEVE fazer o hash da senha
-        # antes de armazená-la. O Supabase Auth lida com isso automaticamente.
-        # Se você não usar o Supabase Auth, implemente o hashing da senha aqui.
+
         response = supabase.table("usuarios").insert({
             "nome": nome,
             "email": email,
@@ -34,9 +26,7 @@ def inserir_usuario(nome, email, senha):
             "created_at": "now()" # O Supabase preencherá o timestamp automaticamente se o tipo for TIMESTAMP WITH TIME ZONE e tiver DEFAULT now()
         }).execute()
 
-        # O Supabase retorna um objeto com 'data' e 'error'
-        # A propriedade 'data' pode ser uma lista vazia se a inserção for bem-sucedida mas não retornar dados.
-        # Verificamos 'error' para saber se houve falha.
+       
         if response.error:
             print("Erro ao inserir usuário no Supabase:", response.error.message)
             return False
