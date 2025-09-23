@@ -13,12 +13,15 @@
     <!-- Tela normal -->
     <div id="mainScreen">
         <div class="titulo-bg">
-            <h2>Tela Principal</h2>
+
+            <!-- <h2>Tela Principal</h2> -->
         </div>
         <div id="imagem0111">
             <img id="preview" src="" alt="Prévia da imagem cortada">
         </div>
-        <button id="openModalButton">Abrir Editor de Imagem</button>
+        <button class="alinhamento" id="openModalButton">
+            <img class="imagenConfigPontos" src="imagens/TresPontos.png" alt="">
+        </button>
     </div>
 
 
@@ -31,7 +34,7 @@
     <div id="cropModal" class="modal">
         <div class="modal-content">
             <button id="closeModalButton" class="close-button">&times;</button>
-            <h2>Cortar Imagem como no WhatsApp</h2>
+            <h2>Cortar Imagem </h2>
             <input type="file" id="imageInput" accept="image/*">
             <img id="image" src="" alt="Imagem para cortar">
             <button id="cropButton" style="display: none;">Cortar Imagem</button>
@@ -39,9 +42,9 @@
         </div>
     </div>
 
-    <!-- Inclua o JavaScript do Cropper.js -->
+    <!-- JavaScript do Cropper.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-    <!-- Inclua o JavaScript personalizado -->
+    <!-- JavaScript personalizado -->
     <script src="script.js"></script>
 </body>
 </html>

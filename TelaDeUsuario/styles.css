@@ -113,6 +113,20 @@ input[type="file"] {
     margin: 0;
 }
 
+.imagenConfigPontos {
+    width: 60px;
+    height: 60px;
+    top: 16px;
+    right: 16px;
+    cursor: pointer;
+}
+
+.alinhamento{
+    align-items: center;
+}
+
+
+
 @media (max-width: 600px) {
     .modal-content {
         padding: 18px 6px;
