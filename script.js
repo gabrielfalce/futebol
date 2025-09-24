@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener ('DOMContentLoaded', function() {
     // Elementos DOM
     const adicionarUsuarioBtn = document.getElementById('adicionarUsuarioBtn');
     const usuariosContainer = document.getElementById('usuarios-container');
@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     ];
     
     // Constante para limite de usuários
-    const LIMITE_USUARIOS = 7;
+    const LIMITE_USUARIOS = 15;
     
     // Event Listeners
     adicionarUsuarioBtn.addEventListener('click', adicionarUsuario);
@@ -48,13 +48,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function adicionarUsuario() {
         // Verifica se atingiu o limite
         if (usuarios.length >= LIMITE_USUARIOS) {
-            mostrarAlerta(`Limite máximo de ${LIMITE_USUARIOS} usuários atingido!`, 'error');
+            mostrarAlerta(`Limite máximo de ${LIMITE_USUARIOS} usuários atingido! Utilize a barra de pesquisa para encontrar usuários.`, 'error');
             return;
         }
         
         const novoUsuario = {
             nome: `Usuário ${usuarios.length + 1}`,
-            idade: `${Math.floor(Math.random() * 100) + 1} anos`,
+            idade: `${Math.floor(Math.random() * 80) + 1} anos`,
             cidade: ['mesopotamia', 'curitiba', 'roma', 'atenas'][Math.floor(Math.random() * 4)],
             foto: 'iconeUser.png'
         };
@@ -105,10 +105,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const alerta = document.createElement('div');
         alerta.className = `alerta alerta-${tipo}`;
         alerta.textContent = mensagem;
-        
+
         // Adiciona ao corpo
         document.body.appendChild(alerta);
-        
+
         // Remove após 3 segundos
         setTimeout(() => {
             alerta.classList.add('fade-out');
@@ -132,3 +132,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Renderizar inicialmente
     renderizarUsuarios();
 });
+//  informa usuario usar pesquisa
+
+function mostrarAlerta() {
+    if (usuarios.length >= LIMITE_USUARIOS) {
+      alert("use a barra de pesquisa para encontrar usuários.");
+      return;
+    }
+
+}
