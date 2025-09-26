@@ -15,8 +15,8 @@ document.addEventListener ('DOMContentLoaded', function() {
     ];
     
     // Constante para limite de usuários
-    const LIMITE_USUARIOS = 15;
-    
+    const LIMITE_USUARIOS = 10;
+
     // Event Listeners
     adicionarUsuarioBtn.addEventListener('click', adicionarUsuario);
     searchInput.addEventListener('input', filtrarUsuarios);
@@ -134,10 +134,9 @@ document.addEventListener ('DOMContentLoaded', function() {
 });
 //  informa usuario usar pesquisa
 
-function mostrarAlerta() {
+function mostrarAlertaPesquisa() {
     if (usuarios.length >= LIMITE_USUARIOS) {
       alert("use a barra de pesquisa para encontrar usuários.");
-      return;
+      ;
     }
-
 }

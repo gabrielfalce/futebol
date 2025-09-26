@@ -1,6 +1,15 @@
+/* variaveis */
+:root {
+    --cor-primaria: #25d366;
+    --cor-secundaria: #128c7e;
+    --cor-fundo: #1E1E1E;
+    --cor-texto: #fff;
+    --cor-borda: rgba(0,0,0,0.1);
+}
+
 body {
     font-family: Arial, sans-serif;
-    background: #f5f5f5;
+    background: var(--cor-fundo);
     margin: 0;
     padding: 0;
 }
@@ -12,14 +21,14 @@ body {
     border-radius: 12px;
     padding-top: 40px;
     padding-bottom: 40px;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 16px rgba(254, 74, 74, 0.06);
 }
 
 button {
     background: #25d366;
     color: #fff;
     border: none;
-    padding: 12px 24px;
+    padding: 5% 10%;
     border-radius: 6px;
     font-size: 16px;
     cursor: pointer;
@@ -28,7 +37,7 @@ button {
 }
 
 button:hover {
-    background: #128c7e;
+    background: var(--cor-secundaria);
 }
 
 .modal {
@@ -46,14 +55,13 @@ button:hover {
     padding: 32px 24px;
     border-radius: 10px;
     box-shadow: 0 4px 32px rgba(0,0,0,0.2);
-    position: relative;
-    width: 90%;
+    position: absolute;
+    width:50%;
     max-width: 420px;
     text-align: center;
 }
 
 .close-button {
-    position: absolute;
     top: 12px;
     right: 16px;
     background: transparent;
@@ -114,8 +122,7 @@ input[type="file"] {
 }
 
 .imagenConfigPontos {
-    width: 60px;
-    height: 60px;
+    max-width: 40%;
     top: 16px;
     right: 16px;
     cursor: pointer;
@@ -145,4 +152,49 @@ input[type="file"] {
     #image, #preview {
         max-height: 140px;
     }
+}
+
+
+/* botão de home  */
+.floating-button-container {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 99;
+}
+
+.floating-button-bar {
+    width: 150px;
+    height: 4px;
+    background-color: #000000;
+    border-radius: 20px;
+    margin-bottom: 10px;
+}
+
+.floating-button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: var(--cor-primaria);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    transition: transform 0.3s ease;
+}
+
+.floating-button:hover {
+    transform: scale(1.1);
+}
+
+.floating-button img {
+    width: 80%;
+    height: 80%;
+    object-fit: contain;
 }
