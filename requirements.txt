@@ -1,5 +1,5 @@
 Flask
 requests
 bcrypt
-supabase-py
+supabase
 python-dotenv
