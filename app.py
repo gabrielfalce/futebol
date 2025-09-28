@@ -14,8 +14,13 @@ def cadastrar():
     nome = request.form["nome"]
     email = request.form["email"]
     senha = request.form["senha"]
+    cidade = request.form["cidade"]
+    numero = request.form["numero"]
+    posicao = request.form["posicao"]
+    nascimento = request.form["nascimento"]
     
-    if inserir_usuario(nome, email, senha):
+    print(f"Processando cadastro: nome={nome}, email={email}, cidade={cidade}, numero={numero}, posicao={posicao}, nascimento={nascimento}")  # Debug
+    if inserir_usuario(nome, email, senha, cidade, numero, posicao, nascimento):
         return redirect(url_for("sucesso"))
     else:
         return "Erro no cadastro. Tente novamente."
