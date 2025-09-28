@@ -18,15 +18,13 @@ def inserir_usuario(nome, email, senha):
         return False
 
     try:
-
         response = supabase.table("usuarios").insert({
             "nome": nome,
             "email": email,
-            "senha": senha, # Senha em texto puro, APENAS para demonstração. NÃO USE EM PRODUÇÃO!
-            "created_at": "now()" # O Supabase preencherá o timestamp automaticamente se o tipo for TIMESTAMP WITH TIME ZONE e tiver DEFAULT now()
+            "senha": senha # Senha em texto puro, APENAS para demonstração. NÃO USE EM PRODUÇÃO!
+            # REMOVIDO: "created_at": "now()" - O Supabase preenche automaticamente
         }).execute()
 
-       
         if response.error:
             print("Erro ao inserir usuário no Supabase:", response.error.message)
             return False
