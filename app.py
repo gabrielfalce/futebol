@@ -6,7 +6,7 @@ app = Flask(__name__)
 # Rota principal (exibe o formulário)
 @app.route("/")
 def home():
-    return render_template("cadastro.html")
+    return render_template("cadastrar.html")
 
 # Rota para processar o formulário
 @app.route("/cadastrar", methods=["POST"])
