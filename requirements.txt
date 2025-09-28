@@ -1,4 +1,5 @@
 Flask
+requests
+bcrypt
 supabase
-gunicorn
-Flask-SQLAlchemy
+python-dotenv
