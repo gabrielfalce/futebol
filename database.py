@@ -5,8 +5,9 @@ import bcrypt
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
+# Debug com verificação para evitar erro com None
 print(f"DEBUG: SUPABASE_URL={SUPABASE_URL}")
-print(f"DEBUG: SUPABASE_KEY={SUPABASE_KEY[:10]}...")  # Mostra só os primeiros 10 caracteres por segurança
+print(f"DEBUG: SUPABASE_KEY={'[None]' if SUPABASE_KEY is None else SUPABASE_KEY[:10] + '...'}")  # Seguro para None
 
 # Inicializa o cliente Supabase
 supabase: Client = None
