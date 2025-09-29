@@ -30,5 +30,6 @@ def cadastrar():
 def sucesso():
     return render_template("sucesso.html")
 
-if __name__ == "__main__":
-    app.run(debug=True)
+# Remova ou comente esta parte para produção
+# if __name__ == "__main__":
+#     app.run(debug=True)
