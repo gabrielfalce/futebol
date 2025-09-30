@@ -8,7 +8,6 @@ app = Flask(__name__)
 def home():
     return render_template("cadastrar.html")
 
-
 # Rota para processar o formulário
 @app.route("/cadastrar", methods=["POST"])
 def cadastrar():
@@ -20,20 +19,14 @@ def cadastrar():
     posicao = request.form["posicao"]
     nascimento = request.form["nascimento"]
 
-    print(f"Processando cadastro: nome={nome}, email={email}, cidade={cidade}, numero={numero}, posicao={posicao}, nascimento={nascimento}")  # Debug
+    print(f"Processando cadastro: nome={nome}, email={email}, cidade={cidade}, numero={numero}, posicao={posicao}, nascimento={nascimento}")  
 
     if inserir_usuario(nome, email, senha, cidade, numero, posicao, nascimento):
         return redirect(url_for("sucesso"))
     else:
         return "Erro no cadastro. Tente novamente."
 
-
 # Rota de sucesso após cadastro
 @app.route("/sucesso")
 def sucesso():
     return render_template("sucesso.html")
-
-
-# Para rodar localmente (no Render o gunicorn chama app:app)
-if __name__ == "__main__":
-    app.run(debug=True)
