@@ -2,20 +2,22 @@ from supabase import create_client, Client
 import os
 import bcrypt
 
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+# Usa os nomes das variáveis configuradas no Render
+SUPABASE_URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
 
-# Debug com verificação para evitar erro com None
+# Debug seguro
 print(f"DEBUG: SUPABASE_URL={SUPABASE_URL}")
-print(f"DEBUG: SUPABASE_KEY={'[None]' if SUPABASE_KEY is None else SUPABASE_KEY[:10] + '...'}")  # Seguro para None
+print(f"DEBUG: SUPABASE_KEY={'[None]' if SUPABASE_KEY is None else SUPABASE_KEY[:10] + '...'}")
 
 # Inicializa o cliente Supabase
 supabase: Client = None
 if SUPABASE_URL and SUPABASE_KEY:
     supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 else:
-    print("AVISO: Variáveis de ambiente do Supabase (SUPABASE_URL ou SUPABASE_KEY) não configuradas.")
+    print("AVISO: Variáveis de ambiente do Supabase não configuradas corretamente.")
     print("A inserção de usuários no Supabase não funcionará sem elas.")
+
 
 def inserir_usuario(nome, email, senha, cidade, numero, posicao, nascimento):
     if supabase is None:
