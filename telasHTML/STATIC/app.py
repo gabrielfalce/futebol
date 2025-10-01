@@ -1,32 +1,34 @@
 from flask import Flask, render_template, request, redirect, url_for
 from database import inserir_usuario
 
-app = Flask(__name__)
+# Caminhos corrigidos: templates dentro de telasHTML, arquivos estáticos em STATIC
+app = Flask(
+    __name__,
+    template_folder="telasHTML",   # onde ficam os .html
+    static_folder="STATIC"         # onde ficam CSS, JS, imagens
+)
 
-# Rota principal (exibe o formulário)
 @app.route("/")
-def home():
-    return render_template("cadastrar.html")
+def index():
+    return render_template("index.html")
 
-# Rota para processar o formulário
-@app.route("/cadastrar", methods=["POST"])
-def cadastrar():
-    nome = request.form["nome"]
-    email = request.form["email"]
-    senha = request.form["senha"]
-    cidade = request.form["cidade"]
-    numero = request.form["numero"]
-    posicao = request.form["posicao"]
-    nascimento = request.form["nascimento"]
+@app.route("/cadastro", methods=["GET", "POST"])
+def cadastro():
+    if request.method == "POST":
+        nome = request.form.get("nome")
+        email = request.form.get("email")
+        senha = request.form.get("senha")
 
-    print(f"Processando cadastro: nome={nome}, email={email}, cidade={cidade}, numero={numero}, posicao={posicao}, nascimento={nascimento}")  
+        # Tenta inserir no banco
+        sucesso = inserir_usuario(nome, email, senha)
 
-    if inserir_usuario(nome, email, senha, cidade, numero, posicao, nascimento):
-        return redirect(url_for("sucesso"))
-    else:
-        return "Erro no cadastro. Tente novamente."
+        if sucesso:
+            return render_template("sucesso.html")
+        else:
+            # Aqui ainda redireciona para erro.html, mas você pode remover se quiser
+            return render_template("erro.html")
 
-# Rota de sucesso após cadastro
-@app.route("/sucesso")
-def sucesso():
-    return render_template("sucesso.html")
+    return render_template("cadastro.html")
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
