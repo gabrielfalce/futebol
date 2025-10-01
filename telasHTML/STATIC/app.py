@@ -11,7 +11,7 @@ static_dir = project_root
 
 app = Flask(
     __name__, 
-    template_folder=template_dir,
+    template_folder=template_dir, # Aponta para a pasta 'telasHTML'
     static_folder=static_dir,
     static_url_path=''
 )
@@ -25,10 +25,15 @@ def index():
 
 @app.route("/loading")
 def tela_de_loading():
-    return render_template("TelaLoading.html")
+    """Renderiza a página de loading intermediária."""
+    # --- CORREÇÃO APLICADA AQUI ---
+    # Especificamos o caminho da subpasta diretamente no render_template.
+    return render_template("STATIC/TelaLoading/TelaLoading.html")
 
 @app.route("/inicio")
 def pagina_inicial():
+    """Renderiza a página principal do usuário."""
+    # Assumindo que TelaInicial.html está direto em 'telasHTML'
     return render_template("TelaInicial.html")
 
 @app.route("/cadastrar", methods=['POST'])
@@ -42,13 +47,10 @@ def cadastrar():
     nascimento = request.form.get("nascimento") 
     numero = request.form.get("numero")
 
-    # Validação para garantir que todos os campos foram preenchidos
     if not all([nome, email, senha, cidade, posicao, nascimento, numero]):
         flash("Erro no cadastro: Todos os campos são obrigatórios.")
         return redirect(url_for('index'))
 
-    # --- CHAMADA DA FUNÇÃO CORRIGIDA ---
-    # Chamamos a função com todos os 7 argumentos.
     sucesso = inserir_usuario(
         nome=nome, email=email, senha=senha, cidade=cidade, 
         posicao=posicao, nascimento=nascimento, numero=numero
