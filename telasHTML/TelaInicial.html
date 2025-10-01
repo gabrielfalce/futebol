@@ -5,59 +5,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>App de Usuários</title>
-    <!-- Caminhos definidos pelo seu amigo (mantidos) -->
-    <link rel="icon" type="image/x-icon" href="STATIC/iconeUser.png">
-    <link rel="stylesheet" href="STATIC/style.css">
+    
+    <!-- --- CAMINHOS CORRIGIDOS COM url_for() --- -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='iconeUser.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <header class="barra-superior">
         <button class="menu-button">
-            <img src="STATIC/TresPontos.png" alt="Menu">
+            <img src="{{ url_for('static', filename='TresPontos.png') }}" alt="Menu">
         </button> 
         <div class="search-container">
             <input placeholder="Pesquisar" class="search-input" type="text">
-            <img src="STATIC/lupa.png" alt="Ícone de pesquisa" class="search-icon"> 
+            <img src="{{ url_for('static', filename='lupa.png') }}" alt="Ícone de pesquisa"> 
         </div>
     </header>
+
     <main class="content">
         <div id="usuarios-container">
-            
-            <!-- --- LÓGICA DE BUSCA DINÂMICA ADICIONADA AQUI --- -->
             {% if usuarios %}
                 {% for usuario in usuarios %}
                     <div class="usuario-card">
-                        <img class="usuario-foto" src="STATIC/iconeUser.png" alt="Foto do usuário">
+                        <img class="usuario-foto" src="{{ url_for('static', filename='iconeUser.png') }}" alt="Foto do usuário">
                         <div class="usuario-info">
                             <h3 class="usuario-nome">{{ usuario.nome }}</h3>
                             <p class="usuario-cidade">{{ usuario.cidade }}</p>
-                            <!-- Você pode adicionar mais campos aqui se quiser -->
-                            <!-- <p>Posição: {{ usuario.posicao }}</p> -->
                         </div>
                     </div>
                 {% endfor %}
             {% else %}
                 <p>Nenhum usuário cadastrado ainda.</p>
             {% endif %}
-            <!-- --- FIM DA LÓGICA DE BUSCA --- -->
-
         </div>
     </main>
 
-    <!-- Botões e script (mantidos como seu amigo deixou) -->
     <div class="floating-button-container">
         <div class="floating-button-bar"></div>
         <button id="adicionarUsuarioBtn" class="floating-button">
-            <img src="STATIC/bolaLogo.png" alt="Adicionar usuário">
+            <img src="{{ url_for('static', filename='bolaLogo.png') }}" alt="Adicionar usuário">
         </button>
     </div>
     <div class="entadaUserBotao-container">
         <div class="entadaUserBotao-bar"></div>
         <button id="entadaUserBotao" class="entadaUserBotao-button">
-            <a href="TelaDeUsuario/TelaUser.html">
-                <img src="STATIC/BotaoUsuario.ico" alt="Adicionar usuário">
-            </a>
+            <a href="#"><img src="{{ url_for('static', filename='BotaoUsuario.ico') }}" alt="Botão Usuário"></a>
         </button>
     </div>
-    <script src="STATIC/script.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
