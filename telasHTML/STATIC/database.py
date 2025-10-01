@@ -1,55 +1,38 @@
-from supabase import create_client, Client
 import os
-import bcrypt
+from supabase import create_client, Client
 
-# Pega as variáveis de ambiente (Render)
-SUPABASE_URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+# Pega as variáveis de ambiente
+url: str = os.getenv("SUPABASE_URL")
+key: str = os.getenv("SUPABASE_KEY")
 
-# Debug (sem expor a key inteira)
-print(f"DEBUG: SUPABASE_URL={SUPABASE_URL}")
-print(f"DEBUG: SUPABASE_KEY={'[None]' if SUPABASE_KEY is None else SUPABASE_KEY[:8] + '...'}")
-
-supabase: Client = None
-if SUPABASE_URL and SUPABASE_KEY:
-    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+# Verifica se estão corretas
+if not url or not key:
+    print("Erro: Variáveis de ambiente SUPABASE_URL e SUPABASE_KEY não configuradas.")
+    supabase: Client = None
 else:
-    print("AVISO: Variáveis de ambiente do Supabase não configuradas.")
-    print("A inserção de usuários no Supabase não funcionará sem elas.")
+    supabase: Client = create_client(url, key)
 
-def inserir_usuario(nome, email, senha, cidade, numero, posicao, nascimento):
+def inserir_usuario(nome: str, email: str, senha: str) -> bool:
+    """Insere um usuário na tabela 'usuarios' do Supabase."""
     if supabase is None:
-        print("Erro: Cliente Supabase não inicializado. Verifique as variáveis de ambiente.")
+        print("Erro: Cliente Supabase não inicializado.")
         return False
 
     try:
-        print(f"Recebido: nome={nome}, email={email}, senha=[oculto], cidade={cidade}, numero={numero}, posicao={posicao}, nascimento={nascimento}")
-        senha_hash = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        print(f"Senha hash gerada: {senha_hash[:10]}...")
-
-        # Dados para inserir no Supabase
         data = {
             "nome": nome,
             "email": email,
-            "senha": senha,            # senha em texto (se quiser guardar)
-            "senha_hash": senha_hash,  # senha criptografada
-            "cidade": cidade,
-            "numero": numero,
-            "posicao": posicao,
-            "nascimento": nascimento
+            "senha": senha
         }
-
-        print(f"Dados a inserir: {data}")
         response = supabase.table("usuarios").insert(data).execute()
-        print(f"Resposta do Supabase: {response}")
 
-        # Checagem de sucesso (Supabase v2 retorna dict)
-        if not response or "data" not in response or len(response["data"]) == 0:
-            print("Erro ao inserir usuário no Supabase.")
+        if response.data:
+            print("Usuário cadastrado com sucesso:", response.data)
+            return True
+        else:
+            print("Erro ao inserir usuário:", response)
             return False
 
-        print("Usuário inserido com sucesso no Supabase.")
-        return True
     except Exception as e:
-        print(f"Erro inesperado ao inserir usuário no Supabase: {str(e)}")
+        print("Exceção ao inserir usuário:", e)
         return False
