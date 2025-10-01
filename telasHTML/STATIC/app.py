@@ -21,19 +21,20 @@ app.secret_key = 'uma-chave-secreta-muito-segura-pode-mudar-depois'
 
 @app.route("/")
 def index():
-    # Encontra o template em: telasHTML/STATIC/Cadastrar templates/cadastrar.html
+    """
+    --- CORREÇÃO APLICADA AQUI ---
+    Esta rota DEVE renderizar a página de cadastro. E nada mais.
+    """
     return render_template("STATIC/Cadastrar templates/cadastrar.html")
 
 @app.route("/loading")
 def tela_de_loading():
     """Renderiza a página de loading intermediária."""
-    # --- CORREÇÃO APLICADA AQUI ---
-    # Usando o nome de arquivo exato que você forneceu: "Telaloading.html"
     return render_template("Telaloading.html")
 
 @app.route("/inicio")
 def pagina_inicial():
-    # Encontra o template em: telasHTML/TelaInicial.html
+    """Renderiza a página principal do usuário."""
     return render_template("TelaInicial.html")
 
 @app.route("/cadastrar", methods=['POST'])
@@ -57,8 +58,10 @@ def cadastrar():
     )
 
     if sucesso:
+        # Se o cadastro for bem-sucedido, redireciona para a tela de loading.
         return redirect(url_for('tela_de_loading'))
     else:
+        # Se falhar, redireciona de volta para a página de cadastro com um alerta.
         flash("Erro ao salvar no banco de dados. Verifique se o e-mail já foi cadastrado e tente novamente.")
         return redirect(url_for('index'))
 
