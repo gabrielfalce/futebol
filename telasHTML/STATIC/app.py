@@ -40,12 +40,3 @@ def cadastro():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
-
-### O que acontece agora?
-
-1.  **Template Folder:** O Flask vai procurar os templates dentro da pasta **`Cadastrar templates`** (o que deve funcionar se o Render aceitar o nome com espaço).
-2.  **Template File:** O Flask vai procurar pelo arquivo **`cadastrar.html`** (tudo em minúsculas). **Você precisa ter certeza que o nome do arquivo HTML no seu repositório é exatamente `cadastrar.html` (minúsculas).**
-
-Faça o *commit* e o *push* deste último código. Se o erro de `TemplateNotFound` persistir, a causa será o nome da pasta com espaço, e você terá que mudar o nome da pasta (o que pode ser feito localmente e depois *pushado* para o Git, se o Git Web não ajudar).
-
-Boa sorte com o *deploy*! Não esqueça das variáveis do Supabase.
