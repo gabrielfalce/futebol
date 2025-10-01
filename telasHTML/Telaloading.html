@@ -1,33 +1,19 @@
-<!-- Localização: telasHTML/TelaLoading.html -->
-
+<!-- Localização: telasHTML/Telaloading.html -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carregando...</title>
-    <!-- O Flask vai encontrar o CSS dentro da pasta 'STATIC/TelaLoading' -->
     <link rel="stylesheet" href="{{ url_for('static', filename='TelaLoading/style.css') }}">
 </head>
 <body>
-    <!-- 
-      A imagem do seu logo com a classe CSS para centralização.
-      Lembre-se de colocar o arquivo do logo (ex: logo-loading.gif) na pasta 'telasHTML/STATIC/'.
-    -->
-    <img class="loading-logo" src="{{ url_for('static', filename='logo-loading.gif') }}" alt="Carregando...">
+    <!-- --- CORREÇÃO DO CAMINHO DO LOGO --- -->
+    <img class="loading-logo" src="{{ url_for('static', filename='TelaLoading/logoGeral.png') }}" alt="Carregando...">
 
-    <!-- O script que fará o redirecionamento após 2 segundos -->
     <script>
-        // Espera o conteúdo da página carregar completamente
         window.onload = function() {
-            // Define o tempo de espera (2000 milissegundos = 2 segundos)
-            const tempoDeLoading = 2000;
-
-            // Função que será executada após o tempo de espera
-            setTimeout(function() {
-                // Redireciona o navegador para a rota /inicio
-                window.location.href = "/inicio";
-            }, tempoDeLoading);
+            setTimeout(() => { window.location.href = "/inicio"; }, 2000);
         };
     </script>
 </body>
