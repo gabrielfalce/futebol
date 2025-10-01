@@ -1,5 +1,3 @@
-# Localização: telasHTML/STATIC/app.py
-
 import os
 from flask import Flask, render_template, request, redirect, url_for
 from database import inserir_usuario 
@@ -9,10 +7,10 @@ from database import inserir_usuario
 # O diretório onde o app.py está: '.../telasHTML/STATIC'
 project_root = os.path.dirname(os.path.abspath(__file__))
 
-# 1. A pasta de templates (HTML) está um nível ACIMA: '.../telasHTML'
+# A pasta de templates (HTML) está um nível ACIMA: '.../telasHTML'
 template_dir = os.path.join(project_root, '..')
 
-# 2. A pasta de arquivos estáticos (CSS, JS, Imagens) é a pasta ATUAL: '.../telasHTML/STATIC'
+# A pasta de arquivos estáticos (CSS, JS, Imagens) é a pasta ATUAL: '.../telasHTML/STATIC'
 static_dir = project_root
 
 app = Flask(
@@ -27,6 +25,11 @@ app = Flask(
 def index():
     """Rota para carregar o formulário de cadastro (telasHTML/index.html)."""
     return render_template("index.html")
+
+@app.route("/loading")
+def tela_de_loading():
+    """Renderiza a página de loading intermediária (telasHTML/TelaLoading.html)."""
+    return render_template("TelaLoading.html")
 
 @app.route("/inicio")
 def pagina_inicial():
@@ -49,11 +52,10 @@ def cadastrar():
         posicao=posicao, nascimento=nascimento, numero=numero
     )
 
-    # --- LÓGICA DE REDIRECIONAMENTO ---
     if sucesso:
-        # SE DEU CERTO: Redireciona para a rota /inicio, que renderiza TelaInicial.html
-        print("Cadastro bem-sucedido. Redirecionando para a página inicial...")
-        return redirect(url_for('pagina_inicial'))
+        # SE DEU CERTO: Redireciona para a TELA DE LOADING
+        print("Cadastro bem-sucedido. Redirecionando para a tela de loading...")
+        return redirect(url_for('tela_de_loading'))
     else:
         # SE DEU ERRADO: Volta para a página de cadastro
         print("Falha no cadastro. Redirecionando de volta para o formulário.")
