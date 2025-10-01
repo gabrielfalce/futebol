@@ -1,79 +1,27 @@
-<!-- Localização: telasHTML/STATIC/Cadastrar templates/cadastrar.html -->
+<!-- Localização: telasHTML/Telaloading.html -->
 
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Criação de Conta</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='static/css/estilo.css') }}">
-    
-    <!-- Estilo para a notificação "Toast" -->
-    <style>
-        .toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #f44336; /* Vermelho */
-            color: white;
-            text-align: center;
-            border-radius: 5px;
-            padding: 16px;
-            position: fixed;
-            z-index: 100;
-            right: 30px;
-            top: 30px;
-            font-size: 17px;
-            opacity: 0;
-            transition: opacity 0.5s, top 0.5s;
-        }
-
-        .toast.show {
-            visibility: visible;
-            opacity: 1;
-            top: 50px;
-        }
-    </style>
+    <title>Carregando...</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='TelaLoading/style.css') }}">
 </head>
 <body>
-    <img src="{{ url_for('static', filename='CriaçãoDeConta/bolaverde 3.png') }}" alt="Bola Verde">
-    <h1 class="titulo">Criação de Conta</h1>
+    <!-- 
+      --- CORREÇÃO APLICADA AQUI ---
+      O caminho agora aponta para o arquivo dentro da pasta 'TelaLoading'.
+    -->
+    <img class="loading-logo" src="{{ url_for('static', filename='TelaLoading/logoGeral.png') }}" alt="Carregando...">
 
-    <!-- O elemento da notificação, que fica escondido -->
-    <div id="toast-notification" class="toast"></div>
-
-    <form action="/cadastrar" method="post">
-        <input placeholder="nome" type="text" id="nome" name="nome" required>  
-        <input placeholder="email" type="email" id="email" name="email" required>  
-        <input placeholder="senha" type="password" id="senha" name="senha" required>  
-        <input placeholder="cidade" type="text" id="cidade" name="cidade" required>  
-        <input placeholder="numero" type="number" id="numero" name="numero" required>  
-        <input placeholder="posicao" type="text" id="posicao" name="posicao" required>  
-        <input placeholder="nascimento (DD/MM/AAAA)" type="date" id="nascimento" name="nascimento" required>  
-        <button type="submit">Criar Conta</button>
-    </form>
-
-    <!-- Script para mostrar a notificação -->
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <script>
-            // Pega a mensagem enviada pelo Flask
-            const message = "{{ messages[0] }}";
-            
-            // Encontra o elemento da notificação
-            const toast = document.getElementById("toast-notification");
-            
-            // Coloca a mensagem dentro dele
-            toast.textContent = message;
-            
-            // Adiciona a classe 'show' para torná-lo visível
-            toast.classList.add("show");
-            
-            // Após 4 segundos, remove a classe 'show' para esconder a notificação
-            setTimeout(function(){ 
-                toast.classList.remove("show"); 
-            }, 4000); // 4 segundos
-        </script>
-      {% endif %}
-    {% endwith %}
+    <script>
+        window.onload = function() {
+            const tempoDeLoading = 2000; // 2 segundos
+            setTimeout(function() {
+                window.location.href = "/inicio";
+            }, tempoDeLoading);
+        };
+    </script>
 </body>
 </html>
