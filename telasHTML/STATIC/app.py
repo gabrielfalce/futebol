@@ -2,18 +2,19 @@
 
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash
-from database import inserir_usuario 
+from database import inserir_usuario, buscar_usuarios 
 
-# --- Configuração do Flask (sem alterações) ---
+# --- Configuração do Flask ---
 project_root = os.path.dirname(os.path.abspath(__file__))
-template_dir = os.path.join(project_root, '..') # Aponta para a pasta 'telasHTML'
+template_dir = os.path.join(project_root, '..')
 static_dir = project_root
 
 app = Flask(
     __name__, 
     template_folder=template_dir,
     static_folder=static_dir,
-    static_url_path=''
+    # Esta linha é a mágica: faz com que 'STATIC/style.css' funcione
+    static_url_path='' 
 )
 app.secret_key = 'uma-chave-secreta-muito-segura-pode-mudar-depois'
 
@@ -21,25 +22,25 @@ app.secret_key = 'uma-chave-secreta-muito-segura-pode-mudar-depois'
 
 @app.route("/")
 def index():
-    """
-    --- CORREÇÃO APLICADA AQUI ---
-    Esta rota DEVE renderizar a página de cadastro. E nada mais.
-    """
     return render_template("STATIC/Cadastrar templates/cadastrar.html")
 
 @app.route("/loading")
 def tela_de_loading():
-    """Renderiza a página de loading intermediária."""
     return render_template("Telaloading.html")
 
+# --- ROTA /inicio MODIFICADA ---
 @app.route("/inicio")
 def pagina_inicial():
-    """Renderiza a página principal do usuário."""
-    return render_template("TelaInicial.html")
+    """Busca os usuários no banco e renderiza a página inicial."""
+    print("Buscando usuários no banco de dados...")
+    lista_de_usuarios = buscar_usuarios()
+    print(f"Usuários encontrados: {len(lista_de_usuarios)}")
+    
+    # Passa a variável 'usuarios' para o template TelaInicial.html
+    return render_template("TelaInicial.html", usuarios=lista_de_usuarios)
 
 @app.route("/cadastrar", methods=['POST'])
 def cadastrar():
-    """Processa os dados do formulário de cadastro."""
     nome = request.form.get("nome")
     email = request.form.get("email")
     senha = request.form.get("senha")
@@ -58,10 +59,8 @@ def cadastrar():
     )
 
     if sucesso:
-        # Se o cadastro for bem-sucedido, redireciona para a tela de loading.
         return redirect(url_for('tela_de_loading'))
     else:
-        # Se falhar, redireciona de volta para a página de cadastro com um alerta.
         flash("Erro ao salvar no banco de dados. Verifique se o e-mail já foi cadastrado e tente novamente.")
         return redirect(url_for('index'))
 
