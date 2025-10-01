@@ -1,14 +1,27 @@
+<!-- Localização: telasHTML/STATIC/Cadastrar templates/cadastrar.html -->
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Criação de Conta</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilo.css') }}">
+    
+    <!-- 
+      CAMINHO CORRETO PARA O CSS:
+      Aponta para 'telasHTML/STATIC/static/css/estilo.css'
+    -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='static/css/estilo.css') }}">
 </head>
 <body>
-    <img src="{{ url_for('static', filename='bolaverde 3.png') }}" alt="Bola Verde">
+    <!-- 
+      CAMINHO CORRETO PARA A IMAGEM:
+      Aponta para 'telasHTML/STATIC/CriaçãoDeConta/bolaverde 3.png'
+    -->
+    <img src="{{ url_for('static', filename='CriaçãoDeConta/bolaverde 3.png') }}" alt="Bola Verde">
+    
     <h1 class="titulo">Criação de Conta</h1>
+    
     <form action="/cadastrar" method="post">
         <input placeholder="nome" type="text" id="nome" name="nome" required>  
         <input placeholder="email" type="email" id="email" name="email" required>  
