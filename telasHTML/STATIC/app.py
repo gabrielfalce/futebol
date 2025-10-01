@@ -6,12 +6,12 @@ from database import inserir_usuario
 
 # --- Configuração do Flask (sem alterações) ---
 project_root = os.path.dirname(os.path.abspath(__file__))
-template_dir = os.path.join(project_root, '..')
+template_dir = os.path.join(project_root, '..') # Aponta para a pasta 'telasHTML'
 static_dir = project_root
 
 app = Flask(
     __name__, 
-    template_folder=template_dir, # Aponta para a pasta 'telasHTML'
+    template_folder=template_dir,
     static_folder=static_dir,
     static_url_path=''
 )
@@ -21,19 +21,19 @@ app.secret_key = 'uma-chave-secreta-muito-segura-pode-mudar-depois'
 
 @app.route("/")
 def index():
+    # Encontra o template em: telasHTML/STATIC/Cadastrar templates/cadastrar.html
     return render_template("STATIC/Cadastrar templates/cadastrar.html")
 
 @app.route("/loading")
 def tela_de_loading():
     """Renderiza a página de loading intermediária."""
     # --- CORREÇÃO APLICADA AQUI ---
-    # Especificamos o caminho da subpasta diretamente no render_template.
-    return render_template("STATIC/TelaLoading/TelaLoading.html")
+    # Usando o nome de arquivo exato que você forneceu: "Telaloading.html"
+    return render_template("Telaloading.html")
 
 @app.route("/inicio")
 def pagina_inicial():
-    """Renderiza a página principal do usuário."""
-    # Assumindo que TelaInicial.html está direto em 'telasHTML'
+    # Encontra o template em: telasHTML/TelaInicial.html
     return render_template("TelaInicial.html")
 
 @app.route("/cadastrar", methods=['POST'])
