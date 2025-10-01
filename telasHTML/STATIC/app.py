@@ -31,21 +31,22 @@ def index():
 # Rota para processar o formulário de cadastro (Método POST)
 @app.route("/cadastrar", methods=['POST'])
 def cadastrar():
-    # 1. Extrair TODOS os dados do formulário
+    # 1. Extrair TODOS os dados do formulário, incluindo o NUMERO
     nome = request.form.get("nome")
     email = request.form.get("email")
     senha = request.form.get("senha")
     cidade = request.form.get("cidade")
-    # Nota: Assumindo que 'posicao' é um campo de texto/select no seu HTML
     posicao = request.form.get("posicao") 
-    nascimento = request.form.get("nascimento") # Assumindo que é o campo de data
+    nascimento = request.form.get("nascimento") 
+    # NOVO CAMPO: Numero da camisa
+    numero = request.form.get("numero") 
 
     # Verificação básica se campos obrigatórios estão presentes
     if not all([nome, email, senha]):
         return redirect(url_for('erro_pagina')) 
 
-    # 2. Inserir no Supabase (PASSANDO TODOS OS CAMPOS)
-    if inserir_usuario(nome, email, senha, cidade, posicao, nascimento):
+    # 2. Inserir no Supabase (PASSANDO TODOS OS CAMPOS, incluindo NUMERO)
+    if inserir_usuario(nome, email, senha, cidade, posicao, nascimento, numero):
         # 3. Redirecionar para uma página de sucesso
         return redirect(url_for('sucesso_pagina'))
     else:
