@@ -1,3 +1,5 @@
+# /path/to/your/project/database.py
+
 import os
 from supabase import create_client, Client
 from typing import Optional
@@ -12,11 +14,13 @@ supabase: Optional[Client] = None
 
 # Verifica se as variáveis estão configuradas
 if not url or not key:
-    print("Erro: Variáveis de ambiente SUPABASE_URL e SUPABASE_KEY não configuradas no Render.")
+    print("Erro: Variáveis de ambiente NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY não configuradas no Render.")
 else:
-    supabase = create_client(url, key)
-    print("Sucesso: Cliente Supabase inicializado.")
-
+    try:
+        supabase = create_client(url, key)
+        print("Sucesso: Cliente Supabase inicializado.")
+    except Exception as e:
+        print(f"Erro ao inicializar o cliente Supabase: {e}")
 
 def inserir_usuario(nome: str, email: str, senha: str, cidade: str, posicao: str, nascimento: str, numero: str) -> bool:
     """Insere um usuário com TODOS os dados na tabela 'usuarios' do Supabase."""
@@ -25,41 +29,43 @@ def inserir_usuario(nome: str, email: str, senha: str, cidade: str, posicao: str
         print("Erro: Cliente Supabase não inicializado. Não é possível inserir dados.")
         return False
 
+    # --- CORREÇÃO 1: Ajuste dos nomes das colunas ---
+    # O nome da coluna no banco de dados deve corresponder exatamente à chave do dicionário.
     data = {
         "nome": nome,
         "email": email,
         "senha": senha,  
         "cidade": cidade,
         "posicao": posicao,
-        "data_nascimento": nascimento,  # Coluna: 'data_nascimento'
-        "numero_camisa": numero       # Coluna: 'numero_camisa'
+        "nascimento": nascimento,      # CORRIGIDO: de "data_nascimento" para "nascimento"
+        "numero_camisa": numero
     }
 
     try:
-        # Tenta inserir
+        # Tenta inserir os dados na tabela 'usuarios'
         response = supabase.table("usuarios").insert(data).execute()
 
-        # O cliente Python do Supabase lança APIError em caso de falha de validação ou de servidor
-        # Se a execução chegar aqui, a inserção foi provavelmente bem-sucedida.
-
+        # A biblioteca do Supabase lança uma exceção (APIError) em caso de falha.
+        # Se o código chegar aqui, a inserção foi bem-sucedida.
         if response.data:
             print("Usuário cadastrado com sucesso:", response.data)
             return True
         else:
-            # Esta parte deve ser raramente alcançada devido ao tratamento de exceções abaixo
-            print("Erro Desconhecido ao inserir usuário. Resposta Vazia.", response)
+            # Caso a resposta seja bem-sucedida mas não contenha dados (cenário raro)
+            print("A inserção foi executada, mas não retornou dados. Resposta:", response)
             return False
 
     except APIError as e:
-        # Captura e imprime o erro exato retornado pelo Supabase
-        print(f"--- ERRO CRÍTICO SUPABASE ---")
-        print(f"Código HTTP: {e.code}")
-        print(f"Mensagem de Erro: {e.message}")
+        # --- CORREÇÃO 2: Tratamento de erro correto para APIError ---
+        # O objeto 'e' (APIError) não tem 'status_code', mas tem 'code' e 'message'.
+        print(f"--- ERRO CRÍTICO SUPABASE AO INSERIR ---")
+        print(f"Código do Erro: {e.code}")      # CORRIGIDO
+        print(f"Mensagem de Erro: {e.message}")  # CORRIGIDO
         print(f"Detalhes: {e.details}")
-        print(f"Status: {e.status_code}")
-        print("------------------------------")
+        print("----------------------------------------")
         return False
     except Exception as e:
-        # Captura outros erros de rede ou processamento
+        # Captura outros erros (ex: problemas de rede, etc.)
         print(f"Exceção inesperada ao inserir usuário: {e}")
         return False
+
