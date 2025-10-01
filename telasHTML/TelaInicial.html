@@ -6,23 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>App de Usuários</title>
     <!-- --- CAMINHOS CORRIGIDOS --- -->
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='iconeUser.png') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" type="image/x-icon" href="STATIC/iconeUser.png">
+    <link rel="stylesheet" href="STATIC/style.css">
 </head>
 <body>
     <header class="barra-superior">
         <button class="menu-button">
-            <img src="TresPontos.png" alt="Menu">
+            <img src="STATIC/TresPontos.png" alt="Menu">
         </button> 
         <div class="search-container">
             <input placeholder="Pesquisar" class="search-input" type="text">
-            <img src="lupa.png" alt="Ícone de pesquisa" class="search-icon"> 
+            <img src="STATIC/lupa.png" alt="Ícone de pesquisa" class="search-icon"> 
         </div>
     </header>
     <main class="content">
         <div id="usuarios-container">
             <div class="usuario-card">
-                <img class="usuario-foto" src="iconeUser.png" alt="Foto do usuário">
+                <img class="usuario-foto" src="STATIC/iconeUser.png" alt="Foto do usuário">
                 <div class="usuario-info">
                     <h3 class="usuario-nome">tobermann</h3>
                     <p class="usuario-idade">150 anos</p>
@@ -40,14 +40,14 @@
     <div class="floating-button-container">
         <div class="floating-button-bar"></div>
         <button id="adicionarUsuarioBtn" class="floating-button">
-            <img src="bolaLogo.png" alt="Adicionar usuário">
+            <img src="STATIC/bolaLogo.png" alt="Adicionar usuário">
         </button>
     </div>
     <div class="entadaUserBotao-container">
         <div class="entadaUserBotao-bar"></div>
         <button id="entadaUserBotao" class="entadaUserBotao-button">
             <a href="TelaDeUsuario/TelaUser.html">
-                <img src="BotaoUsuario.ico" alt="Adicionar usuário">
+                <img src="STATIC/BotaoUsuario.ico" alt="Adicionar usuário">
             </a>
         </button>
     
@@ -61,6 +61,6 @@
         </button> -->
 
 
-    <script src="script.js"></script>
+    <script src="STATIC/script.js"></script>
 </body>
 </html>
