@@ -4,7 +4,7 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, flash
 from database import inserir_usuario 
 
-# --- Configuração do Flask ---
+# --- Configuração do Flask (sem alterações) ---
 project_root = os.path.dirname(os.path.abspath(__file__))
 template_dir = os.path.join(project_root, '..')
 static_dir = project_root
@@ -42,22 +42,35 @@ def cadastrar():
     nascimento = request.form.get("nascimento") 
     numero = request.form.get("numero") 
 
-    # --- CORREÇÃO APLICADA AQUI ---
-    # A chamada da função agora passa TODAS as variáveis corretamente.
+    # --- VALIDAÇÃO MELHORADA ---
+    # Vamos verificar todos os campos e ser mais específicos.
+    campos_obrigatorios = {
+        "Nome": nome, "Email": email, "Senha": senha, 
+        "Cidade": cidade, "Posição": posicao, "Nascimento": nascimento, "Número": numero
+    }
+    
+    campos_vazios = [nome_campo for nome_campo, valor in campos_obrigatorios.items() if not valor]
+
+    if campos_vazios:
+        # Imprime uma mensagem de erro detalhada nos logs
+        print(f"ERRO DE VALIDAÇÃO: Os seguintes campos estão vazios: {', '.join(campos_vazios)}")
+        
+        # Envia uma mensagem de erro mais útil para o usuário
+        mensagem_erro = f"Erro no cadastro: O(s) campo(s) {', '.join(campos_vazios)} é/são obrigatório(s)."
+        flash(mensagem_erro)
+        
+        return redirect(url_for('index'))
+
+    # Se a validação passar, tenta inserir no banco
     sucesso = inserir_usuario(
-        nome=nome, 
-        email=email, 
-        senha=senha, 
-        cidade=cidade, 
-        posicao=posicao, 
-        nascimento=nascimento, 
-        numero=numero
+        nome=nome, email=email, senha=senha, cidade=cidade, 
+        posicao=posicao, nascimento=nascimento, numero=numero
     )
 
     if sucesso:
         return redirect(url_for('tela_de_loading'))
     else:
-        flash("Erro ao realizar o cadastro. Verifique os dados e tente novamente.")
+        flash("Erro ao salvar no banco de dados. Tente novamente mais tarde.")
         return redirect(url_for('index'))
 
 if __name__ == "__main__":
