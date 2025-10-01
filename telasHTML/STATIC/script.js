@@ -1,10 +1,14 @@
-document.addEventListener ('DOMContentLoaded', function() {
-    // Elementos DOM
+// =======================
+// INICIALIZAÇÃO E VARIÁVEIS GLOBAIS
+// =======================
+document.addEventListener('DOMContentLoaded', function () {
+    // --- Seleção de Elementos DOM ---
     const adicionarUsuarioBtn = document.getElementById('adicionarUsuarioBtn');
     const usuariosContainer = document.getElementById('usuarios-container');
     const searchInput = document.querySelector('.search-input');
-    
-    // Dados dos usuários (poderia ser substituído por uma API)
+    const alertaContainer = document.getElementById('alerta-container');
+
+    // --- Dados Iniciais dos Usuários ---
     let usuarios = [
         {
             nome: 'matheson',
@@ -13,18 +17,26 @@ document.addEventListener ('DOMContentLoaded', function() {
             foto: 'iconeUser.png'
         }
     ];
-    
-    // Constante para limite de usuários
-    const LIMITE_USUARIOS = 10;
 
-    // Event Listeners
-    adicionarUsuarioBtn.addEventListener('click', adicionarUsuario);
-    searchInput.addEventListener('input', filtrarUsuarios);
-    
-    // Função para renderizar usuários
+    // --- Limite Máximo de Usuários ---
+    const LIMITE_USUARIOS = 3;
+
+    // =======================
+    // EVENTOS PRINCIPAIS
+    // =======================
+    adicionarUsuarioBtn.addEventListener('click', adicionarUsuario);      // Adiciona usuário ao clicar
+    adicionarUsuarioBtn.addEventListener('click', AnimationEffect);       // Animação do botão ao clicar
+    searchInput.addEventListener('input', filtrarUsuarios);               // Filtra usuários ao digitar
+
+    // Renderização inicial dos usuários
+    renderizarUsuarios();
+
+    // =======================
+    // FUNÇÃO: Renderizar Usuários na Tela
+    // =======================
     function renderizarUsuarios(usuariosParaRenderizar = usuarios) {
         usuariosContainer.innerHTML = '';
-        
+
         usuariosParaRenderizar.forEach(usuario => {
             const usuarioHTML = `
                 <div class="usuario-card">
@@ -36,33 +48,36 @@ document.addEventListener ('DOMContentLoaded', function() {
                     </div>
                 </div>
             `;
-            
             usuariosContainer.insertAdjacentHTML('beforeend', usuarioHTML);
         });
-        
-        // Atualiza o estado do botão
+
+        atualizarAlerta();
         atualizarEstadoBotao();
     }
-    
-    // Função para adicionar novo usuário
+
+    // =======================
+    // FUNÇÃO: Adicionar Novo Usuário
+    // =======================
     function adicionarUsuario() {
-        // Verifica se atingiu o limite
         if (usuarios.length >= LIMITE_USUARIOS) {
-            mostrarAlerta(`Limite máximo de ${LIMITE_USUARIOS} usuários atingido! Utilize a barra de pesquisa para encontrar usuários.`, 'error');
+            mostrarAlerta(
+                `Limite máximo de usuários atingido! Utilize a barra de pesquisa para encontrar usuários.`,
+                'error'
+            );
             return;
         }
-        
+
         const novoUsuario = {
             nome: `Usuário ${usuarios.length + 1}`,
             idade: `${Math.floor(Math.random() * 80) + 1} anos`,
             cidade: ['mesopotamia', 'curitiba', 'roma', 'atenas'][Math.floor(Math.random() * 4)],
             foto: 'iconeUser.png'
         };
-        
+
         usuarios.unshift(novoUsuario);
         renderizarUsuarios();
-        
-        // Animação
+
+        // Animação no novo card
         const cards = document.querySelectorAll('.usuario-card');
         if (cards.length > 0) {
             cards[0].style.transform = 'scale(1.05)';
@@ -71,8 +86,10 @@ document.addEventListener ('DOMContentLoaded', function() {
             }, 300);
         }
     }
-    
-    // Função para atualizar o estado do botão
+
+    // =======================
+    // FUNÇÃO: Atualizar Estado do Botão de Adicionar
+    // =======================
     function atualizarEstadoBotao() {
         if (usuarios.length >= LIMITE_USUARIOS) {
             adicionarUsuarioBtn.disabled = true;
@@ -86,57 +103,60 @@ document.addEventListener ('DOMContentLoaded', function() {
             adicionarUsuarioBtn.title = 'Adicionar novo usuário';
         }
     }
-    
-    // Função para filtrar usuários
+
+    // =======================
+    // FUNÇÃO: Filtrar Usuários pelo Campo de Pesquisa
+    // =======================
     function filtrarUsuarios() {
         const termo = searchInput.value.toLowerCase();
-        const usuariosFiltrados = usuarios.filter(usuario => 
-            usuario.nome.toLowerCase().includes(termo) || 
+        const usuariosFiltrados = usuarios.filter(usuario =>
+            usuario.nome.toLowerCase().includes(termo) ||
             usuario.cidade.toLowerCase().includes(termo) ||
             usuario.idade.includes(termo)
         );
-        
         renderizarUsuarios(usuariosFiltrados);
     }
-    
-    // Função para mostrar alerta
+
+    // =======================
+    // FUNÇÃO: Atualizar Alerta Fixo Abaixo dos Cards
+    // =======================
+    function atualizarAlerta() {
+        if (usuarios.length >= LIMITE_USUARIOS) {
+            alertaContainer.innerHTML = `
+                <div class="alerta alerta-error">
+                    Limite máximo de ${LIMITE_USUARIOS} usuários atingido! Utilize a barra de pesquisa para encontrar usuários.
+                </div>
+            `;
+        } else {
+            alertaContainer.innerHTML = '';
+        }
+    }
+
+    // =======================
+    // FUNÇÃO: Mostrar Alerta Centralizado na Tela (Temporário)
+    // =======================
     function mostrarAlerta(mensagem, tipo) {
-        // Cria elemento de alerta
         const alerta = document.createElement('div');
         alerta.className = `alerta alerta-${tipo}`;
         alerta.textContent = mensagem;
-
-        // Adiciona ao corpo
         document.body.appendChild(alerta);
 
-        // Remove após 3 segundos
         setTimeout(() => {
             alerta.classList.add('fade-out');
             setTimeout(() => alerta.remove(), 500);
         }, 3000);
     }
-    
-    // Efeito de animação para o botão
+
+    // =======================
+    // FUNÇÃO: Animação do Botão de Adicionar Usuário
+    // =======================
     function AnimationEffect() {
         if (usuarios.length >= LIMITE_USUARIOS) return;
-        
         adicionarUsuarioBtn.style.transform = 'scale(1.1) rotate(90deg)';
         setTimeout(() => {
             adicionarUsuarioBtn.style.transform = 'scale(1) rotate(0)';
         }, 300);
     }
-    
-    // Adicionando o efeito ao botão
-    adicionarUsuarioBtn.addEventListener('click', AnimationEffect);
-    
-    // Renderizar inicialmente
-    renderizarUsuarios();
 });
-//  informa usuario usar pesquisa
 
-function mostrarAlertaPesquisa() {
-    if (usuarios.length >= LIMITE_USUARIOS) {
-      alert("use a barra de pesquisa para encontrar usuários.");
-      ;
-    }
-}
+

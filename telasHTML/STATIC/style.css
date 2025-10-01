@@ -1,4 +1,6 @@
-/* Variáveis */
+/* =======================
+   VARIÁVEIS CSS GLOBAIS
+   ======================= */
 :root {
     --cor-primaria: #2BBF90;
     --cor-fundo: #1E1E1E;
@@ -8,7 +10,9 @@
     --sombra: 0 2px 5px rgba(0,0,0,0.2);
 }
 
-/* Reset e estilos base */
+/* =======================
+   RESET E ESTILOS BASE
+   ======================= */
 * {
     margin: 0;
     padding: 0;
@@ -22,7 +26,9 @@ body {
     padding-bottom: 100px; /* Espaço para o botão flutuante */
 }
 
-/* Barra superior */
+/* =======================
+   BARRA SUPERIOR (HEADER)
+   ======================= */
 .barra-superior {
     background-color: var(--cor-primaria);
     padding: 10px 15px;
@@ -45,7 +51,9 @@ body {
     height: 25px;
 }
 
-/* Campo de pesquisa */
+/* =======================
+   CAMPO DE PESQUISA
+   ======================= */
 .search-container {
     position: relative;
     flex-grow: 1;
@@ -72,7 +80,9 @@ body {
     pointer-events: none;
 }
 
-/* Cards de usuário */
+/* =======================
+   CARDS DE USUÁRIO
+   ======================= */
 #usuarios-container {
     padding: 20px;
     display: flex;
@@ -123,7 +133,9 @@ body {
     margin-bottom: 3px;
 }
 
-/* Botão flutuante central */
+/* =======================
+   BOTÃO FLUTUANTE CENTRAL (ADICIONAR USUÁRIO)
+   ======================= */
 .floating-button-container {
     position: fixed;
     bottom: 20px;
@@ -167,7 +179,9 @@ body {
     object-fit: contain;
 }
 
-/* Responsividade */
+/* =======================
+   RESPONSIVIDADE E BOTÃO DE PERFIL FIXO
+   ======================= */
 @media (max-width: 768px) {
     body {
         font-size: 18px;
@@ -180,48 +194,102 @@ body {
     .search-container {
         margin-left: 10px;
     }
+
+    .alerta {
+        font-size: 1rem;
+        padding: 12px 10px;
+        min-width: 140px;   
+    }
+
+    /* Botão de perfil fixo à esquerda */
+    .entadaUserBotao-container {
+        position: fixed;
+        bottom: 20px;
+        left: 20px; /* fixa à esquerda */
+        transform: none; /* remove centralização */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        z-index: 99;
+    }
+
+    /* .entadaUserBotao-bar {
+        width: 150px;
+        height: 4px;
+        background-color: #000000;
+        border-radius: 20px;
+        margin-bottom: 10px;
+    } */
+
+    .entadaUserBotao-button {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: var(--cor-primaria);
+        border: none;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        transition: transform 0.3s ease;
+    }
+
+    .entadaUserBotao-button:hover {
+        transform: scale(1.1);
+    }
+
+    .entadaUserBotao-button img {
+        width: 50%;
+        height: 50%;
+        object-fit: contain;
+    }
 }
 
-/* Botão de perfil fixo à esquerda */
-.entadaUserBotao-container {
+/* =======================
+   ALERTA FIXO ABAIXO DOS CARDS DE USUÁRIO
+   ======================= */
+.alerta-container {
+    margin-top: 20px;
+    margin-left: 0;
+    color: #000000;
+    background: #f4eeee20; 
+    padding: 10px 20px;
+    /* border-radius: 10px; */
+    font-size: 1rem;
+    text-align: center;
+    /* box-shadow: var(--sombra);KC */
+    /* max-width: 340px; */
+    width: 100%;
+    /* Centraliza abaixo dos cards */
+    margin-right: auto;
+    margin-left: auto;
+}
+
+/* =======================
+   ALERTA CENTRALIZADO NA TELA (TEMPORÁRIO)
+   ======================= */
+.alerta {
     position: fixed;
-    bottom: 20px;
-    left: 20px; /* fixa à esquerda */
-    transform: none; /* remove centralização */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    z-index: 99;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #ff4d4d;
+    color: #fff;
+    padding: 18px 32px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    z-index: 9999;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    text-align: center;
+    opacity: 1;
+    transition: opacity 0.5s;
+    max-width: 90vw;
+    width: fit-content;
+    min-width: 220px;
+    word-break: break-word;
 }
 
-.entadaUserBotao-bar {
-    width: 150px;
-    height: 4px;
-    background-color: #000000;
-    border-radius: 20px;
-    margin-bottom: 10px;
-}
-
-.entadaUserBotao-button {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background-color: var(--cor-primaria);
-    border: none;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    transition: transform 0.3s ease;
-}
-
-.entadaUserBotao-button:hover {
-    transform: scale(1.1);
-}
-
-.entadaUserBotao-button img {
-    width: 50%;
-    height: 50%;
-    object-fit: contain;
+.alerta.fade-out {
+    opacity: 0;
 }
