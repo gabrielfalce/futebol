@@ -2,15 +2,9 @@ import os
 from flask import Flask, render_template, request, redirect, url_for
 from database import inserir_usuario 
 
-# --- Configuração do Flask para a SUA estrutura de arquivos ---
-
-# O diretório onde o app.py está: '.../telasHTML/STATIC'
+# --- Configuração do Flask (mantida para sua estrutura de arquivos) ---
 project_root = os.path.dirname(os.path.abspath(__file__))
-
-# A pasta de templates (HTML) está um nível ACIMA: '.../telasHTML'
 template_dir = os.path.join(project_root, '..')
-
-# A pasta de arquivos estáticos (CSS, JS, Imagens) é a pasta ATUAL: '.../telasHTML/STATIC'
 static_dir = project_root
 
 app = Flask(
@@ -23,8 +17,11 @@ app = Flask(
 
 @app.route("/")
 def index():
-    """Rota para carregar o formulário de cadastro (telasHTML/index.html)."""
-    return render_template("index.html")
+    """
+    --- CORREÇÃO APLICADA AQUI ---
+    Esta é a rota principal. Ela DEVE carregar a página de cadastro.
+    """
+    return render_template("cadastrar.html") # Apontando para o arquivo correto.
 
 @app.route("/loading")
 def tela_de_loading():
@@ -53,12 +50,10 @@ def cadastrar():
     )
 
     if sucesso:
-        # SE DEU CERTO: Redireciona para a TELA DE LOADING
-        print("Cadastro bem-sucedido. Redirecionando para a tela de loading...")
+        # Se o cadastro for bem-sucedido, redireciona para a tela de loading.
         return redirect(url_for('tela_de_loading'))
     else:
-        # SE DEU ERRADO: Volta para a página de cadastro
-        print("Falha no cadastro. Redirecionando de volta para o formulário.")
+        # Se falhar, volta para a página de cadastro.
         return redirect(url_for('index'))
 
 if __name__ == "__main__":
