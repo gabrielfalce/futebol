@@ -1,5 +1,3 @@
-<!-- Localização: telasHTML/STATIC/Cadastrar templates/cadastrar.html -->
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -7,20 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Criação de Conta</title>
     
-    <!-- 
-      CAMINHO CORRETO PARA O CSS:
-      Aponta para 'telasHTML/STATIC/static/css/estilo.css'
-    -->
+    <!-- Caminho corrigido para o arquivo CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='static/css/estilo.css') }}">
 </head>
 <body>
-    <!-- 
-      CAMINHO CORRETO PARA A IMAGEM:
-      Aponta para 'telasHTML/STATIC/CriaçãoDeConta/bolaverde 3.png'
-    -->
+    <!-- Caminho corrigido para a imagem -->
     <img src="{{ url_for('static', filename='CriaçãoDeConta/bolaverde 3.png') }}" alt="Bola Verde">
     
     <h1 class="titulo">Criação de Conta</h1>
+
+    <!-- Bloco para exibir mensagens de erro (alertas) -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert-error">
+          {{ messages[0] }}
+        </div>
+      {% endif %}
+    {% endwith %}
     
     <form action="/cadastrar" method="post">
         <input placeholder="nome" type="text" id="nome" name="nome" required>  
