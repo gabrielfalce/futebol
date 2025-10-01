@@ -2,8 +2,8 @@ import os
 from supabase import create_client, Client
 
 # Pega as variáveis de ambiente
-url: str = os.getenv("SUPABASE_URL")
-key: str = os.getenv("SUPABASE_KEY")
+SUPABASE_URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
 
 # Verifica se estão corretas
 if not url or not key:
