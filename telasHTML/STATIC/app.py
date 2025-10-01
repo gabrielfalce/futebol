@@ -1,53 +1,42 @@
 from flask import Flask, render_template, request, redirect, url_for
+from database import inserir_usuario
 
-# Importa a função de banco de dados. (Presumimos que 'database.py' existe e está acessível)
-from database import inserir_usuario 
-
-# Configuração do Flask:
-# - template_folder: "telasHTML" (Os arquivos .html devem estar em telasHTML/STATIC/telasHTML)
-# - static_folder: "STATIC" (Os arquivos CSS/JS devem estar em telasHTML/STATIC/STATIC)
+# O 'template_folder' AGORA aponta para o nome EXATO da sua pasta: "Cadastrar templates"
+# Presumimos que esta pasta está dentro do mesmo diretório que o app.py.
+# O 'static_folder' aponta para "STATIC", que também deve estar dentro do diretório do app.py.
 #
-# NOTA: Esta configuração é válida se o seu app.py estiver no diretório pai de telasHTML/STATIC.
-# Se app.py estiver em telasHTML/STATIC/, os caminhos relativos podem precisar de ajuste (ex: template_folder="../telasHTML").
-# Mantendo a sua configuração original, mas o caminho no Render é crucial.
+# Se app.py estiver em '/telasHTML/STATIC/' e a pasta 'Cadastrar templates' estiver
+# dentro de 'STATIC', esta configuração está correta.
 app = Flask(
     __name__,
-    template_folder="telasHTML",     # Onde o Flask procura por 'render_template'
-    static_folder="STATIC"           # Onde o Flask procura por 'url_for('static', ...)'
+    template_folder="Cadastrar templates", # CORREÇÃO: Usando o nome exato que você forneceu
+    static_folder="STATIC"                 # Mantendo sua configuração para arquivos estáticos
 )
 
 # Rota principal (/)
-# Corrigido para carregar "cadastro.html" em vez de "index.html",
-# resolvendo o erro 'TemplateNotFound: index.html'.
 @app.route("/")
 def index():
-    # A rota raiz agora mostra a página de cadastro, pois não há 'index.html'
+    # CORREÇÃO: Renderiza 'cadastro.html', pois você não tem 'index.html'
     return render_template("cadastro.html")
 
 # Rota de Cadastro
-# Aceita métodos GET (para exibir o formulário) e POST (para processar o envio)
 @app.route("/cadastro", methods=["GET", "POST"])
 def cadastro():
     if request.method == "POST":
-        # Pega os dados do formulário
         nome = request.form.get("nome")
         email = request.form.get("email")
         senha = request.form.get("senha")
 
-        # Tenta inserir no banco de dados (função importada de 'database')
         sucesso = inserir_usuario(nome, email, senha)
 
         if sucesso:
-            # Redireciona ou renderiza a página de sucesso
-            # É recomendado usar 'redirect' para evitar reenvio de formulário
+            # Garanta que 'sucesso.html' está na pasta 'Cadastrar templates'
             return render_template("sucesso.html") 
         else:
-            # Redireciona ou renderiza a página de erro
+            # Garanta que 'erro.html' está na pasta 'Cadastrar templates'
             return render_template("erro.html")
 
-    # Para requisições GET, apenas exibe o formulário
     return render_template("cadastro.html")
 
 if __name__ == "__main__":
-    # Configuração de execução para o ambiente de desenvolvimento e produção (Render)
     app.run(host="0.0.0.0", port=5000, debug=True)
