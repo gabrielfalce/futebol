@@ -9,27 +9,27 @@ from database import inserir_usuario
 # O diretório onde o app.py está: '.../telasHTML/STATIC'
 project_root = os.path.dirname(os.path.abspath(__file__))
 
-# A pasta de templates (HTML) está um nível ACIMA: '.../telasHTML'
-template_dir = os.path.join(project_root, '..')
-
 # --- CORREÇÃO APLICADA AQUI ---
-# 1. A pasta de arquivos estáticos (CSS, JS, Imagens) é a pasta ATUAL.
+# Definimos os múltiplos locais onde seus arquivos HTML estão.
+template_dir_principal = os.path.join(project_root, '..') # Pasta 'telasHTML'
+template_dir_cadastro = os.path.join(project_root, 'Cadastrar templates') # Pasta 'telasHTML/STATIC/Cadastrar templates'
+
+# A pasta de arquivos estáticos (CSS, JS, Imagens) é a pasta ATUAL.
 static_dir = project_root
 
-# 2. Dizemos ao Flask que a URL para os arquivos estáticos não deve ter um prefixo '/static'.
-#    Isso fará com que url_for('static', filename='style.css') gere '/style.css' e não '/static/style.css'.
 app = Flask(
     __name__, 
-    template_folder=template_dir, 
+    # Passamos uma LISTA de pastas de templates. O Flask procurará em ordem.
+    template_folder=[template_dir_principal, template_dir_cadastro], 
     static_folder=static_dir,
-    static_url_path=''  # A correção crucial
+    static_url_path=''
 )
 
 # --- Rotas da Aplicação ---
 
 @app.route("/")
 def index():
-    """Carrega a página de cadastro (cadastrar.html)."""
+    """Carrega a página de cadastro (agora encontrada em 'Cadastrar templates')."""
     return render_template("cadastrar.html")
 
 @app.route("/loading")
