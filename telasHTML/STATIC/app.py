@@ -40,28 +40,15 @@ def cadastrar():
     cidade = request.form.get("cidade")
     posicao = request.form.get("posicao") 
     nascimento = request.form.get("nascimento") 
-    numero = request.form.get("numero") 
+    numero = request.form.get("numero")
 
-    # --- VALIDAÇÃO MELHORADA ---
-    # Vamos verificar todos os campos e ser mais específicos.
-    campos_obrigatorios = {
-        "Nome": nome, "Email": email, "Senha": senha, 
-        "Cidade": cidade, "Posição": posicao, "Nascimento": nascimento, "Número": numero
-    }
-    
-    campos_vazios = [nome_campo for nome_campo, valor in campos_obrigatorios.items() if not valor]
-
-    if campos_vazios:
-        # Imprime uma mensagem de erro detalhada nos logs
-        print(f"ERRO DE VALIDAÇÃO: Os seguintes campos estão vazios: {', '.join(campos_vazios)}")
-        
-        # Envia uma mensagem de erro mais útil para o usuário
-        mensagem_erro = f"Erro no cadastro: O(s) campo(s) {', '.join(campos_vazios)} é/são obrigatório(s)."
-        flash(mensagem_erro)
-        
+    # Validação para garantir que todos os campos foram preenchidos
+    if not all([nome, email, senha, cidade, posicao, nascimento, numero]):
+        flash("Erro no cadastro: Todos os campos são obrigatórios.")
         return redirect(url_for('index'))
 
-    # Se a validação passar, tenta inserir no banco
+    # --- CHAMADA DA FUNÇÃO CORRIGIDA ---
+    # Chamamos a função com todos os 7 argumentos.
     sucesso = inserir_usuario(
         nome=nome, email=email, senha=senha, cidade=cidade, 
         posicao=posicao, nascimento=nascimento, numero=numero
@@ -70,7 +57,7 @@ def cadastrar():
     if sucesso:
         return redirect(url_for('tela_de_loading'))
     else:
-        flash("Erro ao salvar no banco de dados. Tente novamente mais tarde.")
+        flash("Erro ao salvar no banco de dados. Verifique se o e-mail já foi cadastrado e tente novamente.")
         return redirect(url_for('index'))
 
 if __name__ == "__main__":
