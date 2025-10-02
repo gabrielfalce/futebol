@@ -1,41 +1,42 @@
 # Localização: telasHTML/STATIC/app.py
 
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash
-# Importe a nova função AQUI
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
 from database import inserir_usuario, buscar_usuarios
 import bcrypt
 
-# --- Configuração do Flask (mantendo a estrutura atual) ---
+# --- Configuração para servir arquivos manualmente ---
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-app = Flask(
-    __name__,
-    template_folder=project_root,
-    static_folder=os.path.join(project_root, 'STATIC')
-)
-app.secret_key = 'sua-chave-secreta-aqui'
+app = Flask(__name__, template_folder=project_root)
+app.secret_key = 'uma-chave-secreta-para-dev-branch'
 
-# --- Rotas ---
+# --- ROTAS MANUAIS PARA ARQUIVOS ESTÁTICOS ---
+
+# Rota para servir arquivos da pasta 'Cadastrar templates'
+@app.route('/<path:filename>')
+def serve_cadastro_files(filename):
+    # Procura o arquivo (seja 'estilo.css' ou 'bolaverde 3.png') na pasta correta
+    return send_from_directory(os.path.join(project_root, 'STATIC', 'Cadastrar templates'), filename)
+
+# --- Rotas da Aplicação ---
 
 @app.route("/")
 def index():
     return render_template("STATIC/Cadastrar templates/cadastrar.html")
 
+# ... (O resto do seu app.py, sem nenhuma alteração) ...
+
 @app.route("/loading")
 def tela_de_loading():
     return render_template("Telaloading.html")
 
-# --- ROTA MODIFICADA ---
 @app.route("/inicio")
 def pagina_inicial():
-    # 1. Busca os usuários do banco de dados
     lista_de_usuarios = buscar_usuarios()
-    # 2. Passa a lista para o template
     return render_template("TelaInicial.html", usuarios=lista_de_usuarios)
 
 @app.route("/cadastrar", methods=['POST'])
 def cadastrar():
-    # ... (lógica de cadastro que já funciona, sem alterações) ...
     nome = request.form.get("nome")
     email = request.form.get("email")
     senha_texto_puro = request.form.get("senha")
