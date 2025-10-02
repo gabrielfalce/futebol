@@ -3,7 +3,6 @@
 import os
 from supabase import create_client, Client
 from typing import Optional, List, Dict, Any
-# Não precisamos mais de bcrypt aqui, ele fica só no app.py
 from postgrest.exceptions import APIError
 
 url: Optional[str] = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
@@ -20,22 +19,14 @@ else:
     except Exception as e:
         print(f"Erro ao inicializar cliente Supabase: {e}")
 
-# --- FUNÇÃO CORRIGIDA ---
-# Agora ela espera 'senha_hash' como um bytes e o converte para string
 def inserir_usuario(nome: str, email: str, senha_hash: bytes, cidade: str, posicao: str, nascimento: str, numero: str) -> bool:
     if supabase is None:
         print("Erro: Cliente Supabase não inicializado para inserção.")
         return False
     
     data = {
-        "nome": nome,
-        "email": email,
-        # IMPORTANTE: Converte o hash de bytes para string antes de enviar
-        "senha_hash": senha_hash.decode('utf-8'),
-        "cidade": cidade,
-        "posicao": posicao,
-        "nascimento": nascimento,
-        "numero": numero
+        "nome": nome, "email": email, "senha_hash": senha_hash.decode('utf-8'),
+        "cidade": cidade, "posicao": posicao, "nascimento": nascimento, "numero": numero
     }
     
     try:
@@ -44,13 +35,15 @@ def inserir_usuario(nome: str, email: str, senha_hash: bytes, cidade: str, posic
         response = supabase.table("usuarios").insert(data).execute()
         print("--- RESPOSTA DO SUPABASE ---")
         print(response)
-        # A inserção é bem-sucedida se a resposta contiver dados
-        return bool(response.data)
+        
+        # --- CORREÇÃO DEFINITIVA ---
+        # A inserção é bem-sucedida se NÃO houver um erro. A resposta em si pode ser vazia.
+        # Se o código chegou até aqui sem lançar uma exceção, consideramos sucesso.
+        return True
+
     except APIError as e:
         print(f"--- ERRO DE API SUPABASE ---")
         print(f"Mensagem: {e.message}")
-        print(f"Código: {e.code}")
-        print(f"Detalhes: {e.details}")
         return False
     except Exception as e:
         print(f"--- ERRO INESPERADO AO INSERIR ---: {e}")
