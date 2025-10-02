@@ -4,20 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
     <title>App de Usuários</title>
     
     <!-- --- CAMINHOS CORRIGIDOS COM url_for() --- -->
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='iconeUser.png') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" type="image/x-icon" href="iconeUser.png">
 </head>
 <body>
     <header class="barra-superior">
         <button class="menu-button">
-            <img src="{{ url_for('static', filename='TresPontos.png') }}" alt="Menu">
+            <img src="TresPontos.png" alt="Menu">
         </button> 
         <div class="search-container">
             <input placeholder="Pesquisar" class="search-input" type="text">
-            <img src="{{ url_for('static', filename='lupa.png') }}" alt="Ícone de pesquisa"> 
+            <img src="lupa.png" alt="Ícone de pesquisa">
         </div>
     </header>
 
@@ -51,6 +51,6 @@
             <a href="#"><img src="{{ url_for('static', filename='BotaoUsuario.ico') }}" alt="Botão Usuário"></a>
         </button>
     </div>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="script.js"></script>
 </body>
 </html>

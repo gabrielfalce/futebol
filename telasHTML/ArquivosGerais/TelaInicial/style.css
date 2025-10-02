@@ -70,9 +70,9 @@ body {
     color: #515151;
 }
 
-.search-icon {
+.search-container img[alt="Ícone de pesquisa"] {
     position: absolute;
-    right: 15px;
+    right: 18px;
     top: 50%;
     transform: translateY(-50%);
     width: 20px;
@@ -244,6 +244,61 @@ body {
         height: 50%;
         object-fit: contain;
     }
+}
+
+/* =======================
+   BOTÃO DE PERFIL FIXO (USUÁRIO)
+   ======================= */
+.entadaUserBotao-container {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 99;
+}
+
+.entadaUserBotao-bar {
+    width: 60px;
+    height: 4px;
+    background-color: #000000;
+    border-radius: 20px;
+    margin-bottom: 10px;
+}
+
+.entadaUserBotao-button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: var(--cor-primaria);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    transition: transform 0.3s ease;
+    padding: 0;
+}
+
+.entadaUserBotao-button:hover {
+    transform: scale(1.1);
+}
+
+.entadaUserBotao-button a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.entadaUserBotao-button img {
+    width: 60%;
+    height: 60%;
+    object-fit: contain;
+    display: block;
 }
 
 /* =======================
