@@ -1,30 +1,25 @@
 # Localização: telasHTML/STATIC/app.py
 
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash
 from database import inserir_usuario, buscar_usuarios
 import bcrypt
 
-# --- Configuração para servir arquivos manualmente ---
+# --- Configuração Robusta com url_for() ---
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-app = Flask(__name__, template_folder=project_root)
-app.secret_key = 'uma-chave-secreta-para-dev-branch'
+app = Flask(
+    __name__,
+    template_folder=project_root,
+    static_folder=os.path.join(project_root, 'STATIC'),
+    static_url_path='/static'
+)
+app.secret_key = 'chave-secreta-da-sua-branch' # Chave diferente para segurança
 
-# --- ROTAS MANUAIS PARA ARQUIVOS ESTÁTICOS ---
-
-# Rota para servir arquivos da pasta 'Cadastrar templates'
-@app.route('/<path:filename>')
-def serve_cadastro_files(filename):
-    # Procura o arquivo (seja 'estilo.css' ou 'bolaverde 3.png') na pasta correta
-    return send_from_directory(os.path.join(project_root, 'STATIC', 'Cadastrar templates'), filename)
-
-# --- Rotas da Aplicação ---
+# --- Rotas ---
 
 @app.route("/")
 def index():
     return render_template("STATIC/Cadastrar templates/cadastrar.html")
-
-# ... (O resto do seu app.py, sem nenhuma alteração) ...
 
 @app.route("/loading")
 def tela_de_loading():
