@@ -1,18 +1,30 @@
-# Localização: /app.py (na raiz do projeto)
+# Localização: telasHTML/STATIC/app.py
 
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash
-from database import inserir_usuario, buscar_usuarios 
+from database import inserir_usuario, buscar_usuarios
+import bcrypt
 
-# O Flask agora encontra as pastas 'templates' e 'static' automaticamente!
-app = Flask(__name__)
+# --- Configuração Crucial para a Sua Estrutura ---
+
+# Define o caminho absoluto para a pasta 'telasHTML'
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
+app = Flask(
+    __name__,
+    # Diz ao Flask que a pasta de templates é 'telasHTML'
+    template_folder=project_root,
+    # Diz ao Flask que a pasta de arquivos estáticos é 'telasHTML/STATIC'
+    static_folder=os.path.join(project_root, 'STATIC')
+)
 app.secret_key = 'uma-chave-secreta-muito-segura-pode-mudar-depois'
 
-# --- Rotas da Aplicação ---
+# --- Rotas da Aplicação (sem alterações na lógica) ---
 
 @app.route("/")
 def index():
-    return render_template("cadastrar.html")
+    # Aponta para o caminho relativo a partir da pasta 'templates' (telasHTML)
+    return render_template("STATIC/Cadastrar templates/cadastrar.html")
 
 @app.route("/loading")
 def tela_de_loading():
@@ -25,21 +37,22 @@ def pagina_inicial():
 
 @app.route("/cadastrar", methods=['POST'])
 def cadastrar():
-    # ... (lógica de cadastro, sem alterações) ...
     nome = request.form.get("nome")
     email = request.form.get("email")
-    senha = request.form.get("senha")
+    senha_texto_puro = request.form.get("senha")
     cidade = request.form.get("cidade")
     posicao = request.form.get("posicao") 
     nascimento = request.form.get("nascimento") 
     numero = request.form.get("numero")
 
-    if not all([nome, email, senha, cidade, posicao, nascimento, numero]):
+    if not all([nome, email, senha_texto_puro, cidade, posicao, nascimento, numero]):
         flash("Erro no cadastro: Todos os campos são obrigatórios.")
         return redirect(url_for('index'))
 
+    senha_hash = bcrypt.hashpw(senha_texto_puro.encode('utf-8'), bcrypt.gensalt())
+
     sucesso = inserir_usuario(
-        nome=nome, email=email, senha=senha, cidade=cidade, 
+        nome=nome, email=email, senha_hash=senha_hash, cidade=cidade, 
         posicao=posicao, nascimento=nascimento, numero=numero
     )
 
