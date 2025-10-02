@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Criação de Conta</title>
     
-    <!-- CAMINHO DO CSS CORRIGIDO PARA APONTAR PARA O ARQUIVO LOCAL -->
-    <link rel="stylesheet" href="estilo.css">
+    <!-- O href agora aponta para a raiz do site -->
+    <link rel="stylesheet" href="/estilo.css">
     
     <style>
         .toast { visibility: hidden; min-width: 250px; background-color: #f44336; color: white; text-align: center; border-radius: 5px; padding: 16px; position: fixed; z-index: 100; right: 30px; top: 30px; font-size: 17px; opacity: 0; transition: opacity 0.5s, top 0.5s; }
@@ -15,13 +15,14 @@
     </style>
 </head>
 <body>
-    <!-- O caminho da imagem permanece o mesmo, pois ela não está na mesma pasta -->
+    <!-- O src agora aponta para a rota que criamos -->
     <img src="/CriaçãoDeConta/bolaverde 3.png" alt="Bola Verde">
     <h1 class="titulo">Criação de Conta</h1>
 
     <div id="toast-notification" class="toast"></div>
 
     <form action="/cadastrar" method="post">
+        <!-- ... (campos do formulário, sem alterações) ... -->
         <input placeholder="nome" type="text" id="nome" name="nome" required>  
         <input placeholder="email" type="email" id="email" name="email" required>  
         <input placeholder="senha" type="password" id="senha" name="senha" required>  
