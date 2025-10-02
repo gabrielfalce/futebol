@@ -1,42 +1,27 @@
 # Localização: telasHTML/STATIC/app.py
 
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash
 from database import inserir_usuario, buscar_usuarios
 import bcrypt
 
-# --- Configuração para servir arquivos manualmente ---
-
-# Define o caminho absoluto para a pasta 'telasHTML'
+# --- Configuração Robusta com url_for() ---
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-
-# A configuração do Flask fica mais simples, pois vamos controlar os arquivos
 app = Flask(
     __name__,
-    template_folder=project_root
+    template_folder=project_root,
+    # A pasta estática é 'telasHTML/STATIC'
+    static_folder=os.path.join(project_root, 'STATIC'),
+    # IMPORTANTE: Define o prefixo da URL para arquivos estáticos
+    static_url_path='/static'
 )
-app.secret_key = 'sua-chave-secreta-aqui'
+app.secret_key = 'sua-chave-secreta-para-main'
 
-# --- ROTAS MANUAIS PARA ARQUIVOS ESTÁTICOS ---
-
-# Rota para servir o CSS da página de cadastro
-@app.route('/estilo.css')
-def serve_cadastro_css():
-    # Procura o arquivo na pasta 'Cadastrar templates'
-    return send_from_directory(os.path.join(project_root, 'STATIC', 'Cadastrar templates'), 'estilo.css')
-
-# Rota para servir imagens da pasta 'CriaçãoDeConta'
-@app.route('/CriaçãoDeConta/<path:filename>')
-def serve_criacao_conta_images(filename):
-    return send_from_directory(os.path.join(project_root, 'STATIC', 'CriaçãoDeConta'), filename)
-
-# --- Rotas da Aplicação (sem alterações na lógica) ---
+# --- Rotas (sem alterações na lógica) ---
 
 @app.route("/")
 def index():
     return render_template("STATIC/Cadastrar templates/cadastrar.html")
-
-# ... (O resto do seu app.py, sem nenhuma alteração) ...
 
 @app.route("/loading")
 def tela_de_loading():
