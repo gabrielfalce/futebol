@@ -1,30 +1,42 @@
 # Localização: telasHTML/STATIC/app.py
 
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
 from database import inserir_usuario, buscar_usuarios
 import bcrypt
 
-# --- Configuração Crucial para a Sua Estrutura ---
+# --- Configuração para servir arquivos manualmente ---
 
 # Define o caminho absoluto para a pasta 'telasHTML'
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
+# A configuração do Flask fica mais simples, pois vamos controlar os arquivos
 app = Flask(
     __name__,
-    # Diz ao Flask que a pasta de templates é 'telasHTML'
-    template_folder=project_root,
-    # Diz ao Flask que a pasta de arquivos estáticos é 'telasHTML/STATIC'
-    static_folder=os.path.join(project_root, 'STATIC')
+    template_folder=project_root
 )
-app.secret_key = 'uma-chave-secreta-muito-segura-pode-mudar-depois'
+app.secret_key = 'sua-chave-secreta-aqui'
+
+# --- ROTAS MANUAIS PARA ARQUIVOS ESTÁTICOS ---
+
+# Rota para servir o CSS da página de cadastro
+@app.route('/estilo.css')
+def serve_cadastro_css():
+    # Procura o arquivo na pasta 'Cadastrar templates'
+    return send_from_directory(os.path.join(project_root, 'STATIC', 'Cadastrar templates'), 'estilo.css')
+
+# Rota para servir imagens da pasta 'CriaçãoDeConta'
+@app.route('/CriaçãoDeConta/<path:filename>')
+def serve_criacao_conta_images(filename):
+    return send_from_directory(os.path.join(project_root, 'STATIC', 'CriaçãoDeConta'), filename)
 
 # --- Rotas da Aplicação (sem alterações na lógica) ---
 
 @app.route("/")
 def index():
-    # Aponta para o caminho relativo a partir da pasta 'templates' (telasHTML)
     return render_template("STATIC/Cadastrar templates/cadastrar.html")
+
+# ... (O resto do seu app.py, sem nenhuma alteração) ...
 
 @app.route("/loading")
 def tela_de_loading():
@@ -59,7 +71,7 @@ def cadastrar():
     if sucesso:
         return redirect(url_for('tela_de_loading'))
     else:
-        flash("Erro ao salvar no banco de dados. Verifique se o e-mail já foi cadastrado e tente novamente.")
+        flash("Erro ao salvar no banco de dados. Verifique se o e-mail já foi cadastrado.")
         return redirect(url_for('index'))
 
 if __name__ == "__main__":
