@@ -1,46 +1,31 @@
-# Localização: telasHTML/STATIC/app.py
+# Localização: /app.py (na raiz do projeto)
 
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash
 from database import inserir_usuario, buscar_usuarios 
 
-# --- Configuração do Flask ---
-project_root = os.path.dirname(os.path.abspath(__file__))
-template_dir = os.path.join(project_root, '..')
-static_dir = project_root
-
-app = Flask(
-    __name__, 
-    template_folder=template_dir,
-    static_folder=static_dir,
-    # Esta linha é a mágica: faz com que 'STATIC/style.css' funcione
-    static_url_path='' 
-)
+# O Flask agora encontra as pastas 'templates' e 'static' automaticamente!
+app = Flask(__name__)
 app.secret_key = 'uma-chave-secreta-muito-segura-pode-mudar-depois'
 
 # --- Rotas da Aplicação ---
 
 @app.route("/")
 def index():
-    return render_template("STATIC/Cadastrar templates/cadastrar.html")
+    return render_template("cadastrar.html")
 
 @app.route("/loading")
 def tela_de_loading():
     return render_template("Telaloading.html")
 
-# --- ROTA /inicio MODIFICADA ---
 @app.route("/inicio")
 def pagina_inicial():
-    """Busca os usuários no banco e renderiza a página inicial."""
-    print("Buscando usuários no banco de dados...")
     lista_de_usuarios = buscar_usuarios()
-    print(f"Usuários encontrados: {len(lista_de_usuarios)}")
-    
-    # Passa a variável 'usuarios' para o template TelaInicial.html
     return render_template("TelaInicial.html", usuarios=lista_de_usuarios)
 
 @app.route("/cadastrar", methods=['POST'])
 def cadastrar():
+    # ... (lógica de cadastro, sem alterações) ...
     nome = request.form.get("nome")
     email = request.form.get("email")
     senha = request.form.get("senha")
