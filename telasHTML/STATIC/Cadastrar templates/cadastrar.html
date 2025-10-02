@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Criação de Conta</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='static/css/estilo.css') }}">
+    <link rel="stylesheet" href="estilo.css">
     
     <!-- Estilo para a notificação "Toast" -->
     <style>
@@ -18,7 +18,7 @@
     </style>
 </head>
 <body>
-    <img src="{{ url_for('static', filename='CriaçãoDeConta/bolaverde 3.png') }}" alt="Bola Verde">
+    <img src="bolaverde 3.png" alt="Bola Verde">
     <h1 class="titulo">Criação de Conta</h1>
 
     <!-- O elemento da notificação, que fica escondido -->
@@ -36,8 +36,8 @@
     </form>
 
     <!-- Script para mostrar a notificação (só é executado se houver erro) -->
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
+    <!-- {% with messages = get_flashed_messages() %}
+      {% if messages %} -->
         <script>
             const message = "{{ messages[0] }}";
             const toast = document.getElementById("toast-notification");
@@ -45,8 +45,8 @@
             toast.classList.add("show");
             setTimeout(function(){ toast.classList.remove("show"); }, 4000);
         </script>
-      {% endif %}
-    {% endwith %}
+      <!-- {% endif %}
+    {% endwith %} -->
 
 
 </body>
