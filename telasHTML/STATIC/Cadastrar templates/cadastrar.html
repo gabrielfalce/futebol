@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Criação de Conta</title>
     
-    <!-- Este caminho está correto e funcionando -->
-    <link rel="stylesheet" href="/estilo.css">
+    <!-- CAMINHO CORRIGIDO COM url_for() -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='Cadastrar templates/estilo.css') }}">
     
     <style>
         .toast { visibility: hidden; min-width: 250px; background-color: #f44336; color: white; text-align: center; border-radius: 5px; padding: 16px; position: fixed; z-index: 100; right: 30px; top: 30px; font-size: 17px; opacity: 0; transition: opacity 0.5s, top 0.5s; }
@@ -15,14 +15,13 @@
     </style>
 </head>
 <body>
-    <!-- CAMINHO DA IMAGEM CORRIGIDO PARA APONTAR PARA O ARQUIVO LOCAL -->
-    <img src="bolaverde 3.png" alt="Bola Verde">
+    <!-- CAMINHO CORRIGIDO COM url_for() -->
+    <img src="{{ url_for('static', filename='Cadastrar templates/bolaverde 3.png') }}" alt="Bola Verde">
     <h1 class="titulo">Criação de Conta</h1>
 
     <div id="toast-notification" class="toast"></div>
 
     <form action="/cadastrar" method="post">
-        <!-- ... (campos do formulário, sem alterações) ... -->
         <input placeholder="nome" type="text" id="nome" name="nome" required>  
         <input placeholder="email" type="email" id="email" name="email" required>  
         <input placeholder="senha" type="password" id="senha" name="senha" required>  
