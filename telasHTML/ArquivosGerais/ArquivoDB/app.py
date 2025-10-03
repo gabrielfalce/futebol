@@ -29,7 +29,7 @@ def tela_de_loading():
     return render_template("Telaloading.html")
 
 # --- ROTA /inicio MODIFICADA ---
-@app.route("/inicio")
+@app.route("/Telaloading")
 def pagina_inicial():
     """Busca os usuários no banco e renderiza a página inicial."""
     print("Buscando usuários no banco de dados...")
