@@ -24,19 +24,27 @@ body {
     box-shadow: 0 2px 16px rgba(254, 74, 74, 0.06);
 }
 
-button {
+
+
+
+#openModalButton {
+    position: absolute;
+    top: 45%;              /* mesma altura do padding-top do #mainScreen */
+    right: 5%;            /* distância do canto direito */
+    align-items: center;
     background: #25d366;
     color: #fff;
     border: none;
-    padding: 5% 10%;
+    padding: 5px 10px;
     border-radius: 6px;
     font-size: 16px;
     cursor: pointer;
-    margin: 10px 0;
     transition: background 0.2s;
+    margin: 0;              /* remove margin negativa */
+    z-index: 10;
 }
 
-button:hover {
+#openModalButton:hover {
     background: var(--cor-secundaria);
 }
 
@@ -45,29 +53,65 @@ button:hover {
     position: fixed;
     z-index: 1000;
     left: 0; top: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.7);
+    background: rgba(8, 4, 4, 0.7);
     justify-content: center;
     align-items: center;
 }
 
 .modal-content {
-    background: #fff;
+    align-items: center;
+    background: #f3f9f230;
     padding: 32px 24px;
     border-radius: 10px;
     box-shadow: 0 4px 32px rgba(0,0,0,0.2);
     position: absolute;
-    width:50%;
+    width:80%;
     max-width: 420px;
     text-align: center;
 }
 
+
+
+.salvar {
+    background: #25d366;
+    color: #000000;
+    border: none;;
+    /* width: 50%; */
+    padding: 10px 100px;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: background 0.2s;
+}
+.salvar:hover {
+    background: var(--cor-secundaria);
+    color: #fff;
+}
+
+
 .close-button {
-    top: 12px;
-    right: 16px;
-    background: transparent;
-    color: #333;
+    display: block;
+    margin: 0 auto 24px auto; /* centraliza horizontalmente */
+    background: black;
+    color: #e80e0e;
+    border-radius: 10px;
+    padding: 8px 32px;
     font-size: 28px;
     border: none;
+    cursor: pointer;
+    position: relative;
+    left: 0;
+    right: 0;
+    top: 0;
+    transform: none;
+    max-width: 120px;
+    width: 100%;
+    box-sizing: border-box;
+}
+.close-button:hover {
+    color: var(--cor-secundaria);
+    background: #191212;
     cursor: pointer;
 }
 
@@ -83,7 +127,16 @@ button:hover {
 
 input[type="file"] {
     margin: 16px 0;
+    border-radius: 8px;
 }
+
+input[type="file"]:hover {
+    cursor: pointer;
+    opacity: 0.9;
+    color: #128c7e;
+    
+}
+
 #imagem0111 {
     
     display: flex;
@@ -128,29 +181,30 @@ input[type="file"] {
     cursor: pointer;
 }
 
-.alinhamento{
-    align-items: center;
+
+.BotãoEntradaModal {
+    align-items: baseline;
 }
 
 
 
 @media (max-width: 600px) {
     .modal-content {
-        padding: 18px 6px;
+        padding: 12px 2vw;
         max-width: 98vw;
         font-size: 15px;
     }
-    button {
-        width: 100%;
-        font-size: 15px;
-        padding: 12px 0;
+    .close-button {
+        font-size: 22px;
+        padding: 6px 0;
+        max-width: 90vw;
     }
-    #mainScreen {
-        margin-top: 24px;
-        padding: 0 4px;
+    #imagem0111 {
+        width: 20%;
+        height: 90px;
     }
     #image, #preview {
-        max-height: 140px;
+        max-height: 90px;
     }
 }
 
@@ -185,16 +239,34 @@ input[type="file"] {
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.055);
     transition: transform 0.3s ease;
 }
 
 .floating-button:hover {
     transform: scale(1.1);
+    box-shadow: 0 6px 12px rgba(65, 167, 2, 0.734);
 }
 
 .floating-button img {
     width: 80%;
     height: 80%;
     object-fit: contain;
+}
+
+/* fim do botão de home  */
+
+/* Corrija o seletor button para não afetar todos os botões globalmente, use classes específicas se possível.
+   Se quiser um estilo global, adicione: */
+button {
+    font-family: inherit;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: background 0.2s, color 0.2s;
+    padding: 8px 16px;
+    background: var(--cor-primaria);
+    color: var(--cor-texto);
 }

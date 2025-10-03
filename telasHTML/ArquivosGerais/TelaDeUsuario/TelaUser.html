@@ -4,59 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cortar Imagem como no WhatsApp</title>
-    <!-- Inclua o CSS do Cropper.js -->
+    <!-- CSS do Cropper.js -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
-    <!-- Inclua o CSS personalizado -->
+    <!-- CSS personalizado -->
     <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="imagens/iconeUser.png">
 </head>
 <body>
-    <!-- Tela normal -->
+    <!-- ===== Tela principal ===== -->
     <div id="mainScreen">
-        <div class="titulo-bg">
-
-            <!-- <h2>Tela Principal</h2> -->
-        </div>
+        <div class="titulo-bg"></div>
+        <!-- Imagem de perfil -->
         <div id="imagem0111">
             <img id="preview" src="" alt="Prévia da imagem cortada">
         </div>
-        <button class="alinhamento" id="openModalButton">
+        <!-- Botão para abrir o modal -->
+        <button  id="openModalButton">
             <img class="imagenConfigPontos" src="imagens/TresPontos.png" alt="">
         </button>
     </div>
 
-
-
-
-
-
-    <!-- segunda parte -->
-    <!-- Modal de corte de imagem -->
+    <!-- ===== Modal de corte de imagem ===== -->
     <div id="cropModal" class="modal">
         <div class="modal-content">
             <button id="closeModalButton" class="close-button">&times;</button>
-            <h2>Cortar Imagem </h2>
+            <h2>Cortar Imagem</h2>
             <input type="file" id="imageInput" accept="image/*">
             <img id="image" src="" alt="Imagem para cortar">
             <button id="cropButton" style="display: none;">Cortar Imagem</button>
             <h3>Prévia da Imagem Cortada</h3>
+            <h4 class="salvar">Salvar</h4>
         </div>
     </div>
 
-
-<!-- botão de home -->
- <div class="floating-button-container">
+    <!-- ===== Botão flutuante de home ===== -->
+    <div class="floating-button-container">
         <div class="floating-button-bar"></div>
-        <button id="adicionarUsuarioBtn" class="floating-button">
-            <img src="bolaLogo.png" alt="Adicionar usuário">
-            <a id="linkTela" href="../TelaInicial.html"></a>
-        </button>
+        <a id="linkTela" href="../TelaLoading/Telaloading.html">
+            <button id="adicionarUsuarioBtn" class="floating-button">
+                <img src="imagens/bolaLogo.png" alt="Ir para tela de loading">
+            </button>
+        </a>
     </div>
 
-
-
-    <!-- JavaScript do Cropper.js -->
+    <!-- ===== Scripts ===== -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-    <!-- JavaScript personalizado -->
     <script src="script.js"></script>
 </body>
 </html>
