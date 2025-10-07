@@ -14,7 +14,9 @@
 <body>
     <img src="{{ url_for('static', filename='Cadastrar templates/bolaverde 3.png') }}" alt="Bola Verde">
     <h1 class="titulo">Criação de Conta</h1>
-    <div id="toast-notification" class="toast"></div>
+    <div id="toast-notification" class="toast">
+        <p class="login-link">Já tem uma conta? <a href="{{ url_for('login') }}">Faça login aqui</a></p>
+    </div>
     <form action="/cadastrar" method="post">
         <input placeholder="nome" type="text" id="nome" name="nome" required>  
         <input placeholder="email" type="email" id="email" name="email" required>  
