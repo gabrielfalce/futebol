@@ -28,14 +28,21 @@ def inserir_usuario(nome: str, email: str, senha_hash: bytes, cidade: str, posic
     }
     
     try:
+        # A biblioteca do Supabase lança uma exceção em caso de erro.
+        # Se esta linha executar sem problemas, a inserção foi um sucesso.
         supabase.table("usuarios").insert(data).execute()
+        
+        # --- CORREÇÃO DEFINITIVA ---
+        # Se chegamos aqui, é porque NENHUM erro ocorreu. Retornamos sucesso.
         return (True, None)
+
     except APIError as e:
         if 'duplicate key value violates unique constraint' in e.message and 'usuarios_email_key' in e.message:
             return (False, "Este e-mail já está cadastrado. Por favor, utilize outro.")
         else:
             print(f"--- ERRO DE API SUPABASE AO INSERIR ---: {e.message}")
             return (False, "Erro de comunicação com o banco de dados. Tente novamente.")
+            
     except Exception as e:
         print(f"--- ERRO INESPERADO AO INSERIR ---: {e}")
         return (False, "Ocorreu um erro inesperado no servidor.")
