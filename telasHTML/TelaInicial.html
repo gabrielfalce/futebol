@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>App de Usuários</title>
-    <!-- Usando url_for para garantir que os caminhos funcionem -->
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='iconeUser.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
@@ -22,31 +21,22 @@
 
     <main class="content">
         <div id="usuarios-container">
-            
-            <!-- INÍCIO DO CÓDIGO DINÂMICO -->
             {% if usuarios %}
-                <!-- Para cada 'usuario' na lista 'usuarios' que o Python enviou... -->
                 {% for usuario in usuarios %}
-                    <!-- ...crie este card: -->
                     <div class="usuario-card">
                         <img class="usuario-foto" src="{{ url_for('static', filename='iconeUser.png') }}" alt="Foto do usuário">
                         <div class="usuario-info">
-                            <!-- Usa os dados do usuário atual do loop -->
                             <h3 class="usuario-nome">{{ usuario.nome }}</h3>
                             <p class="usuario-cidade">{{ usuario.cidade }}</p>
                         </div>
                     </div>
                 {% endfor %}
             {% else %}
-                <!-- Se a lista de usuários estiver vazia, mostre esta mensagem -->
                 <p>Nenhum usuário cadastrado ainda.</p>
             {% endif %}
-            <!-- FIM DO CÓDIGO DINÂMICO -->
-
         </div>
     </main>
 
-    <!-- Botões flutuantes (sem alterações) -->
     <div class="floating-button-container">
         <div class="floating-button-bar"></div>
         <button id="adicionarUsuarioBtn" class="floating-button">
