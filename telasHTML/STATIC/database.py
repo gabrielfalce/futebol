@@ -1,57 +1,59 @@
-# Localização: telasHTML/STATIC/database.py
-
 import os
 from supabase import create_client, Client
-from typing import Optional, List, Dict, Any
-from postgrest.exceptions import APIError
+import bcrypt
 
-url: Optional[str] = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
-key: Optional[str] = os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
-supabase: Optional[Client] = None
+# Configuração do cliente Supabase com as suas credenciais
+url: str = "https://rtndgnydprxkykdxgexa.supabase.co"
+key: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0bmRnbnlkcHJ4a3lrZHhnZXhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjgwMDM3MjUsImV4cCI6MjA0MzU3OTcyNX0.3d-I2h2Y3sM052y3i5iA2s19i4p8s3mY-33V_2NfM-0"
+supabase: Client = create_client(url, key )
 
-if not url or not key:
-    print("Erro Crítico: Variáveis de ambiente do Supabase não configuradas.")
-else:
+def register_user(nome, email, senha, cidade, numero, posicao, data_nasc):
+    """Regista um novo utilizador no banco de dados com senha encriptada."""
     try:
-        supabase = create_client(url, key)
-        print("Sucesso: Cliente Supabase inicializado.")
-    except Exception as e:
-        print(f"Erro Crítico ao inicializar cliente Supabase: {e}")
+        # Verifica se o email já existe
+        user_exists = supabase.table('usuarios').select('id').eq('email', email).execute()
+        if user_exists.data:
+            return False, "Este email já está registado."
 
-def inserir_usuario(nome: str, email: str, senha_hash: bytes, cidade: str, posicao: str, nascimento: str, numero: str) -> (bool, Optional[str]):
-    if supabase is None:
-        return (False, "Erro interno: Conexão com o banco de dados não disponível.")
-    
-    data = {
-        "nome": nome, "email": email, "senha_hash": senha_hash.decode('utf-8'),
-        "cidade": cidade, "posicao": posicao, "nascimento": nascimento, "numero": numero
-    }
-    
-    try:
-        # A biblioteca do Supabase lança uma exceção em caso de erro.
-        # Se esta linha executar sem problemas, a inserção foi um sucesso.
-        supabase.table("usuarios").insert(data).execute()
+        # Encripta a senha antes de guardar
+        hashed_password = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt())
         
-        # --- CORREÇÃO DEFINITIVA ---
-        # Se chegamos aqui, é porque NENHUM erro ocorreu. Retornamos sucesso.
-        return (True, None)
+        # Insere o novo utilizador
+        data, count = supabase.table('usuarios').insert({
+            'nome': nome,
+            'email': email,
+            'senha': hashed_password.decode('utf-8'), # Guarda a senha como string
+            'cidade': cidade,
+            'numero': numero,
+            'posicao': posicao,
+            'data_nasc': data_nasc
+        }).execute()
+        
+        return True, "Utilizador registado com sucesso!"
+        
+    except Exception as e:
+        print(f"Erro ao registar utilizador: {e}")
+        return False, f"Ocorreu um erro inesperado: {e}"
 
-    except APIError as e:
-        if 'duplicate key value violates unique constraint' in e.message and 'usuarios_email_key' in e.message:
-            return (False, "Este e-mail já está cadastrado. Por favor, utilize outro.")
+def check_user(email, password):
+    """Verifica se um utilizador existe e se a senha está correta."""
+    try:
+        # Busca o utilizador pelo email
+        user_data = supabase.table('usuarios').select('senha').eq('email', email).execute()
+        
+        # Verifica se o utilizador foi encontrado
+        if not user_data.data:
+            return False
+
+        # Obtém a hash da senha armazenada no banco de dados
+        hashed_password = user_data.data[0]['senha'].encode('utf-8')
+        
+        # Compara a senha fornecida pelo utilizador com a hash armazenada
+        if bcrypt.checkpw(password.encode('utf-8'), hashed_password):
+            return True # A senha está correta
         else:
-            print(f"--- ERRO DE API SUPABASE AO INSERIR ---: {e.message}")
-            return (False, "Erro de comunicação com o banco de dados. Tente novamente.")
+            return False # A senha está incorreta
             
     except Exception as e:
-        print(f"--- ERRO INESPERADO AO INSERIR ---: {e}")
-        return (False, "Ocorreu um erro inesperado no servidor.")
-
-def buscar_usuarios() -> List[Dict[str, Any]]:
-    if supabase is None: return []
-    try:
-        response = supabase.table("usuarios").select("nome, cidade").execute()
-        return response.data if response.data else []
-    except Exception as e:
-        print(f"--- ERRO DURANTE A BUSCA DE USUÁRIOS ---: {e}")
-        return []
+        print(f"Erro ao verificar utilizador: {e}")
+        return False
