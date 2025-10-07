@@ -110,7 +110,7 @@ button:hover {
     input, select, button {
         font-size: 0.98em;
         padding: 9px;
-        width: 90%; /* Ajuste de largura para telas pequenas */
+        width: 90%; 
     }
 }
 
@@ -134,5 +134,18 @@ button:hover {
     width: 80%;
     margin-left: auto;
     margin-right: auto;
+}
+.login-link {
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.login-link a {
+    color: #00f2ff; 
+    text-decoration: none;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
 }
 
