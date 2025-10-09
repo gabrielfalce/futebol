@@ -1,11 +1,11 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-from database import register_user, check_user, get_all_users, search_users # Certifique-se de que todas as importações estão aqui
+from database import register_user, check_user, get_all_users, search_users
 
 # Configuração da aplicação Flask
 # ALTERAÇÃO: Aponte template_folder para o diretório que contém a pasta 'STATIC'
 app = Flask(__name__, 
-            template_folder='telasHTML',  # NOVO: Use telasHTML como base para templates.
-            static_folder='telasHTML/STATIC') # Mantenha telasHTML/STATIC para os arquivos estáticos.
+            template_folder='telasHTML',  # Base folder para todos os templates (inclui STATIC e TelaInicial.html)
+            static_folder='telasHTML/STATIC') # Base folder para os arquivos estáticos (CSS, imagens, etc.)
 
 # Chave secreta para mensagens flash e sessões
 app.secret_key = 'uma_chave_muito_secreta_e_dificil_de_adivinhar'
@@ -38,8 +38,7 @@ def cadastrar():
             flash(message, 'danger')
     
     # Renderiza a página de cadastro
-    # O caminho agora inclui o STATIC, pois 'telasHTML' é a pasta base.
-    # Novo caminho: templates_folder ('telasHTML') + 'STATIC/Cadastrar templates/cadastrar.html'
+    # Caminho: templates_folder ('telasHTML') + 'STATIC/Cadastrar templates/cadastrar.html'
     return render_template('STATIC/Cadastrar templates/cadastrar.html')
 
 # Rota para a página de login
@@ -65,8 +64,9 @@ def login():
 def tela_inicial():
     if 'user_email' in session:
         usuarios = get_all_users()
-        # TelaInicial.html também deve ser referenciada a partir de telasHTML
-        return render_template('STATIC/TelaInicial.html', # Assumindo que TelaInicial.html está dentro de STATIC
+        
+        # CORREÇÃO AQUI: TelaInicial.html está em 'telasHTML/TelaInicial.html'
+        return render_template('TelaInicial.html', 
                                usuarios=usuarios, 
                                user_email=session['user_email'])
     else:
@@ -87,7 +87,8 @@ def search():
     else:
         usuarios = get_all_users()
         
-    return render_template('STATIC/TelaInicial.html', # Assumindo que TelaInicial.html está dentro de STATIC
+    # CORREÇÃO AQUI: TelaInicial.html está em 'telasHTML/TelaInicial.html'
+    return render_template('TelaInicial.html', 
                            usuarios=usuarios, 
                            user_email=session['user_email'])
 
