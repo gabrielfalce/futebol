@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-from database import register_user, check_user
+# Importe as novas funções
+from database import register_user, check_user, get_all_users, search_users
 
 # Configuração da aplicação Flask
 # Os templates estão em subdiretórios, então ajustamos os caminhos
@@ -59,16 +60,45 @@ def login():
     return render_template('Login templates/login.html')
 
 # Rota para a tela inicial (protegida)
-@app.route('/tela_inicial')
+@app.route('/tela_inicial', methods=['GET'])
 def tela_inicial():
     # Verifica se o utilizador está logado
     if 'user_email' in session:
-        # Se estiver logado, mostra a página
-        return render_template('TelaInicial.html', user_email=session['user_email'])
+        # Busca todos os usuários cadastrados
+        usuarios = get_all_users()
+        
+        # Renderiza o template, passando a lista de usuários
+        return render_template('TelaInicial.html', 
+                               usuarios=usuarios, 
+                               user_email=session['user_email'])
     else:
         # Se não, redireciona para o login
         flash('Você precisa fazer login para aceder a esta página.', 'warning')
         return redirect(url_for('login'))
+
+# Nova Rota para a Busca
+@app.route('/search', methods=['GET'])
+def search():
+    # Protege a rota de busca
+    if 'user_email' not in session:
+        flash('Você precisa fazer login para aceder a esta página.', 'warning')
+        return redirect(url_for('login'))
+        
+    # Pega o valor do campo 'Pesquisar' que será passado como parâmetro 'q' na URL
+    search_query = request.args.get('q', '').strip()
+    
+    if search_query:
+        # Se há uma query, busca usuários filtrados
+        usuarios = search_users(search_query)
+    else:
+        # Se a query está vazia, mostra todos os usuários
+        usuarios = get_all_users()
+        
+    # Renderiza a mesma tela com os resultados da busca
+    return render_template('TelaInicial.html', 
+                           usuarios=usuarios, 
+                           user_email=session['user_email'])
+
 
 # Rota de logout
 @app.route('/logout')
