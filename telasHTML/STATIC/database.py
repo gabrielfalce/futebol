@@ -34,7 +34,7 @@ def register_user(nome, email, senha, cidade, numero, posicao, data_nasc):
             'cidade': cidade,
             'numero': numero,
             'posicao': posicao,
-            'data_nasc': data_nasc
+            'nascimento': data_nasc # <<< CORREÇÃO: Coluna Supabase é 'nascimento'
         }).execute()
         
         return True, "Utilizador registado com sucesso!"
@@ -64,12 +64,11 @@ def check_user(email, password):
         return False
 
 
-# --- NOVAS FUNÇÕES PARA A TELA INICIAL (BUSCA E LISTAGEM) ---
+# --- FUNÇÕES PARA A TELA INICIAL ---
 
 def get_all_users():
     """Recupera todos os usuários do banco de dados, excluindo a senha."""
     try:
-        # Seleciona apenas os campos necessários para exibição na tela inicial
         response = supabase.table('usuarios').select('nome, cidade, email').order('nome', desc=False).execute()
         return response.data
     except Exception as e:
@@ -79,7 +78,6 @@ def get_all_users():
 def search_users(query):
     """Busca usuários pelo nome ou cidade."""
     try:
-        # Monta a query para buscar por nome OU cidade usando 'ilike' (case-insensitive)
         response = supabase.table('usuarios').select('nome, cidade, email').or_(
             f'nome.ilike.%{query}%', 
             f'cidade.ilike.%{query}%'
