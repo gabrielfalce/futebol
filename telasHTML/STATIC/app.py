@@ -1,11 +1,20 @@
+import os # NOVO: Necessário para manipular caminhos de arquivo
 from flask import Flask, render_template, request, redirect, url_for, flash, session
+# Importa as novas funções de busca (necessário que estejam em database (2).py)
 from database import register_user, check_user, get_all_users, search_users 
 
+# --- CORREÇÃO DO CAMINHO CRÍTICA ---
+# app.py está em 'telasHTML/STATIC'. 
+# basedir é a pasta atual (STATIC).
+basedir = os.path.dirname(__file__) 
+# template_base sobe um nível (..) para 'telasHTML'.
+template_base = os.path.join(basedir, '..') 
+
 # Configuração da aplicação Flask
-# template_folder='telasHTML' é a base, pois TelaInicial.html está em telasHTML/
 app = Flask(__name__, 
-            template_folder='telasHTML',  
-            static_folder='telasHTML/STATIC') 
+            template_folder=template_base,  # Base: telasHTML
+            static_folder=basedir)          # Estático: telasHTML/STATIC
+# -----------------------------------
 
 # Chave secreta para mensagens flash e sessões
 app.secret_key = 'uma_chave_muito_secreta_e_dificil_de_adivinhar'
@@ -35,7 +44,7 @@ def cadastrar():
         else:
             flash(message, 'danger')
     
-    # NOVO CAMINHO: Usando Cadastrar_templates (sem espaço)
+    # Caminho correto em relação à pasta 'telasHTML'
     return render_template('STATIC/Cadastrar_templates/cadastrar.html')
 
 # Rota para a página de login
@@ -52,16 +61,18 @@ def login():
         else:
             flash('Email ou senha incorretos. Tente novamente.', 'danger')
             
-    # NOVO CAMINHO: Usando Login_templates (sem espaço)
+    # Caminho correto em relação à pasta 'telasHTML'
     return render_template('STATIC/Login_templates/login.html')
 
 # Rota para a tela inicial (protegida) e com exibição de usuários
 @app.route('/tela_inicial', methods=['GET'])
 def tela_inicial():
     if 'user_email' in session:
-        usuarios = get_all_users()
+        # Busca todos os usuários cadastrados
+        # Esta função precisa estar no seu database.py
+        usuarios = get_all_users() 
         
-        # Caminho: telasHTML/TelaInicial.html
+        # Caminho correto em relação à pasta 'telasHTML'
         return render_template('TelaInicial.html', 
                                usuarios=usuarios, 
                                user_email=session['user_email'])
@@ -79,8 +90,10 @@ def search():
     search_query = request.args.get('q', '').strip()
     
     if search_query:
-        usuarios = search_users(search_query)
+        # Busca usuários filtrados
+        usuarios = search_users(search_query) # Esta função precisa estar no seu database.py
     else:
+        # Mostra todos os usuários se a busca for vazia
         usuarios = get_all_users()
         
     return render_template('TelaInicial.html', 
