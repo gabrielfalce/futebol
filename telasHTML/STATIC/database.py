@@ -1,7 +1,7 @@
 import os
 from supabase import create_client, Client
 import bcrypt
-from dotenv import load_dotenv # Adicione esta linha
+from dotenv import load_dotenv
 
 # Carrega as variáveis do ficheiro .env para o ambiente
 load_dotenv() 
@@ -60,3 +60,23 @@ def check_user(email, password):
     except Exception as e:
         print(f"Erro ao verificar utilizador: {e}")
         return False
+
+def get_all_users():
+    """Busca e retorna todos os utilizadores (nome e cidade) do banco de dados."""
+    try:
+        # Seleciona apenas 'nome' e 'cidade' para exibir na Tela Inicial
+        response = supabase.table('usuarios').select('nome, cidade').execute()
+        return response.data
+    except Exception as e:
+        print(f"Erro ao buscar todos os utilizadores: {e}")
+        return []
+
+def search_users(query):
+    """Busca utilizadores pelo nome ou cidade que contenham a string de busca."""
+    try:
+        # Usa 'ilike' para buscar de forma case-insensitive no campo 'nome'
+        response = supabase.table('usuarios').select('nome, cidade').ilike('nome', f'%{query}%').execute()
+        return response.data
+    except Exception as e:
+        print(f"Erro ao buscar utilizadores: {e}")
+        return []
