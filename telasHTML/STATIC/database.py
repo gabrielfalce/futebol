@@ -24,6 +24,7 @@ def register_user(nome, email, senha, cidade, numero, posicao, data_nasc):
         if user_exists.data:
             return False, "Este email já está registado."
 
+        # Encripta a senha antes de guardar
         hashed_password = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt())
         
         data, count = supabase.table('usuarios').insert({
@@ -50,6 +51,7 @@ def check_user(email, password):
         if not user_data.data:
             return False
 
+        # Verifica a senha encriptada
         hashed_password = user_data.data[0]['senha'].encode('utf-8')
         
         if bcrypt.checkpw(password.encode('utf-8'), hashed_password):
@@ -61,22 +63,28 @@ def check_user(email, password):
         print(f"Erro ao verificar utilizador: {e}")
         return False
 
+
+# --- NOVAS FUNÇÕES PARA A TELA INICIAL (BUSCA E LISTAGEM) ---
+
 def get_all_users():
-    """Busca e retorna todos os utilizadores (nome e cidade) do banco de dados."""
+    """Recupera todos os usuários do banco de dados, excluindo a senha."""
     try:
-        # Seleciona apenas 'nome' e 'cidade' para exibir na Tela Inicial
-        response = supabase.table('usuarios').select('nome, cidade').execute()
+        # Seleciona apenas os campos necessários para exibição na tela inicial
+        response = supabase.table('usuarios').select('nome, cidade, email').order('nome', desc=False).execute()
         return response.data
     except Exception as e:
-        print(f"Erro ao buscar todos os utilizadores: {e}")
+        print(f"Erro ao obter todos os usuários: {e}")
         return []
 
 def search_users(query):
-    """Busca utilizadores pelo nome ou cidade que contenham a string de busca."""
+    """Busca usuários pelo nome ou cidade."""
     try:
-        # Usa 'ilike' para buscar de forma case-insensitive no campo 'nome'
-        response = supabase.table('usuarios').select('nome, cidade').ilike('nome', f'%{query}%').execute()
+        # Monta a query para buscar por nome OU cidade usando 'ilike' (case-insensitive)
+        response = supabase.table('usuarios').select('nome, cidade, email').or_(
+            f'nome.ilike.%{query}%', 
+            f'cidade.ilike.%{query}%'
+        ).execute()
         return response.data
     except Exception as e:
-        print(f"Erro ao buscar utilizadores: {e}")
+        print(f"Erro ao buscar usuários: {e}")
         return []
