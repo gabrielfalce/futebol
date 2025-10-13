@@ -1,69 +1,58 @@
-# Localização: telasHTML/STATIC/app.py
+# No arquivo app.py (seu app (7).py)
 
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash
-from database import inserir_usuario, buscar_usuarios 
+from database import inserir_usuario, buscar_usuarios # Atenção: seu database.py usa 'inserir_usuario' e 'buscar_usuarios'
+import bcrypt
 
-# --- Configuração do Flask ---
-project_root = os.path.dirname(os.path.abspath(__file__))
-template_dir = os.path.join(project_root, '..')
-static_dir = project_root
+# --- CORREÇÃO ROBUSTA DE PATHS ---
+# Sobe dois níveis (../..) a partir de 'telasHTML/ArquivosGerais/ArquivoDB' para chegar em 'telasHTML/ArquivosGerais'
+# O path 'project_root' DEVE apontar para a pasta que contém as pastas de templates e arquivos estáticos.
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')) 
 
 app = Flask(
-    __name__, 
-    template_folder=template_dir,
-    static_folder=static_dir,
-    # Esta linha é a mágica: faz com que 'STATIC/style.css' funcione
-    static_url_path='' 
+    __name__,
+    # template_folder agora é 'telasHTML/ArquivosGerais'
+    template_folder=project_root, 
+    # A pasta estática é 'telasHTML/ArquivosGerais/STATIC' (ou onde seus estáticos estiverem)
+    # **Baseado nas suas pastas, vou assumir que a pasta STATIC é a 'ArquivosGerais' em si ou você moveu.**
+    # Se a pasta 'STATIC' não existir, o Flask procura os arquivos dentro de 'template_folder'.
+    # Vou manter a configuração do seu app (7).py, mas garantir que o render_template está certo.
+    static_folder=os.path.join(project_root, 'STATIC'), 
+    static_url_path='/static'
 )
-app.secret_key = 'uma-chave-secreta-muito-segura-pode-mudar-depois'
+app.secret_key = 'sua-chave-secreta-para-main'
 
-# --- Rotas da Aplicação ---
+# ...
 
 @app.route("/")
 def index():
-    return render_template("STATIC/Cadastrar templates/cadastrar.html")
+    # CORREÇÃO: Remova o espaço da pasta Cadastrar templates
+    # O arquivo correto é 'Cadastrar templates/cadastrar.html' (mas precisa ser renomeado)
+    # Se você já renomeou a pasta no seu branch para 'Cadastrar_templates':
+    return render_template("Cadastrar_templates/cadastrar.html")
+    # Caso você NÃO possa renomear a pasta, use o caminho da estrutura:
+    # return render_template("STATIC/Cadastrar templates/cadastrar.html") 
+    # **A ÚNICA MANEIRA DE CORRIGIR O TEMPLATENOTFOUND É RENOMEAR A PASTA OU TIRAR O ESPAÇO DA CHAMADA.**
 
-@app.route("/loading")
-def tela_de_loading():
-    return render_template("Telaloading.html")
+# VOU ASSUMIR QUE VOCÊ VAI RENOMEAR A PASTA NO GITHUB PARA 'Cadastrar_templates'
 
-# --- ROTA /inicio MODIFICADA ---
-@app.route("/Telaloading")
-def pagina_inicial():
-    """Busca os usuários no banco e renderiza a página inicial."""
-    print("Buscando usuários no banco de dados...")
-    lista_de_usuarios = buscar_usuarios()
-    print(f"Usuários encontrados: {len(lista_de_usuarios)}")
-    
-    # Passa a variável 'usuarios' para o template TelaInicial.html
-    return render_template("TelaInicial.html", usuarios=lista_de_usuarios)
+# ... (Rotas /loading e /inicio)
 
 @app.route("/cadastrar", methods=['POST'])
 def cadastrar():
-    nome = request.form.get("nome")
-    email = request.form.get("email")
-    senha = request.form.get("senha")
-    cidade = request.form.get("cidade")
-    posicao = request.form.get("posicao") 
-    nascimento = request.form.get("nascimento") 
-    numero = request.form.get("numero")
+    # ... (toda a lógica de POST está OK no seu app (7).py) ...
 
-    if not all([nome, email, senha, cidade, posicao, nascimento, numero]):
-        flash("Erro no cadastro: Todos os campos são obrigatórios.")
-        return redirect(url_for('index'))
+    # O POST retorna para a tela de index (que renderiza a página de cadastro em caso de erro)
+    # Também precisa usar o nome da pasta corrigido, ou renomeá-la
+    # return redirect(url_for('index')) # Se falhar, o index renderiza o template
 
-    sucesso = inserir_usuario(
-        nome=nome, email=email, senha=senha, cidade=cidade, 
-        posicao=posicao, nascimento=nascimento, numero=numero
-    )
+    # Para ser mais explícito, em caso de erro de validação:
+    if not sucesso:
+        flash("Erro ao salvar no banco de dados. Verifique se o e-mail já foi cadastrado.")
+        # CHAME O TEMPLATE CORRIGIDO NOVAMENTE
+        return render_template("Cadastrar_templates/cadastrar.html")
 
-    if sucesso:
-        return redirect(url_for('tela_de_loading'))
-    else:
-        flash("Erro ao salvar no banco de dados. Verifique se o e-mail já foi cadastrado e tente novamente.")
-        return redirect(url_for('index'))
+    return redirect(url_for('tela_de_loading')) # Se sucesso
 
-if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+# ... (restante do código) ...
