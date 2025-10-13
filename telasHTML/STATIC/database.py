@@ -1,62 +1,87 @@
-# Localização: telasHTML/STATIC/database.py
-
 import os
 from supabase import create_client, Client
-from typing import Optional, List, Dict, Any
-from postgrest.exceptions import APIError
+import bcrypt
+from dotenv import load_dotenv
 
-url: Optional[str] = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
-key: Optional[str] = os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+# Carrega as variáveis do ficheiro .env para o ambiente
+load_dotenv() 
 
-supabase: Optional[Client] = None
+# Lê as credenciais a partir das variáveis de ambiente
+url: str = os.environ.get("SUPABASE_URL")
+key: str = os.environ.get("SUPABASE_KEY")
 
+# Verifica se as variáveis foram carregadas corretamente
 if not url or not key:
-    print("Erro: Variáveis de ambiente do Supabase não configuradas.")
-else:
-    try:
-        supabase = create_client(url, key)
-        print("Sucesso: Cliente Supabase inicializado.")
-    except Exception as e:
-        print(f"Erro ao inicializar cliente Supabase: {e}")
+    raise ValueError("As variáveis de ambiente SUPABASE_URL e SUPABASE_KEY não foram definidas.")
 
-def inserir_usuario(nome: str, email: str, senha_hash: bytes, cidade: str, posicao: str, nascimento: str, numero: str) -> bool:
-    if supabase is None:
-        print("Erro: Cliente Supabase não inicializado para inserção.")
-        return False
-    
-    data = {
-        "nome": nome, "email": email, "senha_hash": senha_hash.decode('utf-8'),
-        "cidade": cidade, "posicao": posicao, "nascimento": nascimento, "numero": numero
-    }
-    
+# Configuração do cliente Supabase
+supabase: Client = create_client(url, key)
+
+def register_user(nome, email, senha, cidade, numero, posicao, data_nasc):
+    """Regista um novo utilizador no banco de dados com senha encriptada."""
     try:
-        print("--- TENTANDO INSERIR DADOS ---")
-        print(data)
-        response = supabase.table("usuarios").insert(data).execute()
-        print("--- RESPOSTA DO SUPABASE ---")
-        print(response)
+        user_exists = supabase.table('usuarios').select('id').eq('email', email).execute()
+        if user_exists.data:
+            return False, "Este email já está registado."
+
+        # Encripta a senha antes de guardar
+        hashed_password = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt())
         
-        # --- CORREÇÃO DEFINITIVA ---
-        # A inserção é bem-sucedida se NÃO houver um erro. A resposta em si pode ser vazia.
-        # Se o código chegou até aqui sem lançar uma exceção, consideramos sucesso.
-        return True
-
-    except APIError as e:
-        print(f"--- ERRO DE API SUPABASE ---")
-        print(f"Mensagem: {e.message}")
-        return False
+        data, count = supabase.table('usuarios').insert({
+            'nome': nome,
+            'email': email,
+            'senha': hashed_password.decode('utf-8'),
+            'cidade': cidade,
+            'numero': numero,
+            'posicao': posicao,
+            'nascimento': data_nasc # <<< CORREÇÃO: Usando o nome correto da coluna
+        }).execute()
+        
+        return True, "Utilizador registado com sucesso!"
+        
     except Exception as e:
-        print(f"--- ERRO INESPERADO AO INSERIR ---: {e}")
-        return False
+        print(f"Erro ao registar utilizador: {e}")
+        return False, f"Ocorreu um erro inesperado: {e}"
 
-def buscar_usuarios() -> List[Dict[str, Any]]:
-    """Busca todos os usuários da tabela 'usuarios'."""
-    if supabase is None:
-        print("Erro: Cliente Supabase não inicializado para busca.")
-        return []
+def check_user(email, password):
+    """Verifica se um utilizador existe e se a senha está correta."""
     try:
-        response = supabase.table("usuarios").select("nome, cidade").execute()
-        return response.data if response.data else []
+        user_data = supabase.table('usuarios').select('senha').eq('email', email).execute()
+        
+        if not user_data.data:
+            return False
+
+        # Verifica a senha encriptada
+        hashed_password = user_data.data[0]['senha'].encode('utf-8')
+        
+        if bcrypt.checkpw(password.encode('utf-8'), hashed_password):
+            return True
+        else:
+            return False
+            
     except Exception as e:
-        print(f"--- ERRO DURANTE A BUSCA DE USUÁRIOS ---: {e}")
+        print(f"Erro ao verificar utilizador: {e}")
+        return False
+
+# --- FUNÇÕES ADICIONADAS PARA LISTAGEM E BUSCA ---
+
+def get_all_users():
+    """Recupera todos os usuários do banco de dados, excluindo a senha."""
+    try:
+        response = supabase.table('usuarios').select('nome, cidade, email').order('nome', desc=False).execute()
+        return response.data
+    except Exception as e:
+        print(f"Erro ao obter todos os usuários: {e}")
+        return []
+
+def search_users(query):
+    """Busca usuários pelo nome ou cidade."""
+    try:
+        response = supabase.table('usuarios').select('nome, cidade, email').or_(
+            f'nome.ilike.%{query}%', 
+            f'cidade.ilike.%{query}%'
+        ).execute()
+        return response.data
+    except Exception as e:
+        print(f"Erro ao buscar usuários: {e}")
         return []
