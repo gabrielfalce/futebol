@@ -3,3 +3,4 @@ requests
 bcrypt
 supabase
 gunicorn
+python-dotenv
