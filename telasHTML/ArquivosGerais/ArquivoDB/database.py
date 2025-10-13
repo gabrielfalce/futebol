@@ -1,78 +1,100 @@
 import os
 from supabase import create_client, Client
+from typing import Optional, List, Dict, Any
+from postgrest.exceptions import APIError
+from dotenv import load_dotenv # Adicionado para carregar .env localmente
 import bcrypt
-from dotenv import load_dotenv # Requer python-dotenv no requirements.txt
 
-# Carrega as variáveis do ficheiro .env para o ambiente
+# Tenta carregar variáveis do .env (se existir)
 load_dotenv() 
 
-# Lê as credenciais a partir das variáveis de ambiente
-url: str = os.environ.get("SUPABASE_URL")
-key: str = os.environ.get("SUPABASE_KEY")
+# Prioriza as chaves do Render/Vercel ou as chaves Supabase padrão
+# Garante que as variáveis de ambiente do Render sejam usadas
+url = os.environ.get("SUPABASE_URL") or os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
+key = os.environ.get("SUPABASE_KEY") or os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
 
-# Trata a possibilidade de usar variáveis alternativas (comuns em serviços de deploy)
+supabase: Optional[Client] = None
+
 if not url or not key:
-    url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
-    key = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
-    if not url or not key:
-        print("Aviso: As variáveis de ambiente do Supabase não foram encontradas. A aplicação pode falhar.")
-
-# Inicializa o cliente Supabase
-supabase: Client = create_client(url, key)
-
-def register_user(nome, email, senha, cidade, numero, posicao, data_nasc):
-    """Regista um novo utilizador no banco de dados com senha encriptada."""
+    print("Erro: Variáveis de ambiente do Supabase não configuradas no ambiente.")
+else:
     try:
-        # 1. Verifica se o utilizador já existe
-        user_exists = supabase.table('usuarios').select('id').eq('email', email).execute()
-        if user_exists.data:
-            return False, "Este email já está registado."
-
-        # 2. Encripta a senha antes de guardar
-        hashed_password = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt())
-        
-        # 3. Insere os dados
-        data, count = supabase.table('usuarios').insert({
-            'nome': nome,
-            'email': email,
-            'senha': hashed_password.decode('utf-8'),
-            'cidade': cidade,
-            'numero': numero,
-            'posicao': posicao,
-            'nascimento': data_nasc # <<< CORREÇÃO CRÍTICA: Nome da coluna no DB é 'nascimento'
-        }).execute()
-        
-        return True, "Utilizador registado com sucesso!"
-        
+        supabase = create_client(url, key)
+        print("Sucesso: Cliente Supabase inicializado.")
     except Exception as e:
-        print(f"Erro ao registar utilizador: {e}")
-        return False, f"Ocorreu um erro inesperado: {e}"
+        print(f"Erro ao inicializar cliente Supabase: {e}")
 
-def check_user(email, password):
-    """Verifica se um utilizador existe e se a senha está correta."""
+# Renomeada para 'inserir_usuario' para corresponder à função no app.py
+def inserir_usuario(nome: str, email: str, senha_hash: bytes, cidade: str, posicao: str, nascimento: str, numero: str) -> tuple[bool, str]:
+    """Insere um novo usuário na tabela 'usuarios'."""
+    if supabase is None:
+        return False, "Erro de servidor: Banco de dados indisponível."
+    
+    # 1. Checagem de e-mail duplicado
     try:
-        user_data = supabase.table('usuarios').select('senha').eq('email', email).execute()
-        
-        if not user_data.data:
-            return False
+        if supabase.table('usuarios').select('email').eq('email', email).execute().data:
+            return False, "Erro: Este e-mail já está cadastrado."
+    except Exception as e:
+        print(f"Erro ao checar e-mail duplicado: {e}")
 
-        # Verifica a senha encriptada
-        hashed_password = user_data.data[0]['senha'].encode('utf-8')
+    # 2. DEFINITIVO: Usa a coluna 'nascimento' (tipo date, conforme seu print do BD)
+    data = {
+        "nome": nome, 
+        "email": email, 
+        "senha_hash": senha_hash.decode('utf-8'),
+        "cidade": cidade, 
+        "posicao": posicao, 
+        "nascimento": nascimento, # NOME DA COLUNA CORRIGIDO PARA 'nascimento'
+        "numero": numero
+    }
+    
+    try:
+        response = supabase.table("usuarios").insert(data).execute()
+        # Se a execução ocorrer sem exceção, o registro foi bem-sucedido
+        return True, "Cadastro realizado com sucesso! Faça login."
+
+    except APIError as e:
+        print(f"--- ERRO DE API SUPABASE ---: {e.message}")
+        return False, f"Erro ao salvar: {e.message}"
+    except Exception as e:
+        print(f"--- ERRO INESPERADO AO INSERIR ---: {e}")
+        return False, "Ocorreu um erro inesperado ao cadastrar."
+
+# Função para checar login
+def check_user(email: str, senha_texto_puro: str) -> Optional[Dict[str, Any]]:
+    """Verifica as credenciais do usuário e retorna os dados se o login for bem-sucedido."""
+    if supabase is None:
+        return None
         
-        if bcrypt.checkpw(password.encode('utf-8'), hashed_password):
-            return True
+    try:
+        # Busca o usuário pelo email
+        response = supabase.table("usuarios").select("senha_hash, nome, email").eq("email", email).limit(1).execute()
+        
+        if not response.data:
+            return None # Usuário não encontrado
+
+        user_data = response.data[0]
+        stored_hash = user_data.get('senha_hash', '').encode('utf-8')
+
+        # Compara a senha fornecida com o hash armazenado
+        if bcrypt.checkpw(senha_texto_puro.encode('utf-8'), stored_hash):
+            return user_data # Login bem-sucedido
         else:
-            return False
-            
-    except Exception as e:
-        print(f"Erro ao verificar utilizador: {e}")
-        return False
+            return None # Senha incorreta
 
-def get_all_users():
-    """Recupera todos os usuários para a tela inicial."""
-    try:
-        response = supabase.table('usuarios').select('nome, cidade, email').order('nome', desc=False).execute()
-        return response.data
     except Exception as e:
-        print(f"Erro ao obter todos os usuários: {e}")
+        print(f"Erro durante a checagem de login: {e}")
+        return None
+
+# Renomeada para 'get_all_users' para corresponder à função no app.py
+def get_all_users() -> List[Dict[str, Any]]:
+    """Busca todos os usuários da tabela 'usuarios'."""
+    if supabase is None:
+        return []
+    try:
+        # Retorna apenas nome e cidade para a lista inicial
+        response = supabase.table("usuarios").select("nome, cidade").execute()
+        return response.data if response.data else []
+    except Exception as e:
+        print(f"--- ERRO DURANTE A BUSCA DE USUÁRIOS ---: {e}")
         return []
