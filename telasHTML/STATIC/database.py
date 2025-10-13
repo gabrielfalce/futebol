@@ -12,7 +12,11 @@ key: str = os.environ.get("SUPABASE_KEY")
 
 # Verifica se as variáveis foram carregadas corretamente
 if not url or not key:
-    raise ValueError("As variáveis de ambiente SUPABASE_URL e SUPABASE_KEY não foram definidas.")
+    # Use as variáveis de ambiente corretas para o Render (se forem diferentes)
+    url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
+    key = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+    if not url or not key:
+        print("Aviso: As variáveis de ambiente SUPABASE_URL/KEY não foram encontradas via .env ou env padrão.")
 
 # Configuração do cliente Supabase
 supabase: Client = create_client(url, key)
@@ -34,7 +38,7 @@ def register_user(nome, email, senha, cidade, numero, posicao, data_nasc):
             'cidade': cidade,
             'numero': numero,
             'posicao': posicao,
-            'nascimento': data_nasc # <<< CORREÇÃO: Usando o nome correto da coluna
+            'nascimento': data_nasc # <<< CORREÇÃO: Coluna Supabase é 'nascimento'
         }).execute()
         
         return True, "Utilizador registado com sucesso!"
@@ -63,7 +67,8 @@ def check_user(email, password):
         print(f"Erro ao verificar utilizador: {e}")
         return False
 
-# --- FUNÇÕES ADICIONADAS PARA LISTAGEM E BUSCA ---
+
+# --- FUNÇÕES PARA LISTAGEM E BUSCA ---
 
 def get_all_users():
     """Recupera todos os usuários do banco de dados, excluindo a senha."""
