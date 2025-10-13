@@ -1,6 +1,6 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-from database import inserir_usuario, check_user, get_all_users # Funções Corretas
+from database import inserir_usuario, check_user, get_all_users
 import bcrypt # Para hashing da senha
 from datetime import datetime # NOVO: Importa para formatar a data
 
@@ -82,14 +82,15 @@ def cadastrar():
         flash("Erro no cadastro: Todos os campos são obrigatórios.", 'danger')
         return redirect(url_for('index'))
         
-    # --- CORREÇÃO DA DATA DE NASCIMENTO ---
+    # --- CORREÇÃO DA DATA DE NASCIMENTO (Permite DD/MM/AAAA) ---
     try:
-        # 1. Tenta interpretar a string como DD/MM/AAAA (formato brasileiro)
+        # 1. Interpreta a string como DD/MM/AAAA
         data_obj = datetime.strptime(nascimento_str, '%d/%m/%Y')
-        # 2. Converte o objeto datetime para o formato ISO AAAA-MM-DD
+        # 2. Converte o objeto datetime para o formato ISO AAAA-MM-DD para o banco
         data_nascimento_iso = data_obj.strftime('%Y-%m-%d')
     except ValueError:
-        flash("Erro: O formato da data de nascimento deve ser dd/mm/aaaa.", 'danger')
+        # Se a data não estiver em DD/MM/AAAA, avisa o usuário (em português)
+        flash("Erro: A data de nascimento deve ser digitada no formato DD/MM/AAAA (ex: 15/09/2007).", 'danger')
         return redirect(url_for('index'))
     # --- FIM DA CORREÇÃO DA DATA ---
 
@@ -106,7 +107,7 @@ def cadastrar():
         flash(mensagem, 'success')
         return redirect(url_for('login'))
     else:
-        # Se falhar no Supabase (e-mail duplicado, etc.), a mensagem do database.py será usada
+        # Se falhar (e-mail duplicado, etc.), a mensagem do database.py será usada
         flash(mensagem, 'danger')
         return redirect(url_for('index')) 
 
