@@ -1,10 +1,9 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-from database import register_user, check_user, get_all_users, search_users # <<< NOVAS FUNÇÕES IMPORTADAS
+from database import register_user, check_user, get_all_users, search_users 
 
-# --- CORREÇÃO ROBUSTA DE PATHS ---
-# Encontra o caminho absoluto da pasta 'telasHTML'
-# app.py está em 'telasHTML/STATIC', então subimos um nível (..)
+# --- CORREÇÃO ROBUSTA DE PATHS (Essencial para o Render/Flask) ---
+# O app.py está dentro de 'telasHTML/STATIC', então o root é a pasta 'telasHTML'.
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 app = Flask(__name__, 
@@ -12,7 +11,7 @@ app = Flask(__name__,
             template_folder=project_root,  
             # static_folder aponta para a pasta 'telasHTML/STATIC'
             static_folder=os.path.join(project_root, 'STATIC'))
-# ----------------------------------
+# -------------------------------------------------------------------
 
 # Chave secreta para mensagens flash e sessões
 app.secret_key = 'uma_chave_muito_secreta_e_dificil_de_adivinhar'
@@ -20,12 +19,14 @@ app.secret_key = 'uma_chave_muito_secreta_e_dificil_de_adivinhar'
 # Rota principal que redireciona para o cadastro
 @app.route('/')
 def index():
+    # CORREÇÃO DEFINITIVA DO PATH: Usando Cadastrar_templates (com underscore)
     return redirect(url_for('cadastrar'))
 
 # Rota para a página de cadastro
 @app.route('/cadastrar', methods=['GET', 'POST'])
 def cadastrar():
     if request.method == 'POST':
+        # Recolhe os dados do formulário
         nome = request.form['nome']
         email = request.form['email']
         senha = request.form['senha']
@@ -34,16 +35,18 @@ def cadastrar():
         posicao = request.form['posicao']
         data_nasc = request.form['nascimento']
 
+        # Tenta registar o utilizador
         success, message = register_user(nome, email, senha, cidade, numero, posicao, data_nasc)
 
         if success:
             flash(message, 'success')
-            return redirect(url_for('login'))
+            return redirect(url_for('login')) 
         else:
             flash(message, 'danger')
+            return render_template('STATIC/Cadastrar_templates/cadastrar.html') # Caso de erro no POST
     
-    # CORREÇÃO DO PATH: Usando Cadastrar_templates (sem espaço)
-    # render_template busca a partir de 'telasHTML/'
+    # Rota GET: Renderiza a página de cadastro
+    # CORREÇÃO DEFINITIVA DO PATH: Usando Cadastrar_templates (com underscore)
     return render_template('STATIC/Cadastrar_templates/cadastrar.html')
 
 # Rota para a página de login
@@ -60,15 +63,20 @@ def login():
         else:
             flash('Email ou senha incorretos. Tente novamente.', 'danger')
             
-    # CORREÇÃO DO PATH: Usando Login_templates (sem espaço)
+    # CORREÇÃO DO PATH: Assumindo que a pasta é 'Login_templates'
     return render_template('STATIC/Login_templates/login.html')
 
 # Rota para a tela inicial (protegida) e com exibição de usuários
 @app.route('/tela_inicial', methods=['GET'])
 def tela_inicial():
     if 'user_email' in session:
-        # Busca todos os usuários cadastrados
-        usuarios = get_all_users()
+        # Pega a query de busca (se houver)
+        search_query = request.args.get('q', '').strip()
+        
+        if search_query:
+            usuarios = search_users(search_query)
+        else:
+            usuarios = get_all_users()
         
         # Caminho: telasHTML/TelaInicial.html
         return render_template('TelaInicial.html', 
@@ -78,25 +86,6 @@ def tela_inicial():
         flash('Você precisa fazer login para aceder a esta página.', 'warning')
         return redirect(url_for('login'))
 
-# Nova Rota para a Busca
-@app.route('/search', methods=['GET'])
-def search():
-    if 'user_email' not in session:
-        flash('Você precisa fazer login para aceder a esta página.', 'warning')
-        return redirect(url_for('login'))
-        
-    search_query = request.args.get('q', '').strip()
-    
-    if search_query:
-        usuarios = search_users(search_query)
-    else:
-        usuarios = get_all_users()
-        
-    return render_template('TelaInicial.html', 
-                           usuarios=usuarios, 
-                           user_email=session['user_email'])
-
-
 # Rota de logout
 @app.route('/logout')
 def logout():
@@ -105,4 +94,6 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    # Usar porta 8080 ou a variável de ambiente PORT do Render
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host='0.0.0.0', port=port, debug=True)
