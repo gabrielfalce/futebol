@@ -1,39 +1,38 @@
+# Localização: telasHTML/ArquivosGerais/ArquivoDB/database.py
+
 import os
 from supabase import create_client, Client
 import bcrypt
-from dotenv import load_dotenv
+from dotenv import load_dotenv # ESSENCIAL: Requer python-dotenv no requirements.txt
 
 # Carrega as variáveis do ficheiro .env para o ambiente
 load_dotenv() 
 
-# Lê as credenciais a partir das variáveis de ambiente
+# Lê as credenciais a partir das variáveis de ambiente (SUPABASE_URL e SUPABASE_KEY)
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
 
-# Verifica se as variáveis foram carregadas corretamente
-# Adiciona as variáveis comuns do Render/Vercel caso as principais falhem
+# Tenta carregar variáveis comuns do Render/Vercel se as principais falharem
 if not url or not key:
     url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
     key = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
     if not url or not key:
-        # Se ainda não estiverem definidas, imprime um aviso ou lança exceção
-        print("Aviso: As variáveis de ambiente SUPABASE_URL/KEY não foram encontradas.")
+        print("Aviso: As variáveis de ambiente do Supabase não foram encontradas. O cadastro irá falhar sem elas.")
 
-# Configuração do cliente Supabase
+
+# Inicializa o cliente Supabase
 supabase: Client = create_client(url, key)
 
 def register_user(nome, email, senha, cidade, numero, posicao, data_nasc):
     """Regista um novo utilizador no banco de dados com senha encriptada."""
     try:
-        # 1. Verifica se o utilizador já existe
         user_exists = supabase.table('usuarios').select('id').eq('email', email).execute()
         if user_exists.data:
             return False, "Este email já está registado."
 
-        # 2. Encripta a senha antes de guardar
+        # Encripta a senha antes de guardar
         hashed_password = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt())
         
-        # 3. Insere os dados
         data, count = supabase.table('usuarios').insert({
             'nome': nome,
             'email': email,
@@ -41,14 +40,15 @@ def register_user(nome, email, senha, cidade, numero, posicao, data_nasc):
             'cidade': cidade,
             'numero': numero,
             'posicao': posicao,
-            'nascimento': data_nasc  # <<< CORREÇÃO CRÍTICA: Nome da coluna no DB é 'nascimento'
+            'nascimento': data_nasc # <<< CORREÇÃO CRÍTICA: Coluna Supabase é 'nascimento'
         }).execute()
         
         return True, "Utilizador registado com sucesso!"
         
     except Exception as e:
+        # Se as chaves do Supabase estiverem faltando, este será o erro mais provável
         print(f"Erro ao registar utilizador: {e}")
-        return False, f"Ocorreu um erro inesperado: {e}"
+        return False, f"Ocorreu um erro inesperado: {e}. Verifique as chaves do Supabase."
 
 def check_user(email, password):
     """Verifica se um utilizador existe e se a senha está correta."""
@@ -79,6 +79,8 @@ def get_all_users():
         print(f"Erro ao obter todos os usuários: {e}")
         return []
 
+# A função search_users é útil, mas não estritamente necessária se não for usada no app.py
+# Se quiser adicioná-la para futura implementação:
 def search_users(query):
     """Busca usuários pelo nome ou cidade."""
     try:
