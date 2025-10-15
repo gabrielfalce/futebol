@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
 from database import inserir_usuario, check_user, get_all_users, get_user_by_email
 import bcrypt
 from datetime import datetime
@@ -17,6 +17,23 @@ app = Flask(
 )
 app.secret_key = 'uma_chave_muito_secreta_e_dificil_de_adivinhar'
 
+# --- Rotas para Arquivos Estáticos em Outras Pastas ---
+@app.route('/Cadastrar_templates/<path:filename>')
+def serve_cadastrar_static(filename):
+    return send_from_directory(os.path.join(template_root, 'Cadastrar_templates'), filename)
+
+@app.route('/telaDeLogin/<path:filename>')
+def serve_login_static(filename):
+    return send_from_directory(os.path.join(template_root, 'telaDeLogin'), filename)
+
+@app.route('/TelaInicial/<path:filename>')
+def serve_inicial_static(filename):
+    return send_from_directory(os.path.join(template_root, 'TelaInicial'), filename)
+
+@app.route('/TelaLoading/<path:filename>')
+def serve_loading_static(filename):
+    return send_from_directory(os.path.join(template_root, 'TelaLoading'), filename)
+
 # --- Filtro para formatar data ---
 @app.template_filter('format_date')
 def format_date(date_str):
@@ -30,11 +47,14 @@ def format_date(date_str):
 
 @app.route("/")
 def index():
+    print("Acessando rota raiz, redirecionando para /inicio")
     return redirect(url_for('pagina_inicial'))  # Redireciona para /inicio
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    print(f"Accessing /login, method: {request.method}, session: {session}")
     if 'user_email' in session:
+        print("User already logged in, redirecting to /inicio")
         return redirect(url_for('pagina_inicial'))  # Se já logado, vai para /inicio
     
     if request.method == 'POST':
@@ -56,11 +76,12 @@ def login():
             return render_template('TelaDeLogin/telaLogin.html')
             
     try:
+        print("Rendering TelaDeLogin/telaLogin.html")
         return render_template('TelaDeLogin/telaLogin.html')  # Renderiza o template para GET
     except TemplateNotFound:
         print(f"Template 'TelaDeLogin/telaLogin.html' not found in {app.template_folder}")
         flash('Erro interno: Template de login não encontrado.', 'danger')
-        return redirect(url_for('cadastro'))  # Redireciona para cadastro em caso de erro
+        return "<h1>Erro: Template de login não encontrado. Verifique a pasta TelaDeLogin.</h1>", 500
 
 @app.route("/inicio")
 def pagina_inicial():
