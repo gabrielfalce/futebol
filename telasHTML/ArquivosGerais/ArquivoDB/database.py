@@ -9,9 +9,9 @@ from datetime import datetime
 # Tenta carregar variáveis do .env (se existir)
 load_dotenv() 
 
-# Prioriza as chaves do Render/Vercel ou as chaves Supabase padrão
-url = os.environ.get("SUPABASE_URL") 
-key = os.environ.get("SUPABASE_KEY") 
+# Usa apenas as variáveis de ambiente do Render
+url = os.environ.get("SUPABASE_URL")
+key = os.environ.get("SUPABASE_KEY")
 
 supabase: Optional[Client] = None
 
