@@ -17,20 +17,11 @@ app = Flask(
 )
 app.secret_key = 'uma_chave_muito_secreta_e_dificil_de_adivinhar'
 
-# --- Filtro para formatar data ---
-@app.template_filter('format_date')
-def format_date(date_str):
-    try:
-        date_obj = datetime.strptime(date_str, '%Y-%m-%d')
-        return date_obj.strftime('%d/%m/%Y')
-    except ValueError:
-        return date_str
-
 # --- Rotas ---
 
 @app.route("/")
 def index():
-    return redirect(url_for('pagina_inicial'))  # Redireciona para /inicio
+    return render_template("Cadastrar_templates/cadastrar.html") 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -80,10 +71,6 @@ def pagina_usuario():
 def tela_de_loading():
     return render_template("TelaLoading/Telaloading.html")
 
-@app.route("/cadastro")
-def cadastro():
-    return render_template("Cadastrar_templates/cadastrar.html")
-
 @app.route("/cadastrar", methods=['POST'])
 def cadastrar():
     nome = request.form.get("nome")
@@ -96,7 +83,7 @@ def cadastrar():
 
     if not all([nome, email, senha_texto_puro, cidade, posicao, nascimento_str, numero]):
         flash("Erro no cadastro: Todos os campos são obrigatórios.", 'danger')
-        return redirect(url_for('cadastro'))
+        return redirect(url_for('index'))
         
     # --- Validação e Conversão da Data de Nascimento ---
     try:
@@ -104,10 +91,10 @@ def cadastrar():
         data_nascimento_iso = data_obj.strftime('%Y-%m-%d')
         if data_obj > datetime.now():
             flash("Erro: A data de nascimento não pode ser no futuro.", 'danger')
-            return redirect(url_for('cadastro'))
+            return redirect(url_for('index'))
     except ValueError:
         flash("Erro: A data de nascimento deve ser no formato DD/MM/AAAA (ex: 15/09/2007).", 'danger')
-        return redirect(url_for('cadastro'))
+        return redirect(url_for('index'))
 
     # Hash da senha usando bcrypt
     senha_hash = bcrypt.hashpw(senha_texto_puro.encode('utf-8'), bcrypt.gensalt())
@@ -123,7 +110,7 @@ def cadastrar():
         return redirect(url_for('tela_de_loading'))
     else:
         flash(mensagem, 'danger')
-        return redirect(url_for('cadastro')) 
+        return redirect(url_for('index')) 
 
 @app.route("/api/usuarios", methods=['GET'])
 def buscar_usuarios():
