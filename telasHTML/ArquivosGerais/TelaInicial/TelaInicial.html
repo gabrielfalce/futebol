@@ -1,23 +1,20 @@
-<!-- Localização: telasHTML/TelaInicial.html -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
     <title>App de Usuários</title>
-    
-    <!-- --- CAMINHOS CORRIGIDOS COM url_for() --- -->
-    <link rel="icon" type="image/x-icon" href="iconeUser.png">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='iconeUser.png') }}">
 </head>
 <body>
     <header class="barra-superior">
         <button class="menu-button">
-            <img src="TresPontos.png" alt="Menu">
+            <img src="{{ url_for('static', filename='TresPontos.png') }}" alt="Menu">
         </button> 
         <div class="search-container">
-            <input placeholder="Pesquisar" class="search-input" type="text">
-            <img src="lupa.png" alt="Ícone de pesquisa">
+            <input placeholder="Pesquisar" class="search-input" type="text" id="searchInput">
+            <img src="{{ url_for('static', filename='lupa.png') }}" alt="Ícone de pesquisa">
         </div>
     </header>
 
@@ -26,7 +23,7 @@
             {% if usuarios %}
                 {% for usuario in usuarios %}
                     <div class="usuario-card">
-                        <img class="usuario-foto" src="iconeUser.png" alt="Foto do usuário">
+                        <img class="usuario-foto" src="{{ url_for('static', filename='iconeUser.png') }}" alt="Foto do usuário">
                         <div class="usuario-info">
                             <h3 class="usuario-nome">{{ usuario.nome }}</h3>
                             <p class="usuario-cidade">{{ usuario.cidade }}</p>
@@ -42,15 +39,48 @@
     <div class="floating-button-container">
         <div class="floating-button-bar"></div>
         <button id="adicionarUsuarioBtn" class="floating-button">
-            <img src="bolaLogo.png" alt="Adicionar usuário">
+            <img src="{{ url_for('static', filename='bolaLogo.png') }}" alt="Adicionar usuário">
         </button>
     </div>
     <div class="entadaUserBotao-container">
         <div class="entadaUserBotao-bar"></div>
         <button id="entadaUserBotao" class="entadaUserBotao-button">
-            <a href="../TelaDeUsuario/TelaUser.html"><img src="BotaoUsuario.ico" alt="Botão Usuário"></a>
+            <a href="{{ url_for('index') }}"><img src="{{ url_for('static', filename='BotaoUsuario.ico') }}" alt="Botão Usuário"></a>
         </button>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const usuariosContainer = document.getElementById('usuarios-container');
+
+        searchInput.addEventListener('input', async () => {
+            const query = searchInput.value.trim();
+            try {
+                const response = await fetch(`/api/usuarios?q=${encodeURIComponent(query)}`);
+                const usuarios = await response.json();
+                
+                usuariosContainer.innerHTML = '';
+                if (usuarios.length > 0) {
+                    usuarios.forEach(usuario => {
+                        const card = document.createElement('div');
+                        card.className = 'usuario-card';
+                        card.innerHTML = `
+                            <img class="usuario-foto" src="{{ url_for('static', filename='iconeUser.png') }}" alt="Foto do usuário">
+                            <div class="usuario-info">
+                                <h3 class="usuario-nome">${usuario.nome}</h3>
+                                <p class="usuario-cidade">${usuario.cidade}</p>
+                            </div>
+                        `;
+                        usuariosContainer.appendChild(card);
+                    });
+                } else {
+                    usuariosContainer.innerHTML = '<p>Nenhum usuário encontrado.</p>';
+                }
+            } catch (error) {
+                console.error('Erro ao buscar usuários:', error);
+                usuariosContainer.innerHTML = '<p>Erro ao carregar usuários.</p>';
+            }
+        });
+    </script>
 </body>
 </html>
