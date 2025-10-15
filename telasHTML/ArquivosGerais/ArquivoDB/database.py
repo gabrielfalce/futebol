@@ -4,6 +4,7 @@ from typing import Optional, List, Dict, Any
 from postgrest.exceptions import APIError
 from dotenv import load_dotenv 
 import bcrypt
+from datetime import datetime
 
 # Tenta carregar variáveis do .env (se existir)
 load_dotenv() 
@@ -28,68 +29,65 @@ def inserir_usuario(nome: str, email: str, senha_hash: bytes, cidade: str, posic
     if supabase is None:
         return False, "Erro de servidor: Banco de dados indisponível."
     
-    # 1. Checagem de e-mail duplicado
+    # Validação da data de nascimento no formato ISO
     try:
-        # Verifica se o e-mail já existe
+        datetime.strptime(nascimento, '%Y-%m-%d')
+    except ValueError:
+        return False, "Erro: A data de nascimento fornecida não está no formato correto (AAAA-MM-DD)."
+    
+    # Checagem de e-mail duplicado
+    try:
         if supabase.table('usuarios').select('email').eq('email', email).execute().data:
             return False, "Erro: Este e-mail já está cadastrado."
     except Exception as e:
         print(f"Erro ao checar e-mail duplicado: {e}")
-        # Se a checagem falhar, o erro abaixo será acionado.
+        return False, "Erro ao verificar e-mail. Tente novamente."
 
-    # 2. Dados a serem inseridos
+    # Dados a serem inseridos
     data = {
         "nome": nome, 
         "email": email, 
         "senha_hash": senha_hash.decode('utf-8'),
         "cidade": cidade, 
         "posicao": posicao, 
-        "nascimento": nascimento, # Já formatado como AAAA-MM-DD pelo app.py
+        "nascimento": nascimento,
         "numero": numero
     }
     
     try:
-        # Tenta inserir
         supabase.table("usuarios").insert(data).execute()
         return True, "Cadastro realizado com sucesso! Faça login."
-
     except APIError as e:
-        # Erro de banco de dados (por exemplo, falha em constraint)
         error_message = f"Erro de banco de dados: {e.message}"
         print(f"--- ERRO DE API SUPABASE ---: {error_message}")
         return False, "Erro ao salvar: Verifique se todos os campos estão corretos e tente novamente."
     except Exception as e:
-        # Outros erros inesperados
         print(f"--- ERRO INESPERADO AO INSERIR ---: {e}")
         return False, "Ocorreu um erro inesperado ao cadastrar. Tente novamente mais tarde."
 
-# Função para checar login
 def check_user(email: str, senha_texto_puro: str) -> Optional[Dict[str, Any]]:
     """Verifica as credenciais do usuário e retorna os dados se o login for bem-sucedido."""
     if supabase is None:
         return None
         
     try:
-        # Busca o usuário pelo email
         response = supabase.table("usuarios").select("senha_hash, nome, email").eq("email", email).limit(1).execute()
         
         if not response.data:
-            return None # Usuário não encontrado
+            return None
 
         user_data = response.data[0]
         stored_hash = user_data.get('senha_hash', '').encode('utf-8')
 
-        # Compara a senha fornecida com o hash armazenado
         if bcrypt.checkpw(senha_texto_puro.encode('utf-8'), stored_hash):
-            return user_data # Login bem-sucedido
+            return user_data
         else:
-            return None # Senha incorreta
+            return None
 
     except Exception as e:
         print(f"Erro durante a checagem de login: {e}")
         return None
 
-# Busca todos os usuários
 def get_all_users() -> List[Dict[str, Any]]:
     """Busca todos os usuários da tabela 'usuarios'."""
     if supabase is None:
