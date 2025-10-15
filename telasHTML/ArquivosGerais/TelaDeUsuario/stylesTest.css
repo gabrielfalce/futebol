@@ -1,0 +1,361 @@
+:root {
+    --cor-primaria: #25d366;
+    --cor-secundaria: #128c7e;
+    --cor-fundo: #1E1E1E;
+    --cor-texto: #fff;
+    --cor-borda: rgba(0, 0, 0, 0.1);
+}
+
+/* variaveis globais */
+
+#mainScreen {
+    text-align: flex-end;
+    border-radius: 12px;
+    padding: 160px 20px;
+    box-shadow: 0 2px 16px rgba(254, 74, 74, 0.06);
+}
+
+
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to bottom, var(--cor-primaria), var(--cor-fundo));
+    margin: 0;
+    padding: 0;
+    color: var(--cor-texto);
+}
+
+.Wallpaper {    
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    /* Coloca a imagem atrás de outros conteúdos */
+    overflow: hidden;
+    
+}
+
+
+/* modal configurações  */
+.modal {
+    display: none;
+    /* Mostrado com display: flex via JS */
+    align-items: center;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(8, 4, 4, 0.7);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: var(--cor-fundo);
+    padding: 20px;
+    border-radius: 8px;
+    position: relative;
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+}
+
+/* abrir modal  */
+#openModalButton {
+    /* position: fixed; */
+    /* Corrigido: adicionado para que top/right funcionem */
+    top: 45%;
+    right: 20%;
+    background: #129542;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    /* Aumentado para melhor usabilidade */
+    border-radius: 60px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+    z-index: 10;
+    display: inline-flex;
+    /* Corrigido: flex para centralizar conteúdo se necessário */
+    align-items: center;
+    justify-content: center;
+}
+
+#openModalButton:hover {
+    background: var(--cor-secundaria);
+    color: #010302;
+}
+
+#openModalButton:focus {
+    transform: scale(0.95);
+    outline: none;
+}
+
+
+/* fechar modal  */
+.close-button {
+    position: absolute;
+    /* Corrigido: adicionado para que top/right funcionem */
+    top: 10px;
+    right: 10px;
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--cor-texto);
+    transition: color 0.2s, background 0.2s;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background-color: #0000001f;
+}
+
+/* #closeModalButton{
+color: rebeccapurple);
+background-color: rgba(68, 78, 66, 0.438);
+} */
+
+#closeModalButton:hover {
+    color: var(--cor-primaria);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+
+/* inserir imagem  */
+
+input[type="file"] {
+    margin: 16px 0;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+input[type="file"]:hover {
+    opacity: 0.9;
+    /* Corrigido: color pode não afetar input file devido a estilos do browser; considere ::-webkit-file-upload-button para custom */
+}
+
+input[type="file"]::-webkit-file-upload-button {
+    background: var(--cor-primaria);
+    color: var(--cor-texto);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+input[type="file"]::-webkit-file-upload-button:hover {
+    background: var(--cor-secundaria);
+}
+
+image {
+    display: block;
+    max-width: 100%;
+    /* Corrigido: 1000% era um erro grave */
+    max-height: 300px;
+    /* Ajustado para preview razoável; override em media query se necessário */
+    margin: 18px auto;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+    /* Corrigido: 1000% era um erro grave */
+    max-height: 300px;
+    /* Ajustado para preview razoável; override em media query se necessário */
+    margin: 18px auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+}
+
+#nomeUser {
+    text-align: center;
+    font-size: 18px;
+    margin-top: 10px;
+    color: var(--cor-texto);
+    font-weight: bold;
+}
+
+
+
+
+
+
+
+/* foto perfil do usuario  */
+
+
+#preview {
+    display:center;
+    align-items: center;
+    max-width: 100%;
+    /* Corrigido: 1000% era um erro grave */
+    max-height: 300px;
+    /* Ajustado para preview razoável; override em media query se necessário */
+    margin: 18px auto;
+    position: relative;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+}
+
+/* botão de cortar */
+
+.cortarImagem {
+    background: var(--cor-primaria);
+    color: black;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 10px;
+}
+
+.cortarImagem:hover {
+    background: var(--cor-secundaria);
+    color: var(--cor-texto);
+}
+
+/* Botão de home flutuante */
+.floating-button-container {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 99;
+}
+
+/* barra acima do botao home */
+.floating-button-bar {
+    width: 150px;
+    height: 4px;
+    background-color: #000000;
+    border-radius: 20px;
+    margin-bottom: 10px;
+}
+
+/* ------ */
+.floating-button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: var(--cor-primaria);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(255, 249, 249, 0.055);
+    transition: transform 0.3s ease;
+}
+
+.floating-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 12px rgba(65, 167, 2, 0.734);
+}
+
+.floating-button img {
+    width: 80%;
+    background-color: transparent;
+    display: block;
+    height: 80%;
+    object-fit: contain;
+}
+
+/* configurações do preview da imagem do perfil */
+
+#imagem0111 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 140px;
+    height: 140px;
+    background: #ffffff;
+    border-radius: 50%;
+    margin: 0 auto 16px auto;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+/* boxer de informações do usuario */
+
+.usuarioBoxeInformacoes {
+    background: var(--cor-fundo);
+    border: 2px solid var(--cor-borda);
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 400px;
+    margin: 20px auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+/* setor de adaptabilidade da pagina */
+
+
+@media (max-width: 720px) {
+    .modal-content {
+        padding: 12px 2vw;
+        width: 98vw;
+        /* Corrigido: width ao invés de max-width para full em mobile */
+        font-size: 15px;
+    }
+
+    .close-button {
+        font-size: 22px;
+        padding: 6px 10px;
+    }
+
+    #imagem0111 {
+        width: 115px;
+        height: 115px;
+    }
+
+    #image, #preview {
+        max-height: 200px;
+        /* Ajustado para mobile, mas maior que 90px para usabilidade */
+    }
+
+    #openModalButton {
+        top: -30%;
+        /* Ajustado para mobile */
+        right: 2%;
+        /* Ajustado para mobile */
+        padding: 8px 12px;
+    }
+
+    .Wallpaper {
+       
+        width: 100%;
+    }
+
+    #mainScreen {
+        margin-right: 200px;
+    }
+}
+
+
+/* teste */
+
+.usuarioBoxeInfoSup{
+
+
+display: flex;
+
+top: 0;
+    /* background: var(--cor-fundo); */
+    border: 2px solid var(--cor-borda);
+    border-radius: 12px;
+    /* padding: 220px; */
+    max-width: 400px;
+    margin: 20px auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
