@@ -133,12 +133,23 @@ header img {
     z-index: 99;
 }
 
-.entadaUserBotao-bar {
+/* Removendo a barra azul (comentada para futura referência) */
+/* .entadaUserBotao-bar {
     width: 60px;
     height: 4px;
     background-color: #000000;
     border-radius: 20px;
     margin-bottom: 10px;
+} */
+
+/* Redefinindo a barra vermelha como um indicador decorativo */
+.entadaUserBotao-bar {
+    width: 60px;
+    height: 4px;
+    background-color: #e74c3c; /* Vermelho para destacar */
+    border-radius: 20px;
+    margin-bottom: 10px;
+    transition: width 0.3s ease; /* Animação opcional */
 }
 
 .entadaUserBotao-button {
@@ -235,5 +246,9 @@ header img {
 
     #userList div {
         max-width: 100%;
+    }
+
+    .entadaUserBotao-container {
+        left: 10px;
     }
 }
