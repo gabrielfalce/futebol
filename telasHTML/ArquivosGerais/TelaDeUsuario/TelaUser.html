@@ -1,54 +1,41 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cortar Imagem como no WhatsApp</title>
-    <!-- CSS do Cropper.js -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
-    <!-- CSS personalizado -->
-    <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="imagens/iconeUser.png">
+    <title>Minha Conta</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='iconeUser.png') }}">
 </head>
 <body>
-    <!-- ===== Tela principal ===== -->
-    <div id="mainScreen">
-        <div class="titulo-bg"></div>
-        <!-- Imagem de perfil -->
-        <div id="imagem0111">
-            <img id="preview" src="" alt="Prévia da imagem cortada">
-        </div>
-        <!-- Botão para abrir o modal -->
-        <button  id="openModalButton">
-            <img class="imagenConfigPontos" src="imagens/TresPontos.png" alt="">
-        </button>
-    </div>
+    <header class="barra-superior">
+        <button class="menu-button">
+            <img src="{{ url_for('static', filename='TresPontos.png') }}" alt="Menu">
+        </button> 
+        <h1>Minha Conta</h1>
+    </header>
 
-    <!-- ===== Modal de corte de imagem ===== -->
-    <div id="cropModal" class="modal">
-        <div class="modal-content">
-            <button id="closeModalButton" class="close-button">&times;</button>
-            <h2>Cortar Imagem</h2>
-            <input type="file" id="imageInput" accept="image/*">
-            <img id="image" src="" alt="Imagem para cortar">
-            <button id="cropButton" style="display: none;">Cortar Imagem</button>
-            <h3>Prévia da Imagem Cortada</h3>
-            <h4 class="salvar">Salvar</h4>
-        </div>
-    </div>
+    <main class="content">
+        {% if usuario %}
+            <div class="usuario-card">
+                <img class="usuario-foto" src="{{ url_for('static', filename='iconeUser.png') }}" alt="Foto do usuário">
+                <div class="usuario-info">
+                    <h3 class="usuario-nome">{{ usuario.nome }}</h3>
+                    <p><strong>Email:</strong> {{ usuario.email }}</p>
+                    <p><strong>Cidade:</strong> {{ usuario.cidade }}</p>
+                    <p><strong>Posição:</strong> {{ usuario.posicao }}</p>
+                    <p><strong>Data de Nascimento:</strong> {{ usuario.nascimento | format_date }}</p>
+                    <p><strong>Número:</strong> {{ usuario.numero }}</p>
+                </div>
+            </div>
+            <a href="{{ url_for('pagina_inicial') }}">Voltar para a Tela Inicial</a>
+        {% else %}
+            <p>Erro: Dados do usuário não encontrados.</p>
+        {% endif %}
+    </main>
 
-    <!-- ===== Botão flutuante de home ===== -->
-    <div class="floating-button-container">
-        <div class="floating-button-bar"></div>
-        <a id="linkTela" href="../TelaLoading/Telaloading.html">
-            <button id="adicionarUsuarioBtn" class="floating-button">
-                <img src="imagens/bolaLogo.png" alt="Ir para tela de loading">
-            </button>
-        </a>
-    </div>
-
-    <!-- ===== Scripts ===== -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-    <script src="script.js"></script>
+    <script>
+        // JavaScript para funcionalidades futuras, se necessário
+    </script>
 </body>
 </html>
