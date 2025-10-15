@@ -98,3 +98,14 @@ def get_all_users() -> List[Dict[str, Any]]:
     except Exception as e:
         print(f"--- ERRO DURANTE A BUSCA DE USUÁRIOS ---: {e}")
         return []
+
+def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
+    """Busca os dados de um usuário pelo email."""
+    if supabase is None:
+        return None
+    try:
+        response = supabase.table("usuarios").select("nome, email, cidade, posicao, nascimento, numero").eq("email", email).limit(1).execute()
+        return response.data[0] if response.data else None
+    except Exception as e:
+        print(f"--- ERRO DURANTE A BUSCA DE USUÁRIO POR EMAIL ---: {e}")
+        return None
