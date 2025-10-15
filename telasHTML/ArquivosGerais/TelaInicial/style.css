@@ -29,7 +29,7 @@ body {
 /* =======================
    BARRA SUPERIOR (HEADER)
    ======================= */
-.barra-superior {
+header {
     background-color: var(--cor-primaria);
     padding: 10px 15px;
     display: flex;
@@ -39,16 +39,15 @@ body {
     z-index: 100;
 }
 
-.menu-button {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 5px;
+header img {
+    height: 40px;
+    margin-right: 10px;
 }
 
-.menu-button img {
-    width: 25px;
-    height: 25px;
+.search-icon, .menu-icon {
+    height: 30px;
+    cursor: pointer;
+    margin-left: 10px;
 }
 
 /* =======================
@@ -70,7 +69,7 @@ body {
     color: #515151;
 }
 
-.search-container img[alt="Ícone de pesquisa"] {
+.search-container img[alt="Lupa"] {
     position: absolute;
     right: 18px;
     top: 50%;
@@ -83,14 +82,14 @@ body {
 /* =======================
    CARDS DE USUÁRIO
    ======================= */
-#usuarios-container {
+#userList {
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
 
-.usuario-card {
+#userList div {
     display: flex;
     align-items: center;
     width: 100%;
@@ -102,16 +101,8 @@ body {
     transition: transform 0.3s ease;
 }
 
-.usuario-card:hover {
+#userList div:hover {
     transform: translateY(-3px);
-}
-
-.usuario-foto {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-right: 15px;
 }
 
 .usuario-info {
@@ -124,126 +115,9 @@ body {
     margin-bottom: 5px;
 }
 
-.usuario-idade, .usuario-cidade {
+.usuario-cidade {
     color: var(--cor-texto-card);
     font-size: 0.875rem;
-}
-
-.usuario-idade {
-    margin-bottom: 3px;
-}
-
-/* =======================
-   BOTÃO FLUTUANTE CENTRAL (ADICIONAR USUÁRIO)
-   ======================= */
-.floating-button-container {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    z-index: 99;
-}
-
-.floating-button-bar {
-    width: 150px;
-    height: 4px;
-    background-color: #000000;
-    border-radius: 20px;
-    margin-bottom: 10px;
-}
-
-.floating-button {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background-color: var(--cor-primaria);
-    border: none;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    transition: transform 0.3s ease;
-}
-
-.floating-button:hover {
-    transform: scale(1.1);
-}
-
-.floating-button img {
-    width: 50%;
-    height: 50%;
-    object-fit: contain;
-}
-
-/* =======================
-   RESPONSIVIDADE E BOTÃO DE PERFIL FIXO
-   ======================= */
-@media (max-width: 768px) {
-    body {
-        font-size: 18px;
-    }
-    
-    .usuario-card {
-        max-width: 100%;
-    }
-    
-    .search-container {
-        margin-left: 10px;
-    }
-
-    .alerta {
-        font-size: 1rem;
-        padding: 12px 10px;
-        min-width: 140px;   
-    }
-
-    /* Botão de perfil fixo à esquerda */
-    .entadaUserBotao-container {
-        position: fixed;
-        bottom: 20px;
-        left: 20px; /* fixa à esquerda */
-        transform: none; /* remove centralização */
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        z-index: 99;
-    }
-
-    /* .entadaUserBotao-bar {
-        width: 150px;
-        height: 4px;
-        background-color: #000000;
-        border-radius: 20px;
-        margin-bottom: 10px;
-    } */
-
-    .entadaUserBotao-button {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background-color: var(--cor-primaria);
-        border: none;
-        cursor: pointer;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        transition: transform 0.3s ease;
-    }
-
-    .entadaUserBotao-button:hover {
-        transform: scale(1.1);
-    }
-
-    .entadaUserBotao-button img {
-        width: 50%;
-        height: 50%;
-        object-fit: contain;
-    }
 }
 
 /* =======================
@@ -302,34 +176,14 @@ body {
 }
 
 /* =======================
-   ALERTA FIXO ABAIXO DOS CARDS DE USUÁRIO
+   ALERTA (TOAST)
    ======================= */
-.alerta-container {
-    margin-top: 20px;
-    margin-left: 0;
-    color: #000000;
-    background: #f4eeee20; 
-    padding: 10px 20px;
-    /* border-radius: 10px; */
-    font-size: 1rem;
-    text-align: center;
-    /* box-shadow: var(--sombra);KC */
-    /* max-width: 340px; */
-    width: 100%;
-    /* Centraliza abaixo dos cards */
-    margin-right: auto;
-    margin-left: auto;
-}
-
-/* =======================
-   ALERTA CENTRALIZADO NA TELA (TEMPORÁRIO)
-   ======================= */
-.alerta {
+.toast {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: #ff4d4d;
+    background: #27ae60; /* Verde para sucesso */
     color: #fff;
     padding: 18px 32px;
     border-radius: 12px;
@@ -345,6 +199,41 @@ body {
     word-break: break-word;
 }
 
-.alerta.fade-out {
-    opacity: 0;
+.toast.show {
+    opacity: 1;
+}
+
+.toast.danger {
+    background: #ff4d4d; /* Vermelho para erro */
+}
+
+/* =======================
+   RESPONSIVIDADE
+   ======================= */
+@media (max-width: 768px) {
+    body {
+        font-size: 18px;
+    }
+    
+    header {
+        flex-direction: column;
+        padding: 10px;
+    }
+    
+    .search-container {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+
+    .search-input {
+        width: 100%;
+    }
+
+    #userList {
+        padding: 10px;
+    }
+
+    #userList div {
+        max-width: 100%;
+    }
 }
