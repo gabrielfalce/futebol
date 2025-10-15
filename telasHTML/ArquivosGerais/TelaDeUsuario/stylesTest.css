@@ -159,45 +159,6 @@ image {
     max-height: 300px;
     /* Ajustado para preview razoável; override em media query se necessário */
     margin: 18px auto;
-}
-
-img {
-    display: block;
-    max-width: 100%;
-    /* Corrigido: 1000% era um erro grave */
-    max-height: 300px;
-    /* Ajustado para preview razoável; override em media query se necessário */
-    margin: 18px auto;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    background: #ffffff;
-}
-
-#nomeUser {
-    text-align: center;
-    font-size: 18px;
-    margin-top: 10px;
-    color: var(--cor-texto);
-    font-weight: bold;
-}
-
-
-
-
-
-
-
-/* foto perfil do usuario  */
-
-
-#preview {
-    display:center;
-    align-items: center;
-    max-width: 100%;
-    /* Corrigido: 1000% era um erro grave */
-    max-height: 300px;
-    /* Ajustado para preview razoável; override em media query se necessário */
-    margin: 18px auto;
     position: relative;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -284,6 +245,9 @@ img {
     margin: 0 auto 16px auto;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     overflow: hidden;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 /* boxer de informações do usuario */
@@ -339,6 +303,15 @@ img {
     #mainScreen {
         margin-right: 200px;
     }
+
+    #imagem0111 {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .usuarioBoxeInformacoes {
+        padding: 10px;
+    }
 }
 
 
@@ -358,4 +331,3 @@ top: 0;
     margin: 20px auto;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
-
