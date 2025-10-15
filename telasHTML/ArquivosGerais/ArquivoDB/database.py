@@ -1,78 +1,111 @@
-# Localização: telasHTML/STATIC/database.py
-
 import os
-import bcrypt
 from supabase import create_client, Client
 from typing import Optional, List, Dict, Any
 from postgrest.exceptions import APIError
+from dotenv import load_dotenv 
+import bcrypt
+from datetime import datetime
 
-def get_supabase_client() -> Optional[Client]:
-    """Cria e retorna um cliente Supabase se as variáveis de ambiente estiverem configuradas."""
-    url: Optional[str] = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
-    key: Optional[str] = os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+# Tenta carregar variáveis do .env (se existir)
+load_dotenv() 
 
-    if not url or not key:
-        print("ERRO CRÍTICO: Variáveis de ambiente do Supabase não configuradas.")
-        return None
-    
+# Usa apenas as variáveis de ambiente do Render
+url = os.environ.get("SUPABASE_URL")
+key = os.environ.get("SUPABASE_KEY")
+
+supabase: Optional[Client] = None
+
+if not url or not key:
+    print("Erro: Variáveis de ambiente do Supabase não configuradas no ambiente.")
+else:
     try:
-        return create_client(url, key)
+        supabase = create_client(url, key)
+        print("Sucesso: Cliente Supabase inicializado.")
     except Exception as e:
-        print(f"Erro ao criar o cliente Supabase: {e}")
-        return None
+        print(f"Erro ao inicializar cliente Supabase: {e}")
 
-# --- CORREÇÃO APLICADA AQUI ---
-# A função foi renomeada de volta para 'inserir_usuario'
-def inserir_usuario(nome: str, email: str, senha: str, cidade: str, posicao: str, nascimento: str, numero: str) -> bool:
-    """Insere os dados de um usuário na tabela 'usuarios', com a senha hasheada."""
-    
-    supabase = get_supabase_client()
+def inserir_usuario(nome: str, email: str, senha_hash: bytes, cidade: str, posicao: str, nascimento: str, numero: str) -> tuple[bool, str]:
+    """Insere um novo usuário. A data de nascimento DEVE estar no formato ISO (AAAA-MM-DD)."""
     if supabase is None:
-        print("ERRO DE INSERÇÃO: Falha ao obter o cliente Supabase.")
-        return False
-
+        return False, "Erro de servidor: Banco de dados indisponível."
+    
+    # Validação da data de nascimento no formato ISO
     try:
-        senha_bytes = senha.encode('utf-8')
-        sal = bcrypt.gensalt()
-        senha_hashed = bcrypt.hashpw(senha_bytes, sal)
-        senha_hash_str = senha_hashed.decode('utf-8')
+        datetime.strptime(nascimento, '%Y-%m-%d')
+    except ValueError:
+        return False, "Erro: A data de nascimento fornecida não está no formato correto (AAAA-MM-DD)."
+    
+    # Checagem de e-mail duplicado
+    try:
+        if supabase.table('usuarios').select('email').eq('email', email).execute().data:
+            return False, "Erro: Este e-mail já está cadastrado."
     except Exception as e:
-        print(f"Erro ao gerar o hash da senha: {e}")
-        return False
+        print(f"Erro ao checar e-mail duplicado: {e}")
+        return False, "Erro ao verificar e-mail. Tente novamente."
 
+    # Dados a serem inseridos
     data = {
-        "nome": nome,
-        "email": email,
-        "senha_hash": senha_hash_str,
-        "cidade": cidade,
-        "posicao": posicao,
+        "nome": nome, 
+        "email": email, 
+        "senha_hash": senha_hash.decode('utf-8'),
+        "cidade": cidade, 
+        "posicao": posicao, 
         "nascimento": nascimento,
         "numero": numero
     }
     
-    print(f"Tentando inserir dados para o email: {email}")
-
     try:
-        response = supabase.table("usuarios").insert(data).execute()
-        print(f"Resposta do Supabase: {response}")
-        return bool(response.data)
+        supabase.table("usuarios").insert(data).execute()
+        return True, "Cadastro realizado com sucesso! Faça login."
+    except APIError as e:
+        error_message = f"Erro de banco de dados: {e.message}"
+        print(f"--- ERRO DE API SUPABASE ---: {error_message}")
+        return False, "Erro ao salvar: Verifique se todos os campos estão corretos e tente novamente."
     except Exception as e:
-        print(f"--- ERRO DURANTE A INSERÇÃO ---: {e}")
-        return False
+        print(f"--- ERRO INESPERADO AO INSERIR ---: {e}")
+        return False, "Ocorreu um erro inesperado ao cadastrar. Tente novamente mais tarde."
 
-def buscar_usuarios() -> List[Dict[str, Any]]:
-    """Busca todos os usuários da tabela 'usuarios'."""
-    
-    supabase = get_supabase_client()
+def check_user(email: str, senha_texto_puro: str) -> Optional[Dict[str, Any]]:
+    """Verifica as credenciais do usuário e retorna os dados se o login for bem-sucedido."""
     if supabase is None:
-        print("ERRO DE BUSCA: Falha ao obter o cliente Supabase.")
-        return []
-
+        return None
+        
     try:
-        response = supabase.table("usuarios").select("*").execute()
-        print(f"Resposta da busca de usuários: {response}")
+        response = supabase.table("usuarios").select("senha_hash, nome, email").eq("email", email).limit(1).execute()
+        
+        if not response.data:
+            return None
+
+        user_data = response.data[0]
+        stored_hash = user_data.get('senha_hash', '').encode('utf-8')
+
+        if bcrypt.checkpw(senha_texto_puro.encode('utf-8'), stored_hash):
+            return user_data
+        else:
+            return None
+
+    except Exception as e:
+        print(f"Erro durante a checagem de login: {e}")
+        return None
+
+def get_all_users() -> List[Dict[str, Any]]:
+    """Busca todos os usuários da tabela 'usuarios'."""
+    if supabase is None:
+        return []
+    try:
+        response = supabase.table("usuarios").select("nome, cidade").execute()
         return response.data if response.data else []
     except Exception as e:
         print(f"--- ERRO DURANTE A BUSCA DE USUÁRIOS ---: {e}")
         return []
 
+def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
+    """Busca os dados de um usuário pelo email."""
+    if supabase is None:
+        return None
+    try:
+        response = supabase.table("usuarios").select("nome, email, cidade, posicao, nascimento, numero").eq("email", email).limit(1).execute()
+        return response.data[0] if response.data else None
+    except Exception as e:
+        print(f"--- ERRO DURANTE A BUSCA DE USUÁRIO POR EMAIL ---: {e}")
+        return None

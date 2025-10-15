@@ -7,44 +7,36 @@
     <!-- CSS do Cropper.js -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
     <!-- CSS personalizado -->
-    <!-- <link rel="stylesheet" href="styles.css"> -->
-     <link rel="stylesheet" href="stylesTest.css">
-    <div class="Wallpaper">
-
-        <img src="imagens/WallpaperTest.jpg" alt="Wallpaper de futebol">
-
-
-    </div>
-     
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="imagens/iconeUser.png">
+</head>
 <body>
     <!-- ===== Tela principal ===== -->
     <div id="mainScreen">
         <div class="titulo-bg"></div>
         <!-- Imagem de perfil -->
-        <div class="usuarioBoxeInfoSup" id="userBox">
-        <div class="PerfilFotoEnome" id="imagem0111">
+        <div id="imagem0111">
             <img id="preview" src="" alt="Prévia da imagem cortada">
-            <h1 id="nomeUser"> nome de usuario </h1>
         </div>
-        <h1 id="nomeUser"> nome de usuario </h1>
-        </div>
-         <!-- botão de editar perfil -->
         <!-- Botão para abrir o modal -->
         <button  id="openModalButton">
-            editar perfil
-            <!-- <img class="imagenConfigPontos" src="imagens/TresPontos.png" alt=""> -->
+            <img class="imagenConfigPontos" src="imagens/TresPontos.png" alt="">
         </button>
     </div>
+
     <!-- ===== Modal de corte de imagem ===== -->
     <div id="cropModal" class="modal">
         <div class="modal-content">
-            <button id="closeModalButton" class="close-button"> salvar</button>
+            <button id="closeModalButton" class="close-button">&times;</button>
+            <h2>Cortar Imagem</h2>
             <input type="file" id="imageInput" accept="image/*">
             <img id="image" src="" alt="Imagem para cortar">
-            <button class="cortarImagem" id="cropButton" style="display: none;">Cortar Imagem</button>
-           
+            <button id="cropButton" style="display: none;">Cortar Imagem</button>
+            <h3>Prévia da Imagem Cortada</h3>
+            <h4 class="salvar">Salvar</h4>
         </div>
     </div>
+
     <!-- ===== Botão flutuante de home ===== -->
     <div class="floating-button-container">
         <div class="floating-button-bar"></div>
@@ -54,16 +46,6 @@
             </button>
         </a>
     </div>
-
-
-
-  <!-- informações do usuario -->
-  <div class="usuarioBoxeInformacoes"  id="userInfo">
-      <h2>Informações do Usuário</h2>
-      <p><strong>Nome:</strong> João Silva</p>
-      <p><strong>Email:</strong> joao.silva@example.com</p>
-      <p><strong>Data de Nascimento:</strong> 01/01/1990</p>
-  </div>
 
     <!-- ===== Scripts ===== -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>

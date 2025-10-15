@@ -3,8 +3,8 @@
   <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Loading</title>
-      <link rel="stylesheet" href="/TelaInicial/style.css">
+      <title>Cadastro</title>
+      <link rel="stylesheet" href="/Cadastrar_templates/estilo.css">
       <style>
           .toast {
               visibility: hidden; min-width: 250px; background-color: #f44336;
@@ -16,14 +16,22 @@
       </style>
   </head>
   <body>
-      <h2><img src="/TelaLoading/logoGeral.png" alt="Logo"></h2>
-      <h1>Carregando...</h1>
+      <h2><img src="/telaDeLogin/bolaverde3.png" alt="Logo"></h2>
+      <h1>Cadastro</h1>
       <div id="toast-notification" class="toast"></div>
-      <script>
-          setTimeout(() => {
-              window.location.href = "{{ url_for('pagina_inicial') }}";
-          }, 3000);
+      <form action="/cadastrar" method="post">
+          <input placeholder="Nome" type="text" id="nome" name="nome" required>
+          <input placeholder="Email" type="email" id="email" name="email" required>
+          <input placeholder="Senha" type="password" id="senha" name="senha" required>
+          <input placeholder="Cidade" type="text" id="cidade" name="cidade" required>
+          <input placeholder="Posição" type="text" id="posicao" name="posicao" required>
+          <input placeholder="Data de Nascimento (DD/MM/AAAA)" type="text" id="nascimento" name="nascimento" required>
+          <input placeholder="Número" type="text" id="numero" name="numero" required>
+          <button type="submit">Cadastrar</button>
+      </form>
+      <a href="{{ url_for('login') }}">Já tem uma conta? Faça login</a>
 
+      <script>
           {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
               const message = "{{ messages[0][1] }}";
