@@ -10,8 +10,8 @@ from datetime import datetime
 load_dotenv() 
 
 # Prioriza as chaves do Render/Vercel ou as chaves Supabase padrão
-url = os.environ.get("SUPABASE_URL") or os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
-key = os.environ.get("SUPABASE_KEY") or os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+url = os.environ.get("SUPABASE_URL") 
+key = os.environ.get("SUPABASE_KEY") 
 
 supabase: Optional[Client] = None
 
