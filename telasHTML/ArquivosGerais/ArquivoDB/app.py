@@ -17,17 +17,33 @@ app = Flask(
 )
 app.secret_key = 'uma_chave_muito_secreta_e_dificil_de_adivinhar'
 
+# --- Filtro para formatar data ---
+@app.template_filter('format_date')
+def format_date(date_str):
+    try:
+        date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+        return date_obj.strftime('%d/%m/%Y')
+    except ValueError:
+        return date_str
+
 # --- Rotas ---
 
 @app.route("/")
 def index():
-    return render_template("Cadastrar_templates/cadastrar.html") 
+    return redirect(url_for('pagina_inicial'))  # Redireciona para /inicio
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if 'user_email' in session:
+        return redirect(url_for('pagina_inicial'))  # Se já logado, vai para /inicio
+    
     if request.method == 'POST':
-        email = request.form['email']
-        senha = request.form['senha']
+        email = request.form.get('email')
+        senha = request.form.get('senha')
+        
+        if not email or not senha:
+            flash('Email e senha são obrigatórios.', 'danger')
+            return render_template('TelaDeLogin/telaLogin.html')
         
         user_data = check_user(email, senha)
         
@@ -37,13 +53,14 @@ def login():
             return redirect(url_for('tela_de_loading'))
         else:
             flash('Email ou senha incorretos. Tente novamente.', 'danger')
+            return render_template('TelaDeLogin/telaLogin.html')
             
     try:
-        return render_template('TelaDeLogin/telaLogin.html')
+        return render_template('TelaDeLogin/telaLogin.html')  # Renderiza o template para GET
     except TemplateNotFound:
         print(f"Template 'TelaDeLogin/telaLogin.html' not found in {app.template_folder}")
         flash('Erro interno: Template de login não encontrado.', 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('cadastro'))  # Redireciona para cadastro em caso de erro
 
 @app.route("/inicio")
 def pagina_inicial():
@@ -69,7 +86,13 @@ def pagina_usuario():
 
 @app.route("/loading")
 def tela_de_loading():
+    if 'user_email' not in session:
+        return redirect(url_for('login'))
     return render_template("TelaLoading/Telaloading.html")
+
+@app.route("/cadastro")
+def cadastro():
+    return render_template("Cadastrar_templates/cadastrar.html")
 
 @app.route("/cadastrar", methods=['POST'])
 def cadastrar():
@@ -83,7 +106,7 @@ def cadastrar():
 
     if not all([nome, email, senha_texto_puro, cidade, posicao, nascimento_str, numero]):
         flash("Erro no cadastro: Todos os campos são obrigatórios.", 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('cadastro'))
         
     # --- Validação e Conversão da Data de Nascimento ---
     try:
@@ -91,10 +114,10 @@ def cadastrar():
         data_nascimento_iso = data_obj.strftime('%Y-%m-%d')
         if data_obj > datetime.now():
             flash("Erro: A data de nascimento não pode ser no futuro.", 'danger')
-            return redirect(url_for('index'))
+            return redirect(url_for('cadastro'))
     except ValueError:
         flash("Erro: A data de nascimento deve ser no formato DD/MM/AAAA (ex: 15/09/2007).", 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('cadastro'))
 
     # Hash da senha usando bcrypt
     senha_hash = bcrypt.hashpw(senha_texto_puro.encode('utf-8'), bcrypt.gensalt())
@@ -110,7 +133,7 @@ def cadastrar():
         return redirect(url_for('tela_de_loading'))
     else:
         flash(mensagem, 'danger')
-        return redirect(url_for('index')) 
+        return redirect(url_for('cadastro')) 
 
 @app.route("/api/usuarios", methods=['GET'])
 def buscar_usuarios():
@@ -121,5 +144,5 @@ def buscar_usuarios():
     return jsonify(usuarios)
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 8080))
+    port = int(os.environ.get("PORT", 10000))  # Ajustado para a porta usada no Render
     app.run(host='0.0.0.0', port=port, debug=True)
