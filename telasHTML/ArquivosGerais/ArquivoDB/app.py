@@ -80,6 +80,10 @@ def pagina_usuario():
 def tela_de_loading():
     return render_template("TelaLoading/Telaloading.html")
 
+@app.route("/cadastro")
+def cadastro():
+    return render_template("Cadastrar_templates/cadastrar.html")
+
 @app.route("/cadastrar", methods=['POST'])
 def cadastrar():
     nome = request.form.get("nome")
@@ -92,7 +96,7 @@ def cadastrar():
 
     if not all([nome, email, senha_texto_puro, cidade, posicao, nascimento_str, numero]):
         flash("Erro no cadastro: Todos os campos são obrigatórios.", 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('cadastro'))
         
     # --- Validação e Conversão da Data de Nascimento ---
     try:
@@ -100,10 +104,10 @@ def cadastrar():
         data_nascimento_iso = data_obj.strftime('%Y-%m-%d')
         if data_obj > datetime.now():
             flash("Erro: A data de nascimento não pode ser no futuro.", 'danger')
-            return redirect(url_for('index'))
+            return redirect(url_for('cadastro'))
     except ValueError:
         flash("Erro: A data de nascimento deve ser no formato DD/MM/AAAA (ex: 15/09/2007).", 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('cadastro'))
 
     # Hash da senha usando bcrypt
     senha_hash = bcrypt.hashpw(senha_texto_puro.encode('utf-8'), bcrypt.gensalt())
@@ -119,7 +123,7 @@ def cadastrar():
         return redirect(url_for('tela_de_loading'))
     else:
         flash(mensagem, 'danger')
-        return redirect(url_for('index')) 
+        return redirect(url_for('cadastro')) 
 
 @app.route("/api/usuarios", methods=['GET'])
 def buscar_usuarios():
