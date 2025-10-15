@@ -91,7 +91,7 @@ def login():
         print("Rendering TelaDeLogin/telaLogin.html")
         return render_template('TelaDeLogin/telaLogin.html')  # Renderiza o template para GET
     except TemplateNotFound:
-        print(f"Template 'TelaDeLogin/telaLogin.html' not found in {app.template_root}")
+        print(f"Template 'TelaDeLogin/telaLogin.html' not found in {app.template_folder}")
         flash('Erro interno: Template de login não encontrado.', 'danger')
         return "<h1>Erro: Template de login não encontrado. Verifique a pasta TelaDeLogin.</h1>", 500
 
