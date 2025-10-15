@@ -6,7 +6,6 @@
     <title>Criação de Conta</title>
     <link rel="stylesheet" href="estilo.css">
     
-    <!-- Estilo para a notificação "Toast" -->
     <style>
         .toast {
             visibility: hidden; min-width: 250px; background-color: #f44336;
@@ -21,33 +20,68 @@
     <img id="logoImagem" src="bolaverde 3.png" alt="Bola Verde">
     <h1 class="titulo">Criação de Conta</h1>
 
-    <!-- O elemento da notificação, que fica escondido -->
     <div id="toast-notification" class="toast"></div>
 
-    <form action="/cadastrar" method="post">
+    <form action="/cadastrar" method="post" onsubmit="return validateForm()">
         <input placeholder="nome" type="text" id="nome" name="nome" required>  
         <input placeholder="email" type="email" id="email" name="email" required>  
         <input placeholder="senha" type="password" id="senha" name="senha" required>  
         <input placeholder="cidade" type="text" id="cidade" name="cidade" required>  
         <input placeholder="numero" type="number" id="numero" name="numero" required>  
         <input placeholder="posicao" type="text" id="posicao" name="posicao" required>  
-        <input placeholder="nascimento (DD/MM/AAAA)" type="date" id="nascimento" name="nascimento" required>  
+        <input placeholder="nascimento (DD/MM/AAAA)" type="text" id="nascimento" name="nascimento" required>  
         <button type="submit">Criar Conta</button>
     </form>
 
-    <!-- Script para mostrar a notificação (só é executado se houver erro) -->
-    <!-- {% with messages = get_flashed_messages() %}
-      {% if messages %} -->
-        <script>
-            const message = "{{ messages[0] }}";
-            const toast = document.getElementById("toast-notification");
-            toast.textContent = message;
-            toast.classList.add("show");
-            setTimeout(function(){ toast.classList.remove("show"); }, 4000);
-        </script>
-      <!-- {% endif %}
-    {% endwith %} -->
+    <script>
+        function validateForm() {
+            const nascimento = document.getElementById('nascimento').value;
+            const datePattern = /^\d{2}\/\d{2}\/\d{4}$/;
+            
+            if (!datePattern.test(nascimento)) {
+                const toast = document.getElementById('toast-notification');
+                toast.textContent = 'Erro: A data de nascimento deve estar no formato DD/MM/AAAA (ex: 15/09/2007).';
+                toast.classList.add('show');
+                setTimeout(() => { toast.classList.remove('show'); }, 4000);
+                return false;
+            }
 
+            // Validação adicional: verificar se a data é válida
+            const [day, month, year] = nascimento.split('/').map(Number);
+            const date = new Date(year, month - 1, day);
+            if (date.getFullYear() !== year || date.getMonth() + 1 !== month || date.getDate() !== day) {
+                const toast = document.getElementById('toast-notification');
+                toast.textContent = 'Erro: A data de nascimento é inválida.';
+                toast.classList.add('show');
+                setTimeout(() => { toast.classList.remove('show'); }, 4000);
+                return false;
+            }
 
+            // Verificar se a data não está no futuro
+            if (date > new Date()) {
+                const toast = document.getElementById('toast-notification');
+                toast.textContent = 'Erro: A data de nascimento não pode ser no futuro.';
+                toast.classList.add('show');
+                setTimeout(() => { toast.classList.remove('show'); }, 4000);
+                return false;
+            }
+
+            return true;
+        }
+
+        // Exibir mensagens de flash do servidor
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <script>
+                const message = "{{ messages[0][1] }}";
+                const toast = document.getElementById("toast-notification");
+                toast.textContent = message;
+                toast.style.backgroundColor = "{{ 'green' if messages[0][0] == 'success' else '#f44336' }}";
+                toast.classList.add("show");
+                setTimeout(function(){ toast.classList.remove("show"); }, 4000);
+            </script>
+          {% endif %}
+        {% endwith %}
+    </script>
 </body>
 </html>
