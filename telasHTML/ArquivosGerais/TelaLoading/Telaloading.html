@@ -1,21 +1,17 @@
-<!-- Localização: telasHTML/Telaloading.html -->
 <!DOCTYPE html>
-<!-- <html lang="pt-br"> -->
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carregando...</title>
-    <link rel="stylesheet" href="style.css">
-   
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <!-- --- CORREÇÃO DO CAMINHO DO LOGO --- -->
-    <img class="loading-logo" src="logoGeral.png" alt="Carregando...">
-    <script src="script.js"></script>
-    <!-- <script>
+    <img class="loading-logo" src="{{ url_for('static', filename='logoGeral.png') }}" alt="Carregando...">
+    <script>
         window.onload = function() {
-            setTimeout(() => { window.location.href = "C:\Users\gabri\OneDrive\Documentos\PASTAS DEV\FUTEBOL-HTML\futebol\telasHTML\ArquivosGerais\TelaInicial\TelaInicial.html"; }, 2000);
+            setTimeout(() => { window.location.href = "{{ url_for('pagina_inicial') }}"; }, 2000);
         };
-    </script> -->
+    </script>
 </body>
 </html>
