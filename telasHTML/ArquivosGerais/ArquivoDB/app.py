@@ -17,11 +17,20 @@ app = Flask(
 )
 app.secret_key = 'uma_chave_muito_secreta_e_dificil_de_adivinhar'
 
+# --- Filtro para formatar data ---
+@app.template_filter('format_date')
+def format_date(date_str):
+    try:
+        date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+        return date_obj.strftime('%d/%m/%Y')
+    except ValueError:
+        return date_str
+
 # --- Rotas ---
 
 @app.route("/")
 def index():
-    return render_template("Cadastrar_templates/cadastrar.html") 
+    return redirect(url_for('pagina_inicial'))  # Redireciona para /inicio
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
