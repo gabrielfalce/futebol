@@ -1,41 +1,45 @@
 <!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minha Conta</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='iconeUser.png') }}">
-</head>
-<body>
-    <header class="barra-superior">
-        <button class="menu-button">
-            <img src="{{ url_for('static', filename='TresPontos.png') }}" alt="Menu">
-        </button> 
-        <h1>Minha Conta</h1>
-    </header>
+  <html lang="pt-br">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Perfil do Usuário</title>
+      <link rel="stylesheet" href="/TelaInicial/style.css">
+      <style>
+          .toast {
+              visibility: hidden; min-width: 250px; background-color: #f44336;
+              color: white; text-align: center; border-radius: 5px; padding: 16px;
+              position: fixed; z-index: 100; right: 30px; top: 30px;
+              font-size: 17px; opacity: 0; transition: opacity 0.5s, top 0.5s;
+          }
+          .toast.show { visibility: visible; opacity: 1; top: 50px; }
+      </style>
+  </head>
+  <body>
+      <h2><img src="/TelaLoading/logoGeral.png" alt="Logo"></h2>
+      <h1>Perfil do Usuário</h1>
+      <div id="toast-notification" class="toast"></div>
+      <div>
+          <p>Nome: {{ usuario.nome }}</p>
+          <p>Email: {{ usuario.email }}</p>
+          <p>Cidade: {{ usuario.cidade }}</p>
+          <p>Posição: {{ usuario.posicao }}</p>
+          <p>Data de Nascimento: {{ usuario.nascimento | format_date }}</p>
+          <p>Número: {{ usuario.numero }}</p>
+      </div>
+      <a href="{{ url_for('pagina_inicial') }}">Voltar</a>
 
-    <main class="content">
-        {% if usuario %}
-            <div class="usuario-card">
-                <img class="usuario-foto" src="{{ url_for('static', filename='iconeUser.png') }}" alt="Foto do usuário">
-                <div class="usuario-info">
-                    <h3 class="usuario-nome">{{ usuario.nome }}</h3>
-                    <p><strong>Email:</strong> {{ usuario.email }}</p>
-                    <p><strong>Cidade:</strong> {{ usuario.cidade }}</p>
-                    <p><strong>Posição:</strong> {{ usuario.posicao }}</p>
-                    <p><strong>Data de Nascimento:</strong> {{ usuario.nascimento | format_date }}</p>
-                    <p><strong>Número:</strong> {{ usuario.numero }}</p>
-                </div>
-            </div>
-            <a href="{{ url_for('pagina_inicial') }}">Voltar para a Tela Inicial</a>
-        {% else %}
-            <p>Erro: Dados do usuário não encontrados.</p>
-        {% endif %}
-    </main>
-
-    <script>
-        // JavaScript para funcionalidades futuras, se necessário
-    </script>
-</body>
-</html>
+      <script>
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              const message = "{{ messages[0][1] }}";
+              const toast = document.getElementById("toast-notification");
+              toast.textContent = message;
+              toast.style.backgroundColor = "{{ 'green' if messages[0][0] == 'success' else '#f44336' }}";
+              toast.classList.add("show");
+              setTimeout(function(){ toast.classList.remove("show"); }, 4000);
+            {% endif %}
+          {% endwith %}
+      </script>
+  </body>
+  </html>
