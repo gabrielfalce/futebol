@@ -1,66 +1,73 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil do Usuário</title>
-    <link rel="stylesheet" href="/TelaDeUsuario/stylesTest.css">
-    <style>
-        .toast {
-            visibility: hidden; min-width: 250px; background-color: #f44336;
-            color: white; text-align: center; border-radius: 5px; padding: 16px;
-            position: fixed; z-index: 100; right: 30px; top: 30px;
-            font-size: 17px; opacity: 0; transition: opacity 0.5s, top 0.5s;
-        }
-        .toast.show { visibility: visible; opacity: 1; top: 50px; }
-    </style>
+    <title>Cortar Imagem como no WhatsApp</title>
+    <!-- CSS do Cropper.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+    <!-- CSS personalizado -->
+    <link rel="stylesheet" href="stylesTest.css">
+    <link rel="icon" href="imagens/iconeUser.png">
+
+    
+    <!-- wallpaper do usuarios -->
+    <div class="Wallpaper">
+   <img class="imagemWallpaper"  src="imagens/hM94BRC.jpeg" alt="Wallpaper de fundo">
+    </div>
 </head>
 <body>
-    <div class="usuarioBoxeInformacoes">
-        <div class="usuarioBoxeInfoSup">
-            <div id="imagem0111">
-                <img src="{{ url_for('static', filename='iconeUser.png') }}" alt="Foto do usuário" id="preview">
-            </div>
-            <button id="openModalButton">Editar Foto</button>
+    <!-- ===== Tela principal ===== -->
+    <div id="mainScreen">
+        <!-- Imagem de perfil -->
+        <div id="perfilImagemGeralCaixa">
+            <img id="preview" src="" alt="Prévia da imagem cortada">
+            
         </div>
-        <p>Nome: {{ usuario.nome }}</p>
-        <p>Email: {{ usuario.email }}</p>
-        <p>Cidade: {{ usuario.cidade }}</p>
-        <p>Posição: {{ usuario.posicao }}</p>
-        <p>Data de Nascimento: {{ usuario.nascimento | format_date }}</p>
-        <p>Número: {{ usuario.numero }}</p>
-        <a href="{{ url_for('pagina_inicial') }}">Voltar para a Tela Inicial</a>
+        <button class="tbmBt" id="openModalButton">editar perfil</button>
+        <!-- Botão para abrir o modal -->
     </div>
+    
 
-    <!-- Modal para upload de imagem -->
-    <div class="modal" id="modal">
+    <!-- ===== Modal de corte de imagem ===== -->
+    <div id="cropModal" class="modal">
         <div class="modal-content">
-            <button class="close-button" id="closeModalButton">×</button>
-            <h2>Upload de Imagem</h2>
-            <input type="file" accept="image/*" id="fileInput">
-            <button class="cortarImagem">Cortar Imagem</button>
+            <button id="closeModalButton" class="close-button">&times;</button>
+            <h2>Cortar Imagem</h2>
+            <input type="file" id="imageInput" accept="image/*">
+            <img id="image" src="" alt="Imagem para cortar">
+            <button id="cropButton" style="display: none;">Cortar Imagem</button>
+            <h3>Prévia da Imagem Cortada</h3>
+            <h4 class="salvar">Salvar</h4>
         </div>
     </div>
 
-    <script>
-        const openModalButton = document.getElementById('openModalButton');
-        const closeModalButton = document.getElementById('closeModalButton');
-        const modal = document.getElementById('modal');
-        const fileInput = document.getElementById('fileInput');
-        const preview = document.getElementById('preview');
+    <!-- ===== Botão flutuante de home ===== -->
+    <div class="floating-button-container">
+        <div class="floating-button-bar"></div>
+        <a id="linkTela" href="../TelaLoading/Telaloading.html">
+            <button id="adicionarUsuarioBtn" class="floating-button">
+                <img src="imagens/bolaLogo.png" alt="Ir para tela de loading">
+            </button>
+        </a>
+    </div>
 
-        openModalButton.addEventListener('click', () => modal.style.display = 'flex');
+<div class="usuarioInfoBoxe" >      
+    <h1>Informações do Usuário'</h1>
+    <p>Nome: Gabriel Falce</p>
+    <p>Email:
 
-        closeModalButton.addEventListener('click', () => modal.style.display = 'none');
 
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => preview.src = e.target.result;
-                reader.readAsDataURL(file);
-            }
-        });
-    </script>
+</div>
+
+
+
+
+
+
+
+    <!-- ===== Scripts ===== -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
