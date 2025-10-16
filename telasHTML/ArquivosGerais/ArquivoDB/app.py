@@ -8,6 +8,7 @@ from jinja2.exceptions import TemplateNotFound
 # --- Configuração de Caminhos e Flask ---
 app_dir = os.path.dirname(os.path.abspath(__file__))
 template_root = os.path.abspath(os.path.join(app_dir, '..', 'ArquivosGerais'))  # Ajustado para apontar para ArquivosGerais
+print(f"Template root set to: {template_root}")  # Depuração
 
 app = Flask(
     __name__,
@@ -105,7 +106,12 @@ def pagina_inicial():
         
     lista_de_usuarios = get_all_users()
     print(f"Rendering TelaInicial/TelaInicial.html with users: {len(lista_de_usuarios)}")
-    return render_template("TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
+    try:
+        return render_template("TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
+    except TemplateNotFound:
+        print(f"Template 'TelaInicial/TelaInicial.html' not found in {app.template_folder}")
+        flash('Erro interno: Template da tela inicial não encontrado.', 'danger')
+        return "<h1>Erro: Template da tela inicial não encontrado. Verifique a pasta TelaInicial.</h1>", 500
 
 @app.route("/usuario")
 def pagina_usuario():
