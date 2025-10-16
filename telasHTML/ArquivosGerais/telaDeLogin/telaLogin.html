@@ -3,9 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="/telaDeLogin/style.css">
+    <title>Tela Inicial</title>
+    <link rel="stylesheet" href="/TelaInicial/style.css">
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #313131;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .search-bar input {
+            padding: 8px;
+            width: 200px;
+            border-radius: 4px;
+            border: 1px solid #fff;
+        }
+        .user-card {
+            background: #2BBF90;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
         .toast {
             visibility: hidden;
             min-width: 250px;
@@ -26,19 +51,33 @@
     </style>
 </head>
 <body>
-    <div class="soccer-ball"></div> <!-- Adiciona a bola animada -->
-    <h2><img src="/TelaLoading/logoGeral.png" alt="Logo"></h2>
-    <h1>Login</h1>
+    <div class="header">
+        <h2><img src="/TelaLoading/logoGeral.png" alt="Logo"></h2>
+        <div class="search-bar">
+            <input type="text" id="search" placeholder="Buscar usuários..." onkeyup="searchUsers()">
+        </div>
+    </div>
+    <div id="user-list">
+        {% for user in usuarios %}
+            <div class="user-card">
+                <p>Nome: {{ user.nome }}</p>
+                <p>Cidade: {{ user.cidade }}</p>
+            </div>
+        {% endfor %}
+    </div>
     <div id="toast-notification" class="toast"></div>
-    <form action="/login" method="post">
-        <input placeholder="Email" type="email" id="email" name="email" required>
-        <input placeholder="Senha" type="password" id="senha" name="senha" required>
-        <a class="esqueceuSenha" href="#">Esqueceu a senha?</a>
-        <button type="submit">Login</button>
-        <a href="{{ url_for('cadastro') }}">Criar nova conta</a>
-    </form>
+    <a href="{{ url_for('logout') }}">Sair</a>
 
     <script>
+        function searchUsers() {
+            let input = document.getElementById("search").value.toLowerCase();
+            let cards = document.getElementsByClassName("user-card");
+            for (let i = 0; i < cards.length; i++) {
+                let text = cards[i].textContent.toLowerCase();
+                cards[i].style.display = text.includes(input) ? "" : "none";
+            }
+        }
+
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 const message = "{{ messages[0][1] }}";
