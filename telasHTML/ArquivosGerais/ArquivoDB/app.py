@@ -104,7 +104,7 @@ def pagina_inicial():
         return redirect(url_for('login'))
         
     lista_de_usuarios = get_all_users()
-    print(f"Rendering TelaInicial.html with users: {len(lista_de_usuarios)}")
+    print(f"Rendering TelaInicial/TelaInicial.html with users: {len(lista_de_usuarios)}")
     return render_template("TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
 
 @app.route("/usuario")
