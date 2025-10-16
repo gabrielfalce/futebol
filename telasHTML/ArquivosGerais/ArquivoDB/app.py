@@ -12,7 +12,7 @@ template_root = os.path.abspath(os.path.join(app_dir, '..', 'ArquivosGerais'))  
 app = Flask(
     __name__,
     template_folder=template_root,
-    static_folder=os.path.join(template_root, 'STATIC'), 
+    static_folder=os.path.join(template_root, 'STATIC'),
     static_url_path='/static'
 )
 app.secret_key = 'uma_chave_muito_secreta_e_dificil_de_adivinhar'
