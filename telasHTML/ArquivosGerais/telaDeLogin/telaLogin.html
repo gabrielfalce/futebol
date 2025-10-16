@@ -1,54 +1,43 @@
 <!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="/telaDeLogin/style.css">
-    <style>
-        .toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #f44336;
-            color: white;
-            text-align: center;
-            border-radius: 5px;
-            padding: 16px;
-            position: fixed;
-            z-index: 100;
-            right: 30px;
-            top: 30px;
-            font-size: 17px;
-            opacity: 0;
-            transition: opacity 0.5s, top 0.5s;
-        }
-        .toast.show { visibility: visible; opacity: 1; top: 50px; }
-    </style>
-</head>
-<body>
-    <div class="soccer-ball"></div> <!-- Adiciona a bola animada -->
-    <h2><img src="/TelaLoading/logoGeral.png" alt="Logo"></h2>
-    <h1>Login</h1>
-    <div id="toast-notification" class="toast"></div>
-    <form action="/login" method="post">
-        <input placeholder="Email" type="email" id="email" name="email" required>
-        <input placeholder="Senha" type="password" id="senha" name="senha" required>
-        <a class="esqueceuSenha" href="#">Esqueceu a senha?</a>
-        <button type="submit">Login</button>
-        <a href="{{ url_for('cadastro') }}">Criar nova conta</a>
-    </form>
+  <html lang="pt-br">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Login</title>
+      <link rel="stylesheet" href="/Cadastrar_templates/estilo.css">
+      <style>
+          .toast {
+              visibility: hidden; min-width: 250px; background-color: #f44336;
+              color: white; text-align: center; border-radius: 5px; padding: 16px;
+              position: fixed; z-index: 100; right: 30px; top: 30px;
+              font-size: 17px; opacity: 0; transition: opacity 0.5s, top 0.5s;
+          }
+          .toast.show { visibility: visible; opacity: 1; top: 50px; }
+      </style>
+  </head>
+  <body>
+      <h2><img src="/TelaLoading/logoGeral.png" alt="Logo"></h2>
+      <h1>Login</h1>
+      <div id="toast-notification" class="toast"></div>
+      <form action="/login" method="post">
+          <input placeholder="Email" type="email" id="email" name="email" required>
+          <input placeholder="Senha" type="password" id="senha" name="senha" required>
+          <a class="esqueceuSenha" href="#">Esqueceu a senha?</a>
+          <button type="submit">Login</button>
+          <a href="{{ url_for('cadastro') }}">Criar nova conta</a>
+      </form>
 
-    <script>
-        {% with messages = get_flashed_messages(with_categories=true) %}
+      <script>
+          {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                const message = "{{ messages[0][1] }}";
-                const toast = document.getElementById("toast-notification");
-                toast.textContent = message;
-                toast.style.backgroundColor = "{{ 'green' if messages[0][0] == 'success' else '#f44336' }}";
-                toast.classList.add("show");
-                setTimeout(function(){ toast.classList.remove("show"); }, 4000);
+              const message = "{{ messages[0][1] }}";
+              const toast = document.getElementById("toast-notification");
+              toast.textContent = message;
+              toast.style.backgroundColor = "{{ 'green' if messages[0][0] == 'success' else '#f44336' }}";
+              toast.classList.add("show");
+              setTimeout(function(){ toast.classList.remove("show"); }, 4000);
             {% endif %}
-        {% endwith %}
-    </script>
-</body>
-</html>
+          {% endwith %}
+      </script>
+  </body>
+  </html>
