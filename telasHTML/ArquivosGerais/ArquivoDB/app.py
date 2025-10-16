@@ -7,7 +7,7 @@ from jinja2.exceptions import TemplateNotFound
 
 # --- Configuração de Caminhos e Flask ---
 app_dir = os.path.dirname(os.path.abspath(__file__))
-template_root = os.path.abspath(os.path.join(app_dir, '..', 'ArquivosGerais'))  # Ajustado para apontar para ArquivosGerais
+template_root = os.path.abspath(os.path.join(app_dir, '..'))  # Correção: Ajustado para apontar diretamente para ArquivosGerais
 print(f"Template root set to: {template_root}")  # Depuração
 
 app = Flask(
@@ -17,6 +17,7 @@ app = Flask(
     static_url_path='/static'
 )
 app.secret_key = 'uma_chave_muito_secreta_e_dificil_de_adivinhar'
+app.config['SKIP_LOGIN_CHECK'] = False  # Configuração para desativar verificação de login (mude para True para ir direto para /inicio)
 
 # --- Rotas para Arquivos Estáticos em Outras Pastas ---
 @app.route('/Cadastrar_templates/<path:filename>')
@@ -58,6 +59,12 @@ def format_date(date_str):
 @app.route("/")
 def index():
     print(f"Acessando rota raiz, session: {session}")
+    if not app.config['SKIP_LOGIN_CHECK']:
+        if 'user_email' not in session:
+            print("User not logged in, redirecting to /login")
+            flash('Você precisa fazer login para aceder a esta página.', 'warning')
+            return redirect(url_for('login'))
+    print(f"Redirecting to /inicio (SKIP_LOGIN_CHECK: {app.config['SKIP_LOGIN_CHECK']})")
     return redirect(url_for('pagina_inicial'))  # Redireciona para /inicio
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -99,7 +106,7 @@ def login():
 @app.route("/inicio")
 def pagina_inicial():
     print(f"Accessing /inicio, session: {session}")
-    if 'user_email' not in session:
+    if not app.config['SKIP_LOGIN_CHECK'] and 'user_email' not in session:
         print("User not logged in, redirecting to /login")
         flash('Você precisa fazer login para aceder a esta página.', 'warning')
         return redirect(url_for('login'))
@@ -116,7 +123,7 @@ def pagina_inicial():
 @app.route("/usuario")
 def pagina_usuario():
     print(f"Accessing /usuario, session: {session}")
-    if 'user_email' not in session:
+    if not app.config['SKIP_LOGIN_CHECK'] and 'user_email' not in session:
         print("User not logged in, redirecting to /login")
         flash('Você precisa fazer login para aceder a esta página.', 'warning')
         return redirect(url_for('login'))
@@ -133,7 +140,7 @@ def pagina_usuario():
 @app.route("/loading")
 def tela_de_loading():
     print(f"Accessing /loading, session: {session}")
-    if 'user_email' not in session:
+    if not app.config['SKIP_LOGIN_CHECK'] and 'user_email' not in session:
         print("User not logged in, redirecting to /login")
         return redirect(url_for('login'))
     return render_template("TelaLoading/Telaloading.html")
