@@ -5,63 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro</title>
     <link rel="stylesheet" href="/Cadastrar_templates/estilo.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #313131;
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        form {
-            background: #2BBF90;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        input {
-            display: block;
-            margin: 10px auto;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            width: 200px;
-        }
-        button {
-            padding: 10px 20px;
-            background: #128c7e;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover { background: #25d366; }
-        .toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #f44336;
-            color: white;
-            text-align: center;
-            border-radius: 5px;
-            padding: 16px;
-            position: fixed;
-            z-index: 100;
-            right: 30px;
-            top: 30px;
-            font-size: 17px;
-            opacity: 0;
-            transition: opacity 0.5s, top 0.5s;
-        }
-        .toast.show { visibility: visible; opacity: 1; top: 50px; }
-    </style>
 </head>
 <body>
-    <h2><img src="/TelaLoading/logoGeral.png" alt="Logo"></h2>
-    <h1>Cadastro</h1>
+    <img src="/TelaLoading/logoGeral.png" alt="Bola Verde">
+    <h1 class="titulo">Cadastro</h1>
     <div id="toast-notification" class="toast"></div>
     <form action="/cadastrar" method="post">
         <input placeholder="Nome" type="text" name="nome" required>
@@ -83,7 +30,7 @@
                 toast.textContent = message;
                 toast.style.backgroundColor = "{{ 'green' if messages[0][0] == 'success' else '#f44336' }}";
                 toast.classList.add("show");
-                setTimeout(function(){ toast.classList.remove("show"); }, 4000);
+                setTimeout(() => toast.classList.remove("show"), 4000);
             {% endif %}
         {% endwith %}
     </script>
