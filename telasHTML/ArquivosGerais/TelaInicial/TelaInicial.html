@@ -1,63 +1,59 @@
 <!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tela Inicial</title>
-    <link rel="stylesheet" href="/TelaInicial/style.css">
-    <style>
-        /* Mantém o estilo inline do toast para compatibilidade */
-    </style>
-</head>
-<body>
-    <header>
-        <img src="/TelaLoading/logoGeral.png" alt="Logo">
-        <div class="search-container">
-            <input type="text" id="searchInput" class="search-input" placeholder="Pesquisar por nome ou cidade">
-            <img src="/TelaInicial/lupa.png" alt="Lupa" class="search-icon">
-        </div>
-        <img src="/TelaInicial/TresPontos.png" alt="Menu" class="menu-icon">
-    </header>
-    <div id="toast-notification" class="toast"></div>
-    <div id="userList"></div>
-    <div class="entadaUserBotao-container">
-        <div class="entadaUserBotao-bar"></div>
-        <button class="entadaUserBotao-button">
-            <a href="{{ url_for('pagina_usuario') }}"><img src="/TelaInicial/iconeUser.png" alt="Usuário"></a>
-        </button>
-    </div>
+  <html lang="pt-br">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Tela Inicial</title>
+      <link rel="stylesheet" href="/TelaInicial/style.css">
+      <style>
+          .toast {
+              visibility: hidden; min-width: 250px; background-color: #f44336;
+              color: white; text-align: center; border-radius: 5px; padding: 16px;
+              position: fixed; z-index: 100; right: 30px; top: 30px;
+              font-size: 17px; opacity: 0; transition: opacity 0.5s, top 0.5s;
+          }
+          .toast.show { visibility: visible; opacity: 1; top: 50px; }
+      </style>
+  </head>
+  <body>
+      <header>
+          <img src="/TelaLoading/logoGeral.png" alt="Logo">
+          <input type="text" id="searchInput" placeholder="Pesquisar por nome ou cidade">
+          <img src="/TelaInicial/lupa.png" alt="Lupa" class="search-icon">
+          <img src="/TelaInicial/TresPontos.png" alt="Menu" class="menu-icon">
+          <a href="{{ url_for('pagina_usuario') }}"><img src="/TelaInicial/iconeUser.png" alt="Usuário"></a>
+      </header>
+      <div id="toast-notification" class="toast"></div>
+      <div id="userList"></div>
 
-    <script>
-        async function fetchUsers(query = '') {
-            const response = await fetch(`/api/usuarios?q=${encodeURIComponent(query)}`);
-            const users = await response.json();
-            const userList = document.getElementById('userList');
-            userList.innerHTML = users.map(user => `
-                <div>
-                    <div class="usuario-info">
-                        <p class="usuario-nome">${user.nome}</p>
-                        <p class="usuario-cidade">${user.cidade}</p>
-                    </div>
-                </div>
-            `).join('');
-        }
+      <script>
+          async function fetchUsers(query = '') {
+              const response = await fetch(`/api/usuarios?q=${encodeURIComponent(query)}`);
+              const users = await response.json();
+              const userList = document.getElementById('userList');
+              userList.innerHTML = users.map(user => `
+                  <div>
+                      <p>${user.nome} - ${user.cidade}</p>
+                  </div>
+              `).join('');
+          }
 
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            fetchUsers(e.target.value);
-        });
+          document.getElementById('searchInput').addEventListener('input', (e) => {
+              fetchUsers(e.target.value);
+          });
 
-        fetchUsers(); // Carrega todos os usuários ao iniciar
+          fetchUsers(); // Carrega todos os usuários ao iniciar
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            const message = "{{ messages[0][1] }}";
-            const toast = document.getElementById("toast-notification");
-            toast.textContent = message;
-            toast.style.backgroundColor = "{{ 'green' if messages[0][0] == 'success' else '#ff4d4d' }}";
-            toast.classList.add("show");
-            setTimeout(function(){ toast.classList.remove("show"); }, 4000);
-          {% endif %}
-        {% endwith %}
-    </script>
-</body>
-</html>
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              const message = "{{ messages[0][1] }}";
+              const toast = document.getElementById("toast-notification");
+              toast.textContent = message;
+              toast.style.backgroundColor = "{{ 'green' if messages[0][0] == 'success' else '#f44336' }}";
+              toast.classList.add("show");
+              setTimeout(function(){ toast.classList.remove("show"); }, 4000);
+            {% endif %}
+          {% endwith %}
+      </script>
+  </body>
+  </html>
