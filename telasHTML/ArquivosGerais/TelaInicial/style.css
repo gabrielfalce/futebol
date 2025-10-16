@@ -23,232 +23,139 @@ body {
     font-family: Arial, Helvetica, sans-serif;
     background-color: var(--cor-fundo);
     color: var(--cor-texto);
-    padding-bottom: 100px; /* Espaço para o botão flutuante */
+    padding: 0 20px;
+    min-height: 100vh;
 }
 
 /* =======================
-   BARRA SUPERIOR (HEADER)
+   CABEÇALHO E LOGO
    ======================= */
-header {
-    background-color: var(--cor-primaria);
-    padding: 10px 15px;
+.logo-container {
     display: flex;
     align-items: center;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    padding: 15px 0;
 }
 
-header img {
-    height: 40px;
-    margin-right: 10px;
+.logo-container img {
+    height: 50px;
+    margin-right: 15px;
 }
 
-.search-icon, .menu-icon {
-    height: 30px;
-    cursor: pointer;
-    margin-left: 10px;
+/* =======================
+   TÍTULO DA PÁGINA
+   ======================= */
+.titulo-pagina {
+    font-size: 2.2rem;
+    margin: 20px 0 30px;
+    color: var(--cor-texto);
 }
 
 /* =======================
    CAMPO DE PESQUISA
    ======================= */
 .search-container {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto 30px;
     position: relative;
-    flex-grow: 1;
-    margin-left: 20px;
 }
 
 .search-input {
     width: 100%;
-    padding: 10px 40px 10px 15px; /* espaço à direita para o ícone */
-    border: 1px solid #38d151;
-    border-radius: 25px;
-    font-size: 14px;
-    background-color: rgb(238, 243, 248);
-    color: #515151;
+    padding: 14px 45px 14px 20px;
+    border: 2px solid var(--cor-primaria);
+    border-radius: 30px;
+    font-size: 16px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--cor-texto);
+    transition: all 0.3s ease;
 }
 
-.search-container img[alt="Lupa"] {
+.search-input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.search-input:focus {
+    outline: none;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: var(--cor-primaria);
+}
+
+.search-icon {
     position: absolute;
-    right: 18px;
+    right: 20px;
     top: 50%;
     transform: translateY(-50%);
-    width: 20px;
-    height: 20px;
-    pointer-events: none;
+    width: 24px;
+    height: 24px;
 }
 
 /* =======================
-   CARDS DE USUÁRIO
+   LISTA DE USUÁRIOS
    ======================= */
-#userList {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+.user-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 25px;
+    padding: 20px 0;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-#userList div {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    max-width: 340px;
-    padding: 15px;
-    border-radius: 15px;
+.user-card {
     background: var(--cor-card);
+    border-radius: 16px;
+    padding: 25px;
     box-shadow: var(--sombra);
     transition: transform 0.3s ease;
 }
 
-#userList div:hover {
-    transform: translateY(-3px);
+.user-card:hover {
+    transform: translateY(-5px);
 }
 
-.usuario-info {
-    flex-grow: 1;
-}
-
-.usuario-nome {
+.user-name {
     color: var(--cor-texto-card);
-    font-size: 1.25rem;
-    margin-bottom: 5px;
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+    font-weight: bold;
 }
 
-.usuario-cidade {
+.user-city {
     color: var(--cor-texto-card);
-    font-size: 0.875rem;
-}
-
-/* =======================
-   BOTÃO DE PERFIL FIXO (USUÁRIO)
-   ======================= */
-.entadaUserBotao-container {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    z-index: 99;
-}
-
-/* Removendo a barra azul (comentada para futura referência) */
-/* .entadaUserBotao-bar {
-    width: 60px;
-    height: 4px;
-    background-color: #000000;
-    border-radius: 20px;
-    margin-bottom: 10px;
-} */
-
-/* Redefinindo a barra vermelha como um indicador decorativo */
-.entadaUserBotao-bar {
-    width: 60px;
-    height: 4px;
-    background-color: #e74c3c; /* Vermelho para destacar */
-    border-radius: 20px;
-    margin-bottom: 10px;
-    transition: width 0.3s ease; /* Animação opcional */
-}
-
-.entadaUserBotao-button {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background-color: var(--cor-primaria);
-    border: none;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    transition: transform 0.3s ease;
-    padding: 0;
-}
-
-.entadaUserBotao-button:hover {
-    transform: scale(1.1);
-}
-
-.entadaUserBotao-button a {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-}
-
-.entadaUserBotao-button img {
-    width: 60%;
-    height: 60%;
-    object-fit: contain;
-    display: block;
-}
-
-/* =======================
-   ALERTA (TOAST)
-   ======================= */
-.toast {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #27ae60; /* Verde para sucesso */
-    color: #fff;
-    padding: 18px 32px;
-    border-radius: 12px;
     font-size: 1.1rem;
-    z-index: 9999;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    opacity: 0.9;
+}
+
+/* =======================
+   MENSAGEM DE ERRO (FOOTER)
+   ======================= */
+.erro-footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: #ff4d4d;
+    color: white;
     text-align: center;
-    opacity: 1;
-    transition: opacity 0.5s;
-    max-width: 90vw;
-    width: fit-content;
-    min-width: 220px;
-    word-break: break-word;
-}
-
-.toast.show {
-    opacity: 1;
-}
-
-.toast.danger {
-    background: #ff4d4d; /* Vermelho para erro */
+    padding: 10px 0;
+    font-weight: bold;
 }
 
 /* =======================
    RESPONSIVIDADE
    ======================= */
 @media (max-width: 768px) {
-    body {
-        font-size: 18px;
+    .user-list {
+        grid-template-columns: 1fr;
+        padding: 15px;
     }
     
-    header {
-        flex-direction: column;
-        padding: 10px;
+    .titulo-pagina {
+        font-size: 1.8rem;
+        text-align: center;
     }
     
     .search-container {
-        margin-left: 0;
-        margin-top: 10px;
-    }
-
-    .search-input {
-        width: 100%;
-    }
-
-    #userList {
-        padding: 10px;
-    }
-
-    #userList div {
-        max-width: 100%;
-    }
-
-    .entadaUserBotao-container {
-        left: 10px;
+        margin-bottom: 20px;
     }
 }
