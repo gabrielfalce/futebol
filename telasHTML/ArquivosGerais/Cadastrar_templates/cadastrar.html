@@ -1,47 +1,91 @@
 <!DOCTYPE html>
-  <html lang="pt-br">
-  <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Cadastro</title>
-      <link rel="stylesheet" href="/Cadastrar_templates/estilo.css">
-      <style>
-          .toast {
-              visibility: hidden; min-width: 250px; background-color: #f44336;
-              color: white; text-align: center; border-radius: 5px; padding: 16px;
-              position: fixed; z-index: 100; right: 30px; top: 30px;
-              font-size: 17px; opacity: 0; transition: opacity 0.5s, top 0.5s;
-          }
-          .toast.show { visibility: visible; opacity: 1; top: 50px; }
-      </style>
-  </head>
-  <body>
-      <h2><img src="/telaDeLogin/bolaverde3.png" alt="Logo"></h2>
-      <h1>Cadastro</h1>
-      <div id="toast-notification" class="toast"></div>
-      <form action="/cadastrar" method="post">
-          <input placeholder="Nome" type="text" id="nome" name="nome" required>
-          <input placeholder="Email" type="email" id="email" name="email" required>
-          <input placeholder="Senha" type="password" id="senha" name="senha" required>
-          <input placeholder="Cidade" type="text" id="cidade" name="cidade" required>
-          <input placeholder="Posição" type="text" id="posicao" name="posicao" required>
-          <input placeholder="Data de Nascimento (DD/MM/AAAA)" type="text" id="nascimento" name="nascimento" required>
-          <input placeholder="Número" type="text" id="numero" name="numero" required>
-          <button type="submit">Cadastrar</button>
-      </form>
-      <a href="{{ url_for('login') }}">Já tem uma conta? Faça login</a>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro</title>
+    <link rel="stylesheet" href="/Cadastrar_templates/estilo.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #313131;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        form {
+            background: #2BBF90;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        input {
+            display: block;
+            margin: 10px auto;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 200px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #128c7e;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover { background: #25d366; }
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #f44336;
+            color: white;
+            text-align: center;
+            border-radius: 5px;
+            padding: 16px;
+            position: fixed;
+            z-index: 100;
+            right: 30px;
+            top: 30px;
+            font-size: 17px;
+            opacity: 0;
+            transition: opacity 0.5s, top 0.5s;
+        }
+        .toast.show { visibility: visible; opacity: 1; top: 50px; }
+    </style>
+</head>
+<body>
+    <h2><img src="/TelaLoading/logoGeral.png" alt="Logo"></h2>
+    <h1>Cadastro</h1>
+    <div id="toast-notification" class="toast"></div>
+    <form action="/cadastrar" method="post">
+        <input placeholder="Nome" type="text" name="nome" required>
+        <input placeholder="Email" type="email" name="email" required>
+        <input placeholder="Senha" type="password" name="senha" required>
+        <input placeholder="Cidade" type="text" name="cidade" required>
+        <input placeholder="Posição" type="text" name="posicao" required>
+        <input placeholder="Data de Nascimento (DD/MM/AAAA)" type="text" name="nascimento" required>
+        <input placeholder="Número" type="text" name="numero" required>
+        <button type="submit">Cadastrar</button>
+        <a href="{{ url_for('login') }}">Voltar para Login</a>
+    </form>
 
-      <script>
-          {% with messages = get_flashed_messages(with_categories=true) %}
+    <script>
+        {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-              const message = "{{ messages[0][1] }}";
-              const toast = document.getElementById("toast-notification");
-              toast.textContent = message;
-              toast.style.backgroundColor = "{{ 'green' if messages[0][0] == 'success' else '#f44336' }}";
-              toast.classList.add("show");
-              setTimeout(function(){ toast.classList.remove("show"); }, 4000);
+                const message = "{{ messages[0][1] }}";
+                const toast = document.getElementById("toast-notification");
+                toast.textContent = message;
+                toast.style.backgroundColor = "{{ 'green' if messages[0][0] == 'success' else '#f44336' }}";
+                toast.classList.add("show");
+                setTimeout(function(){ toast.classList.remove("show"); }, 4000);
             {% endif %}
-          {% endwith %}
-      </script>
-  </body>
-  </html>
+        {% endwith %}
+    </script>
+</body>
+</html>
