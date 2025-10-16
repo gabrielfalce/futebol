@@ -7,7 +7,7 @@ from jinja2.exceptions import TemplateNotFound
 
 # --- Configuração de Caminhos e Flask ---
 app_dir = os.path.dirname(os.path.abspath(__file__))
-template_root = os.path.abspath(os.path.join(app_dir, '..')) 
+template_root = os.path.abspath(os.path.join(app_dir, '..', 'ArquivosGerais'))  # Ajustado para apontar para ArquivosGerais
 
 app = Flask(
     __name__,
@@ -73,7 +73,7 @@ def login():
         
         if not email or not senha:
             flash('Email e senha são obrigatórios.', 'danger')
-            return render_template('TelaDeLogin/telaLogin.html')
+            return render_template('telaDeLogin/telaLogin.html')
         
         user_data = check_user(email, senha)
         
@@ -85,15 +85,15 @@ def login():
         else:
             print(f"Login failed for {email}")
             flash('Email ou senha incorretos. Tente novamente.', 'danger')
-            return render_template('TelaDeLogin/telaLogin.html')
+            return render_template('telaDeLogin/telaLogin.html')
             
     try:
-        print("Rendering TelaDeLogin/telaLogin.html")
-        return render_template('TelaDeLogin/telaLogin.html')  # Renderiza o template para GET
+        print("Rendering telaDeLogin/telaLogin.html")
+        return render_template('telaDeLogin/telaLogin.html')  # Renderiza o template para GET
     except TemplateNotFound:
-        print(f"Template 'TelaDeLogin/telaLogin.html' not found in {app.template_folder}")
+        print(f"Template 'telaDeLogin/telaLogin.html' not found in {app.template_folder}")
         flash('Erro interno: Template de login não encontrado.', 'danger')
-        return "<h1>Erro: Template de login não encontrado. Verifique a pasta TelaDeLogin.</h1>", 500
+        return "<h1>Erro: Template de login não encontrado. Verifique a pasta telaDeLogin.</h1>", 500
 
 @app.route("/inicio")
 def pagina_inicial():
