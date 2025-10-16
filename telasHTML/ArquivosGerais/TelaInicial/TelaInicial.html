@@ -4,70 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tela Inicial</title>
+    <!-- REMOVA O BLOCO <style> INLINE (está causando conflitos) -->
     <link rel="stylesheet" href="/TelaInicial/estilo.css">
-    <style>
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            max-width: 350px;
-            margin-bottom: 20px;
-        }
-        .search-bar input {
-            width: 100%;
-            padding: 12px 14px;
-            border: none;
-            border-radius: 8px;
-            background: var(--cor-input);
-            font-size: 1rem;
-            color: #222;
-        }
-        .user-card {
-            background: var(--cor-form);
-            padding: 16px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            box-shadow: var(--sombra);
-            text-align: center;
-        }
-    </style>
 </head>
 <body>
-    <img src="/TelaLoading/logoGeral.png" alt="Bola Verde">
-    <h1 class="titulo">Tela Inicial</h1>
-    <div class="header">
-        <div class="search-bar">
-            <input type="text" id="search" placeholder="Buscar usuários..." onkeyup="searchUsers()">
+    <header class="page-header">
+        <div class="logo-container">
+            <img src="/TelaLoading/logoGeral.png" alt="Logo">
         </div>
+        <h1 class="titulo">Tela Inicial</h1>
+    </header>
+
+    <div class="search-container">
+        <input type="text" id="search" placeholder="Buscar usuários..." onkeyup="searchUsers()">
+        <img src="/TelaInicial/lupa.png" alt="Lupa" class="search-icon">
     </div>
-    <div id="user-list">
+
+    <div class="user-list" id="user-list">
         {% for user in usuarios %}
             <div class="user-card">
-                <p>Nome: {{ user.nome }}</p>
-                <p>Cidade: {{ user.cidade }}</p>
+                <p class="user-name">Nome: {{ user.nome }}</p>
+                <p class="user-city">Cidade: {{ user.cidade }}</p>
             </div>
         {% endfor %}
     </div>
+
     <div id="toast-notification" class="toast"></div>
-    <a href="{{ url_for('logout') }}">Sair</a>
+    <a href="{{ url_for('logout') }}" class="logout-link">Sair</a>
 
     <script>
         function searchUsers() {
-            let input = document.getElementById("search").value.toLowerCase();
-            let cards = document.getElementsByClassName("user-card");
-            for (let i = 0; i < cards.length; i++) {
-                let text = cards[i].textContent.toLowerCase();
-                cards[i].style.display = text.includes(input) ? "" : "none";
-            }
+            const input = document.getElementById("search").value.toLowerCase();
+            const cards = document.querySelectorAll(".user-card");
+            
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(input) ? "flex" : "none";
+            });
         }
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                const message = "{{ messages[0][1] }}";
                 const toast = document.getElementById("toast-notification");
-                toast.textContent = message;
-                toast.style.backgroundColor = "{{ 'green' if messages[0][0] == 'success' else '#f44336' }}";
+                toast.textContent = "{{ messages[0][1] }}";
+                toast.style.backgroundColor = "{{ 'var(--cor-primaria)' if messages[0][0] == 'success' else '#ff4d4d' }}";
                 toast.classList.add("show");
                 setTimeout(() => toast.classList.remove("show"), 4000);
             {% endif %}
