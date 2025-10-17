@@ -1,112 +1,74 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil do Usuário</title>
-    <link rel="stylesheet" href="/TelaDeUsuario/estilo.css">
-    <style>
-        .usuarioBoxeInformacoes {
-            background: var(--cor-form);
-            padding: 32px;
-            border-radius: 18px;
-            box-shadow: var(--sombra);
-            max-width: 350px;
-            width: 100%;
-            margin: 20px auto;
-            text-align: center;
-        }
-        #imagem0111 img {
-            max-width: 100px;
-            border-radius: 50%;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: var(--cor-form);
-            padding: 20px;
-            border-radius: 18px;
-            text-align: center;
-            position: relative;
-        }
-        .close-button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 20px;
-            border: none;
-            background: none;
-            color: var(--cor-texto);
-            cursor: pointer;
-        }
-        .toast { /* Mantém o toast do estilo.css */ }
-    </style>
+    <title>Cortar Imagem como no WhatsApp</title>
+    <!-- CSS do Cropper.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+    <!-- CSS personalizado -->
+    <link rel="stylesheet" href="stylesTest.css">
+    <link rel="icon" href="imagens/iconeUser.png">
+
+    
+    <!-- wallpaper do usuarios -->
+    <div class="Wallpaper">
+   <img class="imagemWallpaper"  src="imagens/hM94BRC.jpeg" alt="Wallpaper de fundo">
+    </div>
 </head>
 <body>
-    <div class="usuarioBoxeInformacoes">
-        <div class="usuarioBoxeInfoSup">
-            <div id="imagem0111">
-                <img src="{{ url_for('static', filename='iconeUser.png') }}" alt="Foto do usuário" id="preview">
+    <!-- ===== Tela principal ===== -->
+    <div id="mainScreen">
+        <!-- Container para perfil e botão de edição -->
+        <div id="profileContainer">
+            <div id="profileInfo">
+                <!-- Imagem de perfil -->
+                <div id="perfilImagemGeralCaixa">
+                    <img id="preview" src="imagens/user-icon-placeholder.png" alt="Prévia da imagem cortada">
+                </div>
+                <p id="nomeUsuario" >Nome de usuário</p>
             </div>
-            <button id="openModalButton">Editar Foto</button>
+            <button id="openModalButton">editar perfil</button>
         </div>
-        <p>Nome: {{ usuario.nome }}</p>
-        <p>Email: {{ usuario.email }}</p>
-        <p>Cidade: {{ usuario.cidade }}</p>
-        <p>Posição: {{ usuario.posicao }}</p>
-        <p>Data de Nascimento: {{ usuario.nascimento | format_date }}</p>
-        <p>Número: {{ usuario.numero }}</p>
-        <a href="{{ url_for('pagina_inicial') }}">Voltar para a Tela Inicial</a>
-    </div>
 
-    <div class="modal" id="modal">
+    </div>      
+    
+     
+    <!-- ===== Modal de corte de imagem ===== -->
+    <div id="cropModal" class="modal">
         <div class="modal-content">
-            <button class="close-button" id="closeModalButton">×</button>
-            <h2>Upload de Imagem</h2>
-            <input type="file" accept="image/*" id="fileInput">
-            <button class="cortarImagem">Cortar Imagem</button>
+            <button id="closeModalButton" class="close-button">Salvar</button>
+            <h2>Cortar Imagem</h2>
+            <input type="file" id="imageInput" accept="image/*">
+            <img id="image" src="" alt="Imagem para cortar">
+            <button id="cropButton" style="display: none;">Cortar Imagem</button>
         </div>
     </div>
 
-    <div id="toast-notification" class="toast"></div>
+    <!-- ===== Botão flutuante de home ===== -->
+    <div class="floating-button-container">
+        <div class="floating-button-bar"></div>
+        <a id="linkTela" href="../TelaLoading/Telaloading.html">
+            <button id="adicionarUsuarioBtn" class="floating-button">
+                <img src="imagens/bolaLogo.png" alt="Ir para tela de loading">
+            </button>
+        </a>
+    </div>
+    
+<!-- publicações usuario -->
+<div class="BoxePublicacoes" >      
+    <h1>publicações do Usuário</h1>
+    <div id="imagemPublicaçãoUsuario"  >
+        <img class="publicacaoImagem" src="imagens/WallpaperTest.jpg" alt="">
+    </div>
+    
 
-    <script>
-        const openModalButton = document.getElementById('openModalButton');
-        const closeModalButton = document.getElementById('closeModalButton');
-        const modal = document.getElementById('modal');
-        const fileInput = document.getElementById('fileInput');
-        const preview = document.getElementById('preview');
 
-        openModalButton.addEventListener('click', () => modal.style.display = 'flex');
-        closeModalButton.addEventListener('click', () => modal.style.display = 'none');
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => preview.src = e.target.result;
-                reader.readAsDataURL(file);
-            }
-        });
+</div>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                const message = "{{ messages[0][1] }}";
-                const toast = document.getElementById("toast-notification");
-                toast.textContent = message;
-                toast.style.backgroundColor = "{{ 'green' if messages[0][0] == 'success' else '#f44336' }}";
-                toast.classList.add("show");
-                setTimeout(() => toast.classList.remove("show"), 4000);
-            {% endif %}
-        {% endwith %}
-    </script>
+
+    <!-- ===== Scripts ===== -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

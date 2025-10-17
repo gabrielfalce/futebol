@@ -1,41 +1,59 @@
 :root {
-    --cor-primaria: #25d366;
+    --cor-primaria: #2BBF90; /* Unificado com o cadastro */
     --cor-secundaria: #128c7e;
     --cor-fundo: #1E1E1E;
     --cor-texto: #fff;
     --cor-borda: rgba(0, 0, 0, 0.1);
+    
+
 }
 
 /* variaveis globais */
 
 #mainScreen {
-    text-align: flex-end;
+    position: relative; /* Contexto para elementos filhos se necessário */
     border-radius: 12px;
-    padding: 160px 20px;
-    box-shadow: 0 2px 16px rgba(254, 74, 74, 0.06);
+    /* A margem superior empurra o conteúdo para baixo do wallpaper */
+    margin-top: 180px; 
+    z-index: 1; /* Garante que fique acima do wallpaper */
+    display: flex;
+    justify-content: center; /* Centraliza o profileContainer */
+    width: 100%;
 }
 
 
 
 body {
+    min-height: 100vh;
     font-family: Arial, sans-serif;
-    background: linear-gradient(to bottom, var(--cor-primaria), var(--cor-fundo));
+    background-color: var(--cor-fundo);
     margin: 0;
     padding: 0;
     color: var(--cor-texto);
+    overflow: scroll;
 }
 
-.Wallpaper {    
-    position: fixed;
+.Wallpaper {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    /* Coloca a imagem atrás de outros conteúdos */
-    overflow: hidden;
-    
+    height: 250px; /* Altura fixa para o wallpaper */
+    z-index: -1; /* Coloca a imagem atrás de outros conteúdos */
+    overflow: hidden; /* Garante que a imagem não ultrapasse a altura */
 }
+
+.imagemWallpaper{
+    margin-top: 0;
+    width: 100%;
+    height: 100%; /* Ocupa 100% da altura do container .Wallpaper */
+    object-fit: cover;
+    overflow: hidden;
+
+}
+
 
 
 /* modal configurações  */
@@ -47,7 +65,7 @@ body {
     z-index: 1000;
     left: 0;
     top: 0;
-    right: 0;
+    right: 0px;
     bottom: 0;
     background: rgba(8, 4, 4, 0.7);
     justify-content: center;
@@ -66,24 +84,18 @@ body {
 
 /* abrir modal  */
 #openModalButton {
-    /* position: fixed; */
-    /* Corrigido: adicionado para que top/right funcionem */
-    top: 45%;
-    right: 20%;
+    margin-top: -75px;
+    margin-left: 2090px;
+    padding: 5px 15px;
     background: #129542;
     color: #fff;
     border: none;
-    padding: 10px 15px;
-    /* Aumentado para melhor usabilidade */
-    border-radius: 60px;
+    border-radius: 20px;
     font-size: 16px;
+    white-space: nowrap; /* Garante que "editar perfil" fique na mesma linha */
+    align-self: flex-end; /* Alinha o botão à direita da foto */
     cursor: pointer;
     transition: background 0.2s;
-    z-index: 10;
-    display: inline-flex;
-    /* Corrigido: flex para centralizar conteúdo se necessário */
-    align-items: center;
-    justify-content: center;
 }
 
 #openModalButton:hover {
@@ -92,7 +104,7 @@ body {
 }
 
 #openModalButton:focus {
-    transform: scale(0.95);
+    transform: scale(0.98);
     outline: none;
 }
 
@@ -107,17 +119,13 @@ body {
     border: none;
     font-size: 24px;
     cursor: pointer;
-    color: var(--cor-texto);
+    color: var(--cor-primaria);
     transition: color 0.2s, background 0.2s;
     padding: 4px 8px;
-    border-radius: 4px;
-    background-color: #0000001f;
+    border-radius: 40px;
+    background-color: #00000081;
 }
 
-/* #closeModalButton{
-color: rebeccapurple);
-background-color: rgba(68, 78, 66, 0.438);
-} */
 
 #closeModalButton:hover {
     color: var(--cor-primaria);
@@ -152,14 +160,48 @@ input[type="file"]::-webkit-file-upload-button:hover {
     background: var(--cor-secundaria);
 }
 
-image {
+#image {
+    position: relative;
+    display: none;
+    max-width: 10%;
+    /* Corrigido: 1000% era um erro grave */
+    max-height: 10%;
+    /* Ajustado para preview razoável; override em media query se necessário */
+    margin: 18px auto;
+    padding: 10px;
+}
+
+img {
+    position: relative;
     display: block;
     max-width: 100%;
     /* Corrigido: 1000% era um erro grave */
     max-height: 300px;
     /* Ajustado para preview razoável; override em media query se necessário */
     margin: 18px auto;
-    position: relative;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+}
+
+#nomeUser {
+    text-align: center;
+    font-size: 18px;
+    margin-top: 10px;
+    color: var(--cor-texto);
+    font-weight: bold;
+}
+
+    /* foto perfil do usuario  */
+
+
+#preview {
+    display: center;
+    max-width: 100%;
+    height: 100%;
+    object-fit: cover; /* Garante que a imagem preencha o círculo */
+    margin: 0; /* Remove margens para controle total */
+    position: static; /* Simplificado */
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     background: #ffffff;
@@ -234,99 +276,141 @@ image {
 
 /* configurações do preview da imagem do perfil */
 
-#imagem0111 {
+#perfilImagemGeralCaixa {
     display: flex;
     justify-content: center;
     align-items: center;
     width: 140px;
     height: 140px;
-    background: #ffffff;
+    background: #ccc; /* Cor de fundo para o caso de não haver imagem */
     border-radius: 50%;
-    margin: 0 auto 16px auto;
+    margin: 0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     overflow: hidden;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+    border: 4px solid var(--cor-fundo); /* Borda para destacar da imagem de fundo */
 }
 
-/* boxer de informações do usuario */
+/* Novo container para perfil e botão */
+#profileContainer {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
-.usuarioBoxeInformacoes {
+/* Ajuste para telas de desktop */
+@media (min-width: 769px) {
+    #profileContainer {
+        margin-left: -1000px; /* Desloca o container 1000px para a esquerda */
+    }
+    
+    /* Garante que a imagem e o nome fiquem centralizados na vertical em desktop */
+    #profileInfo {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px; /* Espaço entre a imagem e o nome */
+    }
+
+}
+
+/* setor de adaptabilidade da pagina */
+
+
+@media (max-width: 768px) {
+    
+    #mainScreen {
+        margin-top: 200px; /* Ajusta a margem para que a foto sobreponha o wallpaper */
+        justify-content: flex-start; /* Alinha o container do perfil à esquerda */
+        padding: 0 15px;
+    }
+
+    #profileContainer {
+        flex-direction: row; /* Itens lado a lado */
+        width: 100%;
+        align-items: flex-end; /* Alinha itens na base */
+    }
+
+    #perfilImagemGeralCaixa {
+        width: 100px; /* Reduzido para ser menor em mobile */
+        height: 100px; /* Reduzido para ser menor em mobile */
+        margin: 0; /* Remove margem para alinhamento preciso */
+    }
+
+    #preview {
+        margin-left: 3px; /* Distância de 3px da borda esquerda do container */
+    }
+
+    #openModalButton {
+        position: absolute; /* Posicionamento absoluto em relação à tela */
+        right: 20px; /* 20px de distância da direita */
+        bottom: 60px; /* Alinhado à base da imagem de perfil */
+        margin: 0; /* Remove margens para controle total */
+    }
+
+    .modal-content {
+        padding: 12px 2vw;
+        width: 95vw;
+        font-size: 15px;
+    }
+
+    .BoxePublicacoes {
+        /* Ajusta as margens laterais para 5px em telas mobile */
+        margin: 20px 50px;
+    }
+
+    /* Novo container para imagem e nome */
+    #profileInfo {
+        display: flex;
+        flex-direction: column; /* Empilha a imagem e o nome */
+        align-items: center; /* Centraliza horizontalmente */
+        gap: 5px; /* Espaço entre a imagem e o nome */
+    }
+    
+    
+}
+
+
+/* usuario publicações */
+
+.BoxePublicacoes   {
+    background: var(--cor-fundo);
+    border: 2px solid var(--cor-borda);
+    border-radius: 12px;
+    padding: 10px  20px;
+    max-width: 400px;
+    margin: 20px auto;
+    box-shadow: 0 4px 2px rgb(72, 187, 5);
+    }
+
+
+.BoxePublicacoes H1{
+    color: var(--cor-texto);    
+    font-size: 15px;
+
+}
+
+
+/* informações usuario */
+
+#nomeUsuario {
+    font-size: 12px;
+    margin-top: 5px;
+    color: var(--cor-texto);
+    font-weight: bold;
+
+
+
+}
+
+
+
+.InformaçõesUsuario {
+    display: none;
     background: var(--cor-fundo);
     border: 2px solid var(--cor-borda);
     border-radius: 12px;
     padding: 20px;
-    max-width: 400px;
-    margin: 20px auto;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-/* setor de adaptabilidade da pagina */
-
-
-@media (max-width: 720px) {
-    .modal-content {
-        padding: 12px 2vw;
-        width: 98vw;
-        /* Corrigido: width ao invés de max-width para full em mobile */
-        font-size: 15px;
-    }
-
-    .close-button {
-        font-size: 22px;
-        padding: 6px 10px;
-    }
-
-    #imagem0111 {
-        width: 115px;
-        height: 115px;
-    }
-
-    #image, #preview {
-        max-height: 200px;
-        /* Ajustado para mobile, mas maior que 90px para usabilidade */
-    }
-
-    #openModalButton {
-        top: -30%;
-        /* Ajustado para mobile */
-        right: 2%;
-        /* Ajustado para mobile */
-        padding: 8px 12px;
-    }
-
-    .Wallpaper {
-       
-        width: 100%;
-    }
-
-    #mainScreen {
-        margin-right: 200px;
-    }
-
-    #imagem0111 {
-        left: 50%;
-        transform: translateX(-50%);
-    }
-
-    .usuarioBoxeInformacoes {
-        padding: 10px;
-    }
-}
-
-
-/* teste */
-
-.usuarioBoxeInfoSup{
-
-
-display: flex;
-
-top: 0;
-    /* background: var(--cor-fundo); */
-    border: 2px solid var(--cor-borda);
-    border-radius: 12px;
-    /* padding: 220px; */
     max-width: 400px;
     margin: 20px auto;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
