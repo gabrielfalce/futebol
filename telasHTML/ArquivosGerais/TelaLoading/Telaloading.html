@@ -21,12 +21,16 @@
         }
     </style>
 </head>
-<body>
+<body data-tempo-loading="5000">
     <img src="/TelaLoading/logoGeral.png" alt="Bola Verde">
     <h1 class="titulo">Carregando</h1>
     <div class="loader"></div>
     <div id="toast-notification" class="toast"></div>
 
+    <!-- Script externo para redirecionamento -->
+    <script src="/static/TelaLoading/script.js"></script>
+
+    <!-- Script inline para mensagens flash -->
     <script>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
