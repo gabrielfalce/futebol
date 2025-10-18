@@ -1,62 +1,124 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cortar Imagem como no WhatsApp</title>
-    <!-- CSS do Cropper.js -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
-    <!-- CSS personalizado (ajustado para rota estática) -->
-    <link rel="stylesheet" href="/TelaDeUsuario/stylesTest.css">
-    <link rel="icon" href="/TelaDeUsuario/imagens/iconeUser.png">
-</head>
-<body>
-    <!-- ===== Tela principal ===== -->
-    <div id="mainScreen">
-        <!-- Container para perfil e botão de edição -->
-        <div id="profileContainer">
-            <div id="profileInfo">
-                <!-- Imagem de perfil -->
-                <div id="perfilImagemGeralCaixa">
-                    <img id="preview" src="/TelaDeUsuario/imagens/user-icon-placeholder.png" alt="Prévia da imagem cortada">
-                </div>
-                <p id="nomeUsuario">Nome de usuário</p>
-            </div>
-            <button id="openModalButton">editar perfil</button>
-        </div>
-    </div>      
+   <html lang="pt-BR">
+   <head>
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Cortar Imagem como no WhatsApp</title>
+       <!-- CSS do Cropper.js -->
+       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+       <!-- CSS personalizado -->
+       <link rel="stylesheet" href="/TelaDeUsuario/stylesTest.css">
+       <link rel="icon" href="/TelaDeUsuario/imagens/iconeUser.png">
+   </head>
+   <body>
+       <!-- ===== Tela principal ===== -->
+       <div id="mainScreen">
+           <!-- Container para perfil e botão de edição -->
+           <div id="profileContainer">
+               <div id="profileInfo">
+                   <!-- Imagem de perfil -->
+                   <div id="perfilImagemGeralCaixa">
+                       <img id="preview" src="/TelaDeUsuario/imagens/user-icon-placeholder.png" alt="Prévia da imagem cortada">
+                   </div>
+                   <p id="nomeUsuario">Nome de usuário</p>
+               </div>
+               <button id="openModalButton">editar perfil</button>
+           </div>
+       </div>      
 
-    <!-- ===== Modal de corte de imagem ===== -->
-    <div id="cropModal" class="modal">
-        <div class="modal-content">
-            <button id="closeModalButton" class="close-button">Salvar</button>
-            <h2>Cortar Imagem</h2>
-            <input type="file" id="imageInput" accept="image/*">
-            <img id="image" src="" alt="Imagem para cortar">
-            <button id="cropButton" style="display: none;">Cortar Imagem</button>
-        </div>
-    </div>
+       <!-- ===== Modal de corte de imagem ===== -->
+       <div id="cropModal" class="modal">
+           <div class="modal-content">
+               <button id="closeModalButton" class="close-button">Salvar</button>
+               <h2>Cortar Imagem</h2>
+               <input type="file" id="imageInput" accept="image/*">
+               <img id="image" src="" alt="Imagem para cortar">
+               <button id="cropButton">Cortar Imagem</button>
+           </div>
+       </div>
 
-    <!-- ===== Botão flutuante de home ===== -->
-    <div class="floating-button-container">
-        <div class="floating-button-bar"></div>
-        <a id="linkTela" href="{{ url_for('tela_de_loading') }}">
-            <button id="adicionarUsuarioBtn" class="floating-button">
-                <img src="/TelaDeUsuario/imagens/bolaLogo.png" alt="Ir para tela de loading">
-            </button>
-        </a>
-    </div>
-    
-    <!-- publicações usuario -->
-    <div class="BoxePublicacoes">      
-        <h1>publicações do Usuário</h1>
-        <div id="imagemPublicaçãoUsuario">
-            <img class="publicacaoImagem" src="/TelaDeUsuario/imagens/WallpaperTest.jpg" alt="">
-        </div>
-    </div>
+       <!-- ===== Botão flutuante de home ===== -->
+       <div class="floating-button-container">
+           <div class="floating-button-bar"></div>
+           <a id="linkTela" href="{{ url_for('tela_de_loading') }}">
+               <button id="adicionarUsuarioBtn" class="floating-button">
+                   <img src="/TelaDeUsuario/imagens/bolaLogo.png" alt="Ir para tela de loading">
+               </button>
+           </a>
+       </div>
+       
+       <!-- publicações usuario -->
+       <div class="BoxePublicacoes">      
+           <h1>publicações do Usuário</h1>
+           <div id="imagemPublicaçãoUsuario">
+               <img class="publicacaoImagem" src="/TelaDeUsuario/imagens/WallpaperTest.jpg" alt="">
+           </div>
+       </div>
 
-    <!-- ===== Scripts ===== -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-    <script src="/TelaDeUsuario/script.js"></script>
-</body>
-</html>
+       <!-- ===== Scripts ===== -->
+       <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+       <script>
+           let cropper;
+
+           // Abrir modal e inicializar Cropper.js
+           document.getElementById('openModalButton').addEventListener('click', () => {
+               document.getElementById('cropModal').style.display = 'block';
+           });
+
+           // Fechar modal
+           document.getElementById('closeModalButton').addEventListener('click', () => {
+               if (cropper) {
+                   const canvas = cropper.getCroppedCanvas();
+                   if (canvas) {
+                       canvas.toBlob(blob => {
+                           uploadImage(blob);
+                       }, 'image/jpeg');
+                   }
+                   document.getElementById('cropModal').style.display = 'none';
+               }
+           });
+
+           // Lidar com a seleção de imagem
+           document.getElementById('imageInput').addEventListener('change', (e) => {
+               const file = e.target.files[0];
+               if (file) {
+                   const reader = new FileReader();
+                   reader.onload = (event) => {
+                       const image = document.getElementById('image');
+                       image.src = event.target.result;
+                       if (cropper) cropper.destroy();
+                       cropper = new Cropper(image, {
+                           aspectRatio: 1, // Quadrado, como no WhatsApp
+                           viewMode: 1,
+                       });
+                   };
+                   reader.readAsDataURL(file);
+               }
+           });
+
+           // Função para upload da imagem (placeholder - a ser integrado com Supabase)
+           async function uploadImage(blob) {
+               const formData = new FormData();
+               formData.append('file', blob, `profile_${Date.now()}.jpg`);
+               formData.append('user_email', '{{ session["user_email"] if session["user_email"] else "" }}');
+
+               try {
+                   const response = await fetch('/upload_image', {
+                       method: 'POST',
+                       body: formData,
+                   });
+                   const data = await response.json();
+                   if (data.success) {
+                       document.getElementById('preview').src = data.image_url;
+                       alert('Imagem salva com sucesso!');
+                   } else {
+                       alert('Erro ao salvar a imagem.');
+                   }
+               } catch (error) {
+                   console.error('Erro no upload:', error);
+                   alert('Erro ao conectar ao servidor.');
+               }
+           }
+       </script>
+   </body>
+   </html>
