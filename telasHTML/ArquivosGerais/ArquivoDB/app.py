@@ -7,7 +7,7 @@ from jinja2.exceptions import TemplateNotFound
 
 # --- Configuração de Caminhos e Flask ---
 app_dir = os.path.dirname(os.path.abspath(__file__))
-template_root = os.path.abspath(os.path.join(app_dir, '..'))  # Correção: Ajustado para apontar diretamente para ArquivosGerais
+template_root = os.path.abspath(os.path.join(app_dir, '..'))  # Ajustado para apontar diretamente para ArquivosGerais
 print(f"Template root set to: {template_root}")  # Depuração
 
 app = Flask(
