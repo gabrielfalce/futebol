@@ -6,15 +6,9 @@
     <title>Cortar Imagem como no WhatsApp</title>
     <!-- CSS do Cropper.js -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
-    <!-- CSS personalizado -->
-    <link rel="stylesheet" href="stylesTest.css">
-    <link rel="icon" href="imagens/iconeUser.png">
-
-    
-    <!-- wallpaper do usuarios -->
-    <div class="Wallpaper">
-   <img class="imagemWallpaper"  src="imagens/hM94BRC.jpeg" alt="Wallpaper de fundo">
-    </div>
+    <!-- CSS personalizado (ajustado para rota estática) -->
+    <link rel="stylesheet" href="/TelaDeUsuario/stylesTest.css">
+    <link rel="icon" href="/TelaDeUsuario/imagens/iconeUser.png">
 </head>
 <body>
     <!-- ===== Tela principal ===== -->
@@ -24,16 +18,14 @@
             <div id="profileInfo">
                 <!-- Imagem de perfil -->
                 <div id="perfilImagemGeralCaixa">
-                    <img id="preview" src="imagens/user-icon-placeholder.png" alt="Prévia da imagem cortada">
+                    <img id="preview" src="/TelaDeUsuario/imagens/user-icon-placeholder.png" alt="Prévia da imagem cortada">
                 </div>
-                <p id="nomeUsuario" >Nome de usuário</p>
+                <p id="nomeUsuario">Nome de usuário</p>
             </div>
             <button id="openModalButton">editar perfil</button>
         </div>
-
     </div>      
-    
-     
+
     <!-- ===== Modal de corte de imagem ===== -->
     <div id="cropModal" class="modal">
         <div class="modal-content">
@@ -48,27 +40,23 @@
     <!-- ===== Botão flutuante de home ===== -->
     <div class="floating-button-container">
         <div class="floating-button-bar"></div>
-        <a id="linkTela" href="../TelaLoading/Telaloading.html">
+        <a id="linkTela" href="{{ url_for('tela_de_loading') }}">
             <button id="adicionarUsuarioBtn" class="floating-button">
-                <img src="imagens/bolaLogo.png" alt="Ir para tela de loading">
+                <img src="/TelaDeUsuario/imagens/bolaLogo.png" alt="Ir para tela de loading">
             </button>
         </a>
     </div>
     
-<!-- publicações usuario -->
-<div class="BoxePublicacoes" >      
-    <h1>publicações do Usuário</h1>
-    <div id="imagemPublicaçãoUsuario"  >
-        <img class="publicacaoImagem" src="imagens/WallpaperTest.jpg" alt="">
+    <!-- publicações usuario -->
+    <div class="BoxePublicacoes">      
+        <h1>publicações do Usuário</h1>
+        <div id="imagemPublicaçãoUsuario">
+            <img class="publicacaoImagem" src="/TelaDeUsuario/imagens/WallpaperTest.jpg" alt="">
+        </div>
     </div>
-    
-
-
-</div>
-
 
     <!-- ===== Scripts ===== -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-    <script src="script.js"></script>
+    <script src="/TelaDeUsuario/script.js"></script>
 </body>
 </html>
