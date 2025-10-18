@@ -109,3 +109,12 @@ def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
     except Exception as e:
         print(f"--- ERRO DURANTE A BUSCA DE USUÁRIO POR EMAIL ---: {e}")
         return None
+
+   def update_user_profile_image(email, image_url):
+       try:
+           response = supabase.table('usuarios').update({'profile_image_url': image_url}).eq('email', email).execute()
+           if response.data:
+               return True, 'Imagem de perfil atualizada com sucesso.'
+           return False, 'Erro ao atualizar a imagem de perfil.'
+       except Exception as e:
+           return False, f'Erro no banco de dados: {str(e)}'
