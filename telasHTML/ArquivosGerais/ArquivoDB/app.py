@@ -17,32 +17,27 @@ app = Flask(
     static_url_path='/static'
 )
 app.secret_key = 'uma_chave_muito_secreta_e_dificil_de_adivinhar'
-app.config['SKIP_LOGIN_CHECK'] = False  # Configuração para desativar verificação de login (mude para True para ir direto para /inicio)
+app.config['SKIP_LOGIN_CHECK'] = False  # Configuração para desativar verificação de login
 
 # --- Rotas para Arquivos Estáticos em Outras Pastas ---
 @app.route('/Cadastrar_templates/<path:filename>')
 def serve_cadastrar_static(filename):
-    print(f"Serving static file from Cadastrar_templates: {filename}")
     return send_from_directory(os.path.join(template_root, 'Cadastrar_templates'), filename)
 
 @app.route('/telaDeLogin/<path:filename>')
 def serve_login_static(filename):
-    print(f"Serving static file from telaDeLogin: {filename}")
     return send_from_directory(os.path.join(template_root, 'telaDeLogin'), filename)
 
 @app.route('/TelaInicial/<path:filename>')
 def serve_inicial_static(filename):
-    print(f"Serving static file from TelaInicial: {filename}")
     return send_from_directory(os.path.join(template_root, 'TelaInicial'), filename)
 
 @app.route('/TelaLoading/<path:filename>')
 def serve_loading_static(filename):
-    print(f"Serving static file from TelaLoading: {filename}")
     return send_from_directory(os.path.join(template_root, 'TelaLoading'), filename)
 
 @app.route('/TelaDeUsuario/<path:filename>')
 def serve_usuario_static(filename):
-    print(f"Serving static file from TelaDeUsuario: {filename}")
     return send_from_directory(os.path.join(template_root, 'TelaDeUsuario'), filename)
 
 # --- Filtro para formatar data ---
@@ -58,26 +53,20 @@ def format_date(date_str):
 
 @app.route("/")
 def index():
-    print(f"Acessando rota raiz, session: {session}")
     if not app.config['SKIP_LOGIN_CHECK']:
         if 'user_email' not in session:
-            print("User not logged in, redirecting to /login")
             flash('Você precisa fazer login para aceder a esta página.', 'warning')
             return redirect(url_for('login'))
-    print(f"Redirecting to /inicio (SKIP_LOGIN_CHECK: {app.config['SKIP_LOGIN_CHECK']})")
-    return redirect(url_for('pagina_inicial'))  # Redireciona para /inicio
+    return redirect(url_for('pagina_inicial'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    print(f"Accessing /login, method: {request.method}, session: {session}")
     if 'user_email' in session:
-        print(f"User already logged in as {session['user_email']}, redirecting to /inicio")
-        return redirect(url_for('pagina_inicial'))  # Se já logado, vai para /inicio
+        return redirect(url_for('pagina_inicial'))
     
     if request.method == 'POST':
         email = request.form.get('email')
         senha = request.form.get('senha')
-        print(f"Login attempt with email: {email}")
         
         if not email or not senha:
             flash('Email e senha são obrigatórios.', 'danger')
@@ -87,120 +76,96 @@ def login():
         
         if user_data:
             session['user_email'] = email
-            print(f"Login successful for {email}, session: {session}")
             flash('Login bem-sucedido!', 'success')
             return redirect(url_for('tela_de_loading'))
         else:
-            print(f"Login failed for {email}")
             flash('Email ou senha incorretos. Tente novamente.', 'danger')
             return render_template('telaDeLogin/telaLogin.html')
             
     try:
-        print("Rendering telaDeLogin/telaLogin.html")
-        return render_template('telaDeLogin/telaLogin.html')  # Renderiza o template para GET
+        return render_template('telaDeLogin/telaLogin.html')
     except TemplateNotFound:
-        print(f"Template 'telaDeLogin/telaLogin.html' not found in {app.template_folder}")
         flash('Erro interno: Template de login não encontrado.', 'danger')
-        return "<h1>Erro: Template de login não encontrado. Verifique a pasta telaDeLogin.</h1>", 500
+        return "<h1>Erro: Template de login não encontrado.</h1>", 500
 
 @app.route("/inicio")
 def pagina_inicial():
-    print(f"Accessing /inicio, session: {session}")
     if not app.config['SKIP_LOGIN_CHECK'] and 'user_email' not in session:
-        print("User not logged in, redirecting to /login")
         flash('Você precisa fazer login para aceder a esta página.', 'warning')
         return redirect(url_for('login'))
         
     lista_de_usuarios = get_all_users()
-    print(f"Rendering TelaInicial/TelaInicial.html with users: {len(lista_de_usuarios)}")
     try:
         return render_template("TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
     except TemplateNotFound:
-        print(f"Template 'TelaInicial/TelaInicial.html' not found in {app.template_folder}")
         flash('Erro interno: Template da tela inicial não encontrado.', 'danger')
-        return "<h1>Erro: Template da tela inicial não encontrado. Verifique a pasta TelaInicial.</h1>", 500
+        return "<h1>Erro: Template da tela inicial não encontrado.</h1>", 500
 
 @app.route("/usuario")
 def pagina_usuario():
-    print(f"Accessing /usuario, session: {session}")
     if not app.config['SKIP_LOGIN_CHECK'] and 'user_email' not in session:
-        print("User not logged in, redirecting to /login")
         flash('Você precisa fazer login para aceder a esta página.', 'warning')
         return redirect(url_for('login'))
         
     user_data = get_user_by_email(session['user_email'])
     if user_data:
-        print(f"Rendering TelaUser.html for user: {user_data['email']}")
         return render_template("TelaDeUsuario/TelaUser.html", usuario=user_data)
     else:
-        print("User data not found")
         flash('Erro: Dados do usuário não encontrados.', 'danger')
         return redirect(url_for('index'))
 
 @app.route("/loading")
 def tela_de_loading():
-    print(f"Accessing /loading, session: {session}")
     if not app.config['SKIP_LOGIN_CHECK'] and 'user_email' not in session:
-        print("User not logged in, redirecting to /login")
         return redirect(url_for('login'))
     return render_template("TelaLoading/Telaloading.html")
 
 @app.route("/cadastro")
 def cadastro():
-    print(f"Accessing /cadastro, session: {session}")
     return render_template("Cadastrar_templates/cadastrar.html")
 
 @app.route("/cadastrar", methods=['POST'])
 def cadastrar():
-    print(f"Accessing /cadastrar, form data: {request.form}")
     nome = request.form.get("nome")
     email = request.form.get("email")
     senha_texto_puro = request.form.get("senha")
     cidade = request.form.get("cidade")
-    posicao = request.form.get("posicao") 
+    posicao = request.form.get("posicao")
     nascimento_str = request.form.get("nascimento")
     numero = request.form.get("numero")
 
     if not all([nome, email, senha_texto_puro, cidade, posicao, nascimento_str, numero]):
-        print("Missing required fields")
         flash("Erro no cadastro: Todos os campos são obrigatórios.", 'danger')
         return redirect(url_for('cadastro'))
         
-    # --- Validação e Conversão da Data de Nascimento ---
     try:
         data_obj = datetime.strptime(nascimento_str, '%d/%m/%Y')
         data_nascimento_iso = data_obj.strftime('%Y-%m-%d')
         if data_obj > datetime.now():
-            print("Invalid birth date: future date")
             flash("Erro: A data de nascimento não pode ser no futuro.", 'danger')
             return redirect(url_for('cadastro'))
     except ValueError:
-        print("Invalid birth date format")
-        flash("Erro: A data de nascimento deve ser no formato DD/MM/AAAA (ex: 15/09/2007).", 'danger')
+        flash("Erro: A data de nascimento deve ser no formato DD/MM/AAAA.", 'danger')
         return redirect(url_for('cadastro'))
 
-    # Hash da senha usando bcrypt
     senha_hash = bcrypt.hashpw(senha_texto_puro.encode('utf-8'), bcrypt.gensalt())
-
     sucesso, mensagem = inserir_usuario(
-        nome=nome, email=email, senha_hash=senha_hash, cidade=cidade, 
+        nome=nome, email=email, senha_hash=senha_hash, cidade=cidade,
         posicao=posicao, nascimento=data_nascimento_iso, numero=numero
     )
 
     if sucesso:
         session['user_email'] = email
-        print(f"Registration successful for {email}, session: {session}")
         flash(mensagem, 'success')
+        # Redireciona para /loading com um parâmetro para indicar sucesso
         return redirect(url_for('tela_de_loading'))
     else:
-        print(f"Registration failed: {mensagem}")
         flash(mensagem, 'danger')
-        return redirect(url_for('cadastro')) 
+        return redirect(url_for('cadastro'))
 
 @app.route("/api/usuarios", methods=['GET'])
 def buscar_usuarios():
     query = request.args.get('q', '').lower()
-    print(f"Searching users with query: {query}")
     usuarios = get_all_users()
     if query:
         usuarios = [u for u in usuarios if query in u['nome'].lower() or query in u['cidade'].lower()]
@@ -224,12 +189,10 @@ def debug_files():
 
 @app.route("/logout")
 def logout():
-    print(f"Logging out, session before: {session}")
     session.pop('user_email', None)
     flash('Você foi desconectado.', 'success')
-    print(f"Session after logout: {session}")
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 10000))  # Ajustado para a porta usada no Render
+    port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port, debug=True)
