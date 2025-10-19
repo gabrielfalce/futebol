@@ -40,10 +40,14 @@
     {% endfor %}
 </div>
 
- <div id="toast-notification" class="toast"></div>
-    <a href="{{ url_for('logout') }}" class="logout-link">Sair</a>
-    <a href="{{ url_for('pagina_usuario') }}" class="profile-link">Ver Perfil</a>
+<div id="toast-notification" class="toast"></div>
 
+<!-- ÁREA DE NAVEGAÇÃO -->
+<div class="navigation-links">
+    <a href="{{ url_for('pagina_feed') }}" class="nav-button feed-button">Ver Feed</a>
+    <a href="{{ url_for('pagina_usuario') }}" class="nav-button profile-button">Ver Perfil</a>
+    <a href="{{ url_for('logout') }}" class="nav-button logout-button">Sair</a>
+</div>
     <script>
         function searchUsers() {
             const input = document.getElementById("search").value.toLowerCase();

@@ -52,6 +52,13 @@ def serve_usuario_static(filename):
 def serve_chat_static(filename):
     return send_from_directory(os.path.join(template_root, 'TelaChat'), filename)
 
+@app.route('/feed')
+def pagina_feed():
+    if 'user_email' not in session:
+        return redirect(url_for('login'))
+    
+    return render_template('TelaFeed/feed.html')
+
 # --- FILTRO JINJA ---
 @app.template_filter('format_date')
 def format_date(date_str):

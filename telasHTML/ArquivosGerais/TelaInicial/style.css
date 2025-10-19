@@ -1,7 +1,7 @@
 /* =======================
    VARIÁVEIS CSS GLOBAIS
    ======================= */
-:root {
+   :root {
     --cor-primaria: #2BBF90;
     --cor-fundo: #1E1E1E;
     --cor-texto: #FFFFFF;
@@ -188,4 +188,43 @@ body {
     .logo-container img {
         height: 50px;
     }
+}
+
+/* =======================
+   LINKS DE NAVEGAÇÃO (NOVO)
+   ======================= */
+   .navigation-links {
+    display: flex;
+    justify-content: center;
+    gap: 15px; /* Espaço entre os botões */
+    margin-top: 40px;
+    padding: 0 20px;
+}
+
+.nav-button {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1rem;
+    text-align: center;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.nav-button:hover {
+    transform: scale(1.05);
+}
+
+/* Estilo específico para o botão do Feed */
+.feed-button {
+    background-color: var(--cor-primaria);
+    color: white;
+}
+
+/* Estilo para os outros botões */
+.profile-button, .logout-button {
+    background-color: var(--cor-card);
+    color: var(--cor-texto-card);
+    border: 1px solid var(--cor-borda);
 }
