@@ -5,6 +5,7 @@ import bcrypt
 from datetime import datetime
 from jinja2.exceptions import TemplateNotFound
 from supabase import create_client, Client
+from postgrest.exceptions import APIError # Importante para capturar erros específicos do Supabase
 
 # --- Configuração de Supabase ---
 url = os.environ.get("SUPABASE_URL")
@@ -12,20 +13,17 @@ key = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
 # --- Configuração de Caminhos e Flask ---
-# Define o diretório raiz do projeto para encontrar as pastas de templates e arquivos estáticos
 app_dir = os.path.dirname(os.path.abspath(__file__))
 template_root = os.path.abspath(os.path.join(app_dir, '..'))
 
 app = Flask(
     __name__,
     template_folder=template_root,
-    # Define uma pasta estática geral, mas as rotas abaixo são mais específicas
     static_folder=os.path.join(template_root, 'STATIC') 
 )
-# É crucial ter uma chave secreta para gerenciar sessões
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", 'uma_chave_muito_secreta_e_dificil_de_adivinhar')
 
-# --- Rotas para servir arquivos estáticos (CSS, JS, Imagens) de cada pasta ---
+# --- Rotas para servir arquivos estáticos (CSS, JS, Imagens) ---
 @app.route('/Cadastrar_templates/<path:filename>')
 def serve_cadastrar_static(filename):
     return send_from_directory(os.path.join(template_root, 'Cadastrar_templates'), filename)
@@ -61,7 +59,6 @@ def format_date(date_str):
 
 @app.route("/")
 def index():
-    # Se houver um usuário na sessão, redireciona para a página inicial, senão para o login
     if 'user_email' in session:
         return redirect(url_for('pagina_inicial'))
     return redirect(url_for('login'))
@@ -106,15 +103,13 @@ def pagina_usuario():
         flash('Você precisa fazer login para aceder a esta página.', 'warning')
         return redirect(url_for('login'))
         
-    # Busca os dados completos do usuário logado
     user_data = get_user_by_email(session['user_email'])
     
     if user_data:
-        # Passa o dicionário completo do usuário para o template
         return render_template("TelaDeUsuario/TelaUser.html", usuario=user_data)
     else:
         flash('Erro: Dados do usuário não encontrados. Por favor, faça login novamente.', 'danger')
-        session.pop('user_email', None) # Limpa a sessão corrompida
+        session.pop('user_email', None)
         return redirect(url_for('login'))
 
 @app.route("/loading")
@@ -171,16 +166,18 @@ def logout():
     flash('Você foi desconectado.', 'success')
     return redirect(url_for('login'))
 
-# --- Rota da API para Upload de Imagem ---
+# --- Rota da API para Upload de Imagem (VERSÃO ROBUSTA COM LOGS) ---
 
 @app.route('/upload_image', methods=['POST'])
 def upload_image():
     # 1. Segurança: Verificar se o usuário está logado
     if 'user_email' not in session:
+        print("--- FALHA DE AUTENTICAÇÃO EM /upload_image: Usuário não está na sessão.")
         return jsonify({'success': False, 'message': 'Usuário não autenticado'}), 401
 
-    # 2. Validação: Verificar se um arquivo foi enviado corretamente
+    # 2. Validação: Verificar se um arquivo foi enviado
     if 'file' not in request.files:
+        print("--- FALHA DE UPLOAD EM /upload_image: 'file' não encontrado no request.")
         return jsonify({'success': False, 'message': 'Nenhum arquivo enviado'}), 400
 
     file = request.files['file']
@@ -189,41 +186,52 @@ def upload_image():
 
     user_email = session['user_email']
     
-    # 3. Preparação do Arquivo: Gera um nome único para o arquivo no Storage
-    safe_email = user_email.replace('@', '_').replace('.', '_')
-    file_name = f"public/{safe_email}_{int(datetime.now().timestamp())}.jpg"
-
     try:
-        # 4. Upload para o Supabase Storage
+        # 3. Preparação do Arquivo
         file_content = file.read()
-        
-        # Faz o upload para o bucket 'profile_images'. 
-        # 'upsert=True' substituiria um arquivo com o mesmo nome, mas nosso nome é sempre único.
+        file.seek(0) 
+
+        safe_email = user_email.replace('@', '_').replace('.', '_')
+        file_name = f"public/{safe_email}_{int(datetime.now().timestamp())}.jpg"
+
+        print(f"--- INFO: Tentando upload do arquivo '{file_name}' para o bucket 'profile_images'.")
+
+        # 4. Upload para o Supabase Storage
         supabase.storage.from_('profile_images').upload(
             path=file_name,
             file=file_content,
             file_options={"content-type": file.content_type, "upsert": "false"}
         )
 
-        # 5. Obtenção da URL Pública da imagem recém-enviada
-        image_url = supabase.storage.from_('profile_images').get_public_url(file_name)
+        print(f"--- SUCESSO: Upload para o Storage bem-sucedido.")
 
-        # 6. Atualização do Banco de Dados com a nova URL
+        # 5. Obtenção da URL Pública
+        image_url = supabase.storage.from_('profile_images').get_public_url(file_name)
+        print(f"--- INFO: URL pública obtida: {image_url}")
+
+        # 6. Atualização do Banco de Dados
         sucesso, mensagem = update_user_profile_image(user_email, image_url)
         
         if not sucesso:
-            return jsonify({'success': False, 'message': mensagem}), 500
+            print(f"--- ERRO DB: Falha ao atualizar a URL no banco de dados. Mensagem: {mensagem}")
+            return jsonify({'success': False, 'message': f"Erro ao salvar no banco: {mensagem}"}), 500
 
+        print(f"--- SUCESSO FINAL: Imagem do usuário {user_email} atualizada.")
         # 7. Retorno de Sucesso para o Frontend
         return jsonify({'success': True, 'image_url': image_url})
 
+    except APIError as e:
+        # Captura especificamente erros da API do Supabase (como violação de RLS)
+        print(f"--- ERRO DE API SUPABASE EM /upload_image ---: Status: {e.status_code}, Mensagem: {e.message}")
+        return jsonify({'success': False, 'message': f'Erro de permissão do servidor: {e.message}'}), e.status_code
+
     except Exception as e:
-        print(f"Erro crítico no upload da imagem: {str(e)}")
-        return jsonify({'success': False, 'message': f'Erro interno do servidor: {str(e)}'}), 500
+        # Captura todas as outras exceções
+        print(f"--- ERRO CRÍTICO EM /upload_image ---: Tipo: {type(e).__name__}, Erro: {str(e)}")
+        return jsonify({'success': False, 'message': f'Erro interno do servidor ao processar a imagem.'}), 500
 
 # --- Execução da Aplicação ---
 if __name__ == '__main__':
-    # Usa a porta definida pelo Render ou 10000 como padrão para desenvolvimento
     port = int(os.environ.get("PORT", 10000))
-    # 'debug=True' é ótimo para desenvolver, mas considere desativá-lo em produção final
     app.run(host='0.0.0.0', port=port, debug=True)
+
