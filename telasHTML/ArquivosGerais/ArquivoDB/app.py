@@ -219,6 +219,55 @@ def get_historico_chat(destinatario_id):
     
     return jsonify(mensagens)
 
+# --- ROTAS DE RECUPERAÇÃO DE SENHA ---
+
+@app.route('/esqueci-senha', methods=['GET', 'POST'] )
+def esqueci_senha():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        if not email:
+            flash('Por favor, insira um e-mail.', 'danger')
+            return redirect(url_for('esqueci_senha'))
+        
+        try:
+            # Esta é a função mágica do Supabase
+            supabase.auth.reset_password_for_email(email)
+            flash('Se o e-mail estiver cadastrado, um link para redefinição de senha foi enviado.', 'success')
+        except Exception as e:
+            # Não informamos o erro exato para não vazar se um e-mail existe ou não
+            logging.error(f"Tentativa de reset de senha para {email} falhou: {e}")
+            flash('Se o e-mail estiver cadastrado, um link para redefinição de senha foi enviado.', 'info')
+
+        return redirect(url_for('login'))
+        
+    return render_template('RecuperarSenha/esqueci_senha.html')
+
+@app.route('/redefinir-senha', methods=['GET', 'POST'])
+def redefinir_senha():
+    if request.method == 'POST':
+        nova_senha = request.form.get('nova_senha')
+        if not nova_senha or len(nova_senha) < 6:
+            flash('A senha precisa ter no mínimo 6 caracteres.', 'danger')
+            return render_template('RecuperarSenha/redefinir_senha.html')
+
+        try:
+            # O Supabase usa o token da URL para identificar o usuário
+            user = supabase.auth.get_user()
+            if user:
+                supabase.auth.update_user({'password': nova_senha})
+                flash('Senha redefinida com sucesso! Você já pode fazer login.', 'success')
+                return redirect(url_for('login'))
+            else:
+                flash('Link de redefinição inválido ou expirado. Tente novamente.', 'danger')
+                return redirect(url_for('esqueci_senha'))
+        except Exception as e:
+            logging.error(f"Erro ao redefinir senha: {e}")
+            flash('Ocorreu um erro ao redefinir sua senha. O link pode ter expirado.', 'danger')
+            return redirect(url_for('esqueci_senha'))
+
+    return render_template('RecuperarSenha/redefinir_senha.html')
+
+
 # --- EXECUÇÃO DA APLICAÇÃO ---
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
