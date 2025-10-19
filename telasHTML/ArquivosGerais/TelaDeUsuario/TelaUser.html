@@ -31,7 +31,7 @@
                 <!-- Exibe o nome do usuário que veio do banco de dados -->
                 <p id="nomeUsuario">{{ usuario.nome or 'Nome de usuário' }}</p>
             </div>
-            <button id="openModalButton">editar perfil</button>
+            <a href="{{ url_for('editar_perfil') }}" class="edit-profile-button">editar perfil</a>
         </div>
     </div>      
 
