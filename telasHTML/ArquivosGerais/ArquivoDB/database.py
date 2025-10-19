@@ -25,16 +25,20 @@ else:
     except Exception as e:
         print(f"Erro ao inicializar cliente Supabase: {e}")
 
-def inserir_usuario(nome: str, email: str, senha_hash: bytes, cidade: str, posicao: str, nascimento: str, numero: str) -> tuple[bool, str]:
+# Em database.py
+
+def inserir_usuario(nome: str, email: str, senha_hash: bytes, cidade: str, posicao: str, nascimento: str, numero: str, numero_camisa: str) -> tuple[bool, str]:
     """Insere um novo usuário. A data de nascimento DEVE estar no formato ISO (AAAA-MM-DD)."""
     if supabase is None:
         return False, "Erro de servidor: Banco de dados indisponível."
     
+    # Validação da data de nascimento no formato ISO
     try:
         datetime.strptime(nascimento, '%Y-%m-%d')
     except ValueError:
         return False, "Erro: A data de nascimento fornecida não está no formato correto (AAAA-MM-DD)."
     
+    # Checagem de e-mail duplicado
     try:
         if supabase.table('usuarios').select('email').eq('email', email).execute().data:
             return False, "Erro: Este e-mail já está cadastrado."
@@ -42,6 +46,7 @@ def inserir_usuario(nome: str, email: str, senha_hash: bytes, cidade: str, posic
         print(f"Erro ao checar e-mail duplicado: {e}")
         return False, "Erro ao verificar e-mail. Tente novamente."
 
+    # Dados a serem inseridos, incluindo o novo campo
     data = {
         "nome": nome, 
         "email": email, 
@@ -49,7 +54,8 @@ def inserir_usuario(nome: str, email: str, senha_hash: bytes, cidade: str, posic
         "cidade": cidade, 
         "posicao": posicao, 
         "nascimento": nascimento,
-        "numero": numero
+        "numero": numero,
+        "numero_camisa": numero_camisa # NOVO CAMPO
     }
     
     try:
@@ -59,6 +65,7 @@ def inserir_usuario(nome: str, email: str, senha_hash: bytes, cidade: str, posic
         error_message = f"Erro de banco de dados: {e.message}"
         print(f"--- ERRO DE API SUPABASE ---: {error_message}")
         return False, error_message
+
 
 def check_user(email: str, senha_texto_puro: str) -> Optional[Dict[str, Any]]:
     """Verifica as credenciais de um usuário e retorna seus dados se válidos."""
