@@ -83,8 +83,29 @@ def pagina_inicial():
     if 'user_email' not in session:
         flash('Você precisa fazer login para aceder a esta página.', 'warning')
         return redirect(url_for('login'))
+    
+    try:
+        # Busca o ID do usuário logado no banco de dados
+        user_data = supabase.table('usuarios').select('id').eq('email', session['user_email']).single().execute().data
+        
+        # Se o usuário for encontrado, armazena o ID na sessão
+        if user_data:
+            session['user_id'] = user_data['id']
+        else:
+            # Se não encontrar, força o logout para evitar erros
+            flash('Sessão inválida, por favor faça login novamente.', 'danger')
+            session.clear()
+            return redirect(url_for('login'))
+
+    except Exception as e:
+        logging.error(f"Erro ao buscar ID do usuário na página inicial: {e}")
+        flash('Ocorreu um erro ao carregar seus dados. Tente novamente.', 'danger')
+        return redirect(url_for('login'))
+
+    # Continua a carregar a lista de todos os usuários
     lista_de_usuarios = get_all_users()
     return render_template("TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
+
 
 @app.route("/usuario")
 def pagina_usuario():
