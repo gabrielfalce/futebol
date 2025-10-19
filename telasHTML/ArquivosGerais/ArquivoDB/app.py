@@ -4,9 +4,10 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from database import inserir_usuario, check_user, get_all_users, get_user_by_email, update_user_profile_image
 import bcrypt
 from datetime import datetime
-from jinja2.exceptions import TemplateNotFound
 from supabase import create_client, Client
 from postgrest.exceptions import APIError
+
+
 
 # --- CONFIGURAÇÃO DE LOGGING PROFISSIONAL ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
