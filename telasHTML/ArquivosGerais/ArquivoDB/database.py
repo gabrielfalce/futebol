@@ -88,7 +88,8 @@ def get_all_users() -> List[Dict[str, Any]]:
     if supabase is None:
         return []
     try:
-        response = supabase.table("usuarios").select("nome, cidade, profile_image_url").execute()
+        # MUDANÇA: Adicionei 'id' e 'profile_image_url' à seleção.
+        response = supabase.table("usuarios").select("id, nome, cidade, profile_image_url").execute()
         return response.data if response.data else []
     except Exception as e:
         print(f"--- ERRO DURANTE A BUSCA DE USUÁRIOS ---: {e}")
