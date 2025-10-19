@@ -1,239 +1,239 @@
 import os
-   from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
-   from database import inserir_usuario, check_user, get_all_users, get_user_by_email, update_user_profile_image
-   import bcrypt
-   from datetime import datetime
-   from jinja2.exceptions import TemplateNotFound
-   from supabase import create_client, Client
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
+from database import inserir_usuario, check_user, get_all_users, get_user_by_email, update_user_profile_image
+import bcrypt
+from datetime import datetime
+from jinja2.exceptions import TemplateNotFound
+from supabase import create_client, Client
 
-   # --- Configuração de Supabase ---
-   url = os.environ.get("SUPABASE_URL")
-   key = os.environ.get("SUPABASE_KEY")
-   supabase: Client = create_client(url, key)
+# --- Configuração de Supabase ---
+url = os.environ.get("SUPABASE_URL")
+key = os.environ.get("SUPABASE_KEY")
+supabase: Client = create_client(url, key)
 
-   # --- Configuração de Caminhos e Flask ---
-   app_dir = os.path.dirname(os.path.abspath(__file__))
-   template_root = os.path.abspath(os.path.join(app_dir, '..'))  # Ajustado para apontar diretamente para ArquivosGerais
-   print(f"Template root set to: {template_root}")  # Depuração
+# --- Configuração de Caminhos e Flask ---
+app_dir = os.path.dirname(os.path.abspath(__file__))
+template_root = os.path.abspath(os.path.join(app_dir, '..'))  # Ajustado para apontar diretamente para ArquivosGerais
+print(f"Template root set to: {template_root}")  # Depuração
 
-   app = Flask(
-       __name__,
-       template_folder=template_root,
-       static_folder=os.path.join(template_root, 'STATIC'),
-       static_url_path='/static'
-   )
-   app.secret_key = 'uma_chave_muito_secreta_e_dificil_de_adivinhar'
-   app.config['SKIP_LOGIN_CHECK'] = False  # Configuração para desativar verificação de login
+app = Flask(
+    __name__,
+    template_folder=template_root,
+    static_folder=os.path.join(template_root, 'STATIC'),
+    static_url_path='/static'
+)
+app.secret_key = 'uma_chave_muito_secreta_e_dificil_de_adivinhar'
+app.config['SKIP_LOGIN_CHECK'] = False  # Configuração para desativar verificação de login
 
-   # --- Rotas para Arquivos Estáticos em Outras Pastas ---
-   @app.route('/Cadastrar_templates/<path:filename>')
-   def serve_cadastrar_static(filename):
-       return send_from_directory(os.path.join(template_root, 'Cadastrar_templates'), filename)
+# --- Rotas para Arquivos Estáticos em Outras Pastas ---
+@app.route('/Cadastrar_templates/<path:filename>')
+def serve_cadastrar_static(filename):
+    return send_from_directory(os.path.join(template_root, 'Cadastrar_templates'), filename)
 
-   @app.route('/telaDeLogin/<path:filename>')
-   def serve_login_static(filename):
-       return send_from_directory(os.path.join(template_root, 'telaDeLogin'), filename)
+@app.route('/telaDeLogin/<path:filename>')
+def serve_login_static(filename):
+    return send_from_directory(os.path.join(template_root, 'telaDeLogin'), filename)
 
-   @app.route('/TelaInicial/<path:filename>')
-   def serve_inicial_static(filename):
-       return send_from_directory(os.path.join(template_root, 'TelaInicial'), filename)
+@app.route('/TelaInicial/<path:filename>')
+def serve_inicial_static(filename):
+    return send_from_directory(os.path.join(template_root, 'TelaInicial'), filename)
 
-   @app.route('/TelaLoading/<path:filename>')
-   def serve_loading_static(filename):
-       return send_from_directory(os.path.join(template_root, 'TelaLoading'), filename)
+@app.route('/TelaLoading/<path:filename>')
+def serve_loading_static(filename):
+    return send_from_directory(os.path.join(template_root, 'TelaLoading'), filename)
 
-   @app.route('/TelaDeUsuario/<path:filename>')
-   def serve_usuario_static(filename):
-       return send_from_directory(os.path.join(template_root, 'TelaDeUsuario'), filename)
+@app.route('/TelaDeUsuario/<path:filename>')
+def serve_usuario_static(filename):
+    return send_from_directory(os.path.join(template_root, 'TelaDeUsuario'), filename)
 
-   # --- Filtro para formatar data ---
-   @app.template_filter('format_date')
-   def format_date(date_str):
-       try:
-           date_obj = datetime.strptime(date_str, '%Y-%m-%d')
-           return date_obj.strftime('%d/%m/%Y')
-       except ValueError:
-           return date_str
+# --- Filtro para formatar data ---
+@app.template_filter('format_date')
+def format_date(date_str):
+    try:
+        date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+        return date_obj.strftime('%d/%m/%Y')
+    except ValueError:
+        return date_str
 
-   # --- Rotas ---
+# --- Rotas ---
 
-   @app.route("/")
-   def index():
-       if not app.config['SKIP_LOGIN_CHECK']:
-           if 'user_email' not in session:
-               flash('Você precisa fazer login para aceder a esta página.', 'warning')
-               return redirect(url_for('login'))
-       return redirect(url_for('pagina_inicial'))
+@app.route("/")
+def index():
+    if not app.config['SKIP_LOGIN_CHECK']:
+        if 'user_email' not in session:
+            flash('Você precisa fazer login para aceder a esta página.', 'warning')
+            return redirect(url_for('login'))
+    return redirect(url_for('pagina_inicial'))
 
-   @app.route('/login', methods=['GET', 'POST'])
-   def login():
-       if 'user_email' in session:
-           return redirect(url_for('pagina_inicial'))
-       
-       if request.method == 'POST':
-           email = request.form.get('email')
-           senha = request.form.get('senha')
-           
-           if not email or not senha:
-               flash('Email e senha são obrigatórios.', 'danger')
-               return render_template('telaDeLogin/telaLogin.html')
-           
-           user_data = check_user(email, senha)
-           
-           if user_data:
-               session['user_email'] = email
-               flash('Login bem-sucedido!', 'success')
-               return redirect(url_for('tela_de_loading'))
-           else:
-               flash('Email ou senha incorretos. Tente novamente.', 'danger')
-               return render_template('telaDeLogin/telaLogin.html')
-               
-       try:
-           return render_template('telaDeLogin/telaLogin.html')
-       except TemplateNotFound:
-           flash('Erro interno: Template de login não encontrado.', 'danger')
-           return "<h1>Erro: Template de login não encontrado.</h1>", 500
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if 'user_email' in session:
+        return redirect(url_for('pagina_inicial'))
+    
+    if request.method == 'POST':
+        email = request.form.get('email')
+        senha = request.form.get('senha')
+        
+        if not email or not senha:
+            flash('Email e senha são obrigatórios.', 'danger')
+            return render_template('telaDeLogin/telaLogin.html')
+        
+        user_data = check_user(email, senha)
+        
+        if user_data:
+            session['user_email'] = email
+            flash('Login bem-sucedido!', 'success')
+            return redirect(url_for('tela_de_loading'))
+        else:
+            flash('Email ou senha incorretos. Tente novamente.', 'danger')
+            return render_template('telaDeLogin/telaLogin.html')
+            
+    try:
+        return render_template('telaDeLogin/telaLogin.html')
+    except TemplateNotFound:
+        flash('Erro interno: Template de login não encontrado.', 'danger')
+        return "<h1>Erro: Template de login não encontrado.</h1>", 500
 
-   @app.route("/inicio")
-   def pagina_inicial():
-       if not app.config['SKIP_LOGIN_CHECK'] and 'user_email' not in session:
-           flash('Você precisa fazer login para aceder a esta página.', 'warning')
-           return redirect(url_for('login'))
-           
-       lista_de_usuarios = get_all_users()
-       try:
-           return render_template("TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
-       except TemplateNotFound:
-           flash('Erro interno: Template da tela inicial não encontrado.', 'danger')
-           return "<h1>Erro: Template da tela inicial não encontrado.</h1>", 500
+@app.route("/inicio")
+def pagina_inicial():
+    if not app.config['SKIP_LOGIN_CHECK'] and 'user_email' not in session:
+        flash('Você precisa fazer login para aceder a esta página.', 'warning')
+        return redirect(url_for('login'))
+        
+    lista_de_usuarios = get_all_users()
+    try:
+        return render_template("TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
+    except TemplateNotFound:
+        flash('Erro interno: Template da tela inicial não encontrado.', 'danger')
+        return "<h1>Erro: Template da tela inicial não encontrado.</h1>", 500
 
-   @app.route("/usuario")
-   def pagina_usuario():
-       if not app.config['SKIP_LOGIN_CHECK'] and 'user_email' not in session:
-           flash('Você precisa fazer login para aceder a esta página.', 'warning')
-           return redirect(url_for('login'))
-           
-       user_data = get_user_by_email(session['user_email'])
-       if user_data:
-           return render_template("TelaDeUsuario/TelaUser.html", usuario=user_data)
-       else:
-           flash('Erro: Dados do usuário não encontrados.', 'danger')
-           return redirect(url_for('index'))
+@app.route("/usuario")
+def pagina_usuario():
+    if not app.config['SKIP_LOGIN_CHECK'] and 'user_email' not in session:
+        flash('Você precisa fazer login para aceder a esta página.', 'warning')
+        return redirect(url_for('login'))
+        
+    user_data = get_user_by_email(session['user_email'])
+    if user_data:
+        return render_template("TelaDeUsuario/TelaUser.html", usuario=user_data)
+    else:
+        flash('Erro: Dados do usuário não encontrados.', 'danger')
+        return redirect(url_for('index'))
 
-   @app.route("/loading")
-   def tela_de_loading():
-       if not app.config['SKIP_LOGIN_CHECK'] and 'user_email' not in session:
-           return redirect(url_for('login'))
-       return render_template("TelaLoading/Telaloading.html")
+@app.route("/loading")
+def tela_de_loading():
+    if not app.config['SKIP_LOGIN_CHECK'] and 'user_email' not in session:
+        return redirect(url_for('login'))
+    return render_template("TelaLoading/Telaloading.html")
 
-   @app.route("/cadastro")
-   def cadastro():
-       return render_template("Cadastrar_templates/cadastrar.html")
+@app.route("/cadastro")
+def cadastro():
+    return render_template("Cadastrar_templates/cadastrar.html")
 
-   @app.route("/cadastrar", methods=['POST'])
-   def cadastrar():
-       nome = request.form.get("nome")
-       email = request.form.get("email")
-       senha_texto_puro = request.form.get("senha")
-       cidade = request.form.get("cidade")
-       posicao = request.form.get("posicao")
-       nascimento_str = request.form.get("nascimento")
-       numero = request.form.get("numero")
+@app.route("/cadastrar", methods=['POST'])
+def cadastrar():
+    nome = request.form.get("nome")
+    email = request.form.get("email")
+    senha_texto_puro = request.form.get("senha")
+    cidade = request.form.get("cidade")
+    posicao = request.form.get("posicao")
+    nascimento_str = request.form.get("nascimento")
+    numero = request.form.get("numero")
 
-       if not all([nome, email, senha_texto_puro, cidade, posicao, nascimento_str, numero]):
-           flash("Erro no cadastro: Todos os campos são obrigatórios.", 'danger')
-           return redirect(url_for('cadastro'))
-           
-       try:
-           data_obj = datetime.strptime(nascimento_str, '%d/%m/%Y')
-           data_nascimento_iso = data_obj.strftime('%Y-%m-%d')
-           if data_obj > datetime.now():
-               flash("Erro: A data de nascimento não pode ser no futuro.", 'danger')
-               return redirect(url_for('cadastro'))
-       except ValueError:
-           flash("Erro: A data de nascimento deve ser no formato DD/MM/AAAA.", 'danger')
-           return redirect(url_for('cadastro'))
+    if not all([nome, email, senha_texto_puro, cidade, posicao, nascimento_str, numero]):
+        flash("Erro no cadastro: Todos os campos são obrigatórios.", 'danger')
+        return redirect(url_for('cadastro'))
+        
+    try:
+        data_obj = datetime.strptime(nascimento_str, '%d/%m/%Y')
+        data_nascimento_iso = data_obj.strftime('%Y-%m-%d')
+        if data_obj > datetime.now():
+            flash("Erro: A data de nascimento não pode ser no futuro.", 'danger')
+            return redirect(url_for('cadastro'))
+    except ValueError:
+        flash("Erro: A data de nascimento deve ser no formato DD/MM/AAAA.", 'danger')
+        return redirect(url_for('cadastro'))
 
-       senha_hash = bcrypt.hashpw(senha_texto_puro.encode('utf-8'), bcrypt.gensalt())
-       sucesso, mensagem = inserir_usuario(
-           nome=nome, email=email, senha_hash=senha_hash, cidade=cidade,
-           posicao=posicao, nascimento=data_nascimento_iso, numero=numero
-       )
+    senha_hash = bcrypt.hashpw(senha_texto_puro.encode('utf-8'), bcrypt.gensalt())
+    sucesso, mensagem = inserir_usuario(
+        nome=nome, email=email, senha_hash=senha_hash, cidade=cidade,
+        posicao=posicao, nascimento=data_nascimento_iso, numero=numero
+    )
 
-       if sucesso:
-           session['user_email'] = email
-           flash(mensagem, 'success')
-           return redirect(url_for('tela_de_loading'))
-       else:
-           flash(mensagem, 'danger')
-           return redirect(url_for('cadastro'))
+    if sucesso:
+        session['user_email'] = email
+        flash(mensagem, 'success')
+        return redirect(url_for('tela_de_loading'))
+    else:
+        flash(mensagem, 'danger')
+        return redirect(url_for('cadastro'))
 
-   @app.route("/api/usuarios", methods=['GET'])
-   def buscar_usuarios():
-       query = request.args.get('q', '').lower()
-       usuarios = get_all_users()
-       if query:
-           usuarios = [u for u in usuarios if query in u['nome'].lower() or query in u['cidade'].lower()]
-       return jsonify(usuarios)
+@app.route("/api/usuarios", methods=['GET'])
+def buscar_usuarios():
+    query = request.args.get('q', '').lower()
+    usuarios = get_all_users()
+    if query:
+        usuarios = [u for u in usuarios if query in u['nome'].lower() or query in u['cidade'].lower()]
+    return jsonify(usuarios)
 
-   @app.route("/debug/files")
-   def debug_files():
-       import glob
-       template_files = glob.glob(os.path.join(app.template_folder, '**', '*.html'), recursive=True)
-       static_files = (
-           glob.glob(os.path.join(template_root, 'Cadastrar_templates', '**', '*'), recursive=True) +
-           glob.glob(os.path.join(template_root, 'telaDeLogin', '**', '*'), recursive=True) +
-           glob.glob(os.path.join(template_root, 'TelaInicial', '**', '*'), recursive=True) +
-           glob.glob(os.path.join(template_root, 'TelaLoading', '**', '*'), recursive=True) +
-           glob.glob(os.path.join(template_root, 'TelaDeUsuario', '**', '*'), recursive=True)
-       )
-       return {
-           "templates": [os.path.relpath(f, app.template_folder) for f in template_files],
-           "static_files": [os.path.relpath(f, template_root) for f in static_files]
-       }
+@app.route("/debug/files")
+def debug_files():
+    import glob
+    template_files = glob.glob(os.path.join(app.template_folder, '**', '*.html'), recursive=True)
+    static_files = (
+        glob.glob(os.path.join(template_root, 'Cadastrar_templates', '**', '*'), recursive=True) +
+        glob.glob(os.path.join(template_root, 'telaDeLogin', '**', '*'), recursive=True) +
+        glob.glob(os.path.join(template_root, 'TelaInicial', '**', '*'), recursive=True) +
+        glob.glob(os.path.join(template_root, 'TelaLoading', '**', '*'), recursive=True) +
+        glob.glob(os.path.join(template_root, 'TelaDeUsuario', '**', '*'), recursive=True)
+    )
+    return {
+        "templates": [os.path.relpath(f, app.template_folder) for f in template_files],
+        "static_files": [os.path.relpath(f, template_root) for f in static_files]
+    }
 
-   @app.route("/logout")
-   def logout():
-       session.pop('user_email', None)
-       flash('Você foi desconectado.', 'success')
-       return redirect(url_for('login'))
+@app.route("/logout")
+def logout():
+    session.pop('user_email', None)
+    flash('Você foi desconectado.', 'success')
+    return redirect(url_for('login'))
 
-   @app.route('/upload_image', methods=['POST'])
-   def upload_image():
-       if 'user_email' not in session:
-           return jsonify({'success': False, 'message': 'Usuário não autenticado'}), 401
+@app.route('/upload_image', methods=['POST'])
+def upload_image():
+    if 'user_email' not in session:
+        return jsonify({'success': False, 'message': 'Usuário não autenticado'}), 401
 
-       if 'file' not in request.files:
-           return jsonify({'success': False, 'message': 'Nenhum arquivo enviado'}), 400
+    if 'file' not in request.files:
+        return jsonify({'success': False, 'message': 'Nenhum arquivo enviado'}), 400
 
-       file = request.files['file']
-       if file.filename == '':
-           return jsonify({'success': False, 'message': 'Nenhum arquivo selecionado'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'success': False, 'message': 'Nenhum arquivo selecionado'}), 400
 
-       user_email = session['user_email']
-       file_extension = os.path.splitext(file.filename)[1]
-       file_name = f"profile_{user_email}_{datetime.now().strftime('%Y%m%d_%H%M%S')}{file_extension}"
+    user_email = session['user_email']
+    file_extension = os.path.splitext(file.filename)[1]
+    file_name = f"profile_{user_email}_{datetime.now().strftime('%Y%m%d_%H%M%S')}{file_extension}"
 
-       try:
-           # Upload para o Supabase Storage
-           response = supabase.storage.from_('profile_images').upload(file_name, file.read(), {
-               'content-type': file.content_type
-           })
-           if response.error:
-               return jsonify({'success': False, 'message': 'Erro ao enviar imagem ao storage'}), 500
+    try:
+        # Upload para o Supabase Storage
+        response = supabase.storage.from_('profile_images').upload(file_name, file.read(), {
+            'content-type': file.content_type
+        })
+        if response.error:
+            return jsonify({'success': False, 'message': 'Erro ao enviar imagem ao storage'}), 500
 
-           # Obter URL pública da imagem
-           image_url = supabase.storage.from_('profile_images').get_public_url(file_name)
+        # Obter URL pública da imagem
+        image_url = supabase.storage.from_('profile_images').get_public_url(file_name)
 
-           # Atualizar o banco de dados com a URL da imagem
-           sucesso, mensagem = update_user_profile_image(user_email, image_url)
-           if not sucesso:
-               return jsonify({'success': False, 'message': mensagem}), 500
+        # Atualizar o banco de dados com a URL da imagem
+        sucesso, mensagem = update_user_profile_image(user_email, image_url)
+        if not sucesso:
+            return jsonify({'success': False, 'message': mensagem}), 500
 
-           return jsonify({'success': True, 'image_url': image_url})
-       except Exception as e:
-           return jsonify({'success': False, 'message': str(e)}), 500
+        return jsonify({'success': True, 'image_url': image_url})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
 
-   if __name__ == '__main__':
-       port = int(os.environ.get("PORT", 10000))
-       app.run(host='0.0.0.0', port=port, debug=True)
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port, debug=True)
