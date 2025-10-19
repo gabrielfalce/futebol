@@ -95,13 +95,15 @@ def get_all_users() -> List[Dict[str, Any]]:
         print(f"--- ERRO DURANTE A BUSCA DE USUÁRIOS ---: {e}")
         return []
 
+# Em database.py
+
 def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
-    """Busca os dados de um usuário pelo email, incluindo a URL da imagem de perfil."""
+    """Busca os dados de um usuário pelo email."""
     if supabase is None:
         return None
     try:
-        # Seleciona também a coluna 'profile_image_url'
-        response = supabase.table("usuarios").select("nome, email, cidade, posicao, nascimento, numero, profile_image_url").eq("email", email).limit(1).execute()
+        # MUDANÇA: Adicionada a coluna 'numero_camisa'
+        response = supabase.table("usuarios").select("nome, email, cidade, posicao, nascimento, numero, numero_camisa").eq("email", email).limit(1).execute()
         return response.data[0] if response.data else None
     except Exception as e:
         print(f"--- ERRO DURANTE A BUSCA DE USUÁRIO POR EMAIL ---: {e}")
