@@ -268,6 +268,46 @@ def redefinir_senha():
     return render_template('RecuperarSenha/redefinir_senha.html')
 
 
+# --- ROTAS DE EDIÇÃO DE PERFIL ---
+
+@app.route('/editar-perfil', methods=['GET', 'POST'])
+def editar_perfil():
+    if 'user_email' not in session:
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        # Pega os dados do formulário
+        nome = request.form.get('nome')
+        cidade = request.form.get('cidade')
+        numero = request.form.get('numero')
+        posicao = request.form.get('posicao')
+
+        # Cria o dicionário apenas com os campos que o usuário preencheu
+        update_data = {}
+        if nome: update_data['nome'] = nome
+        if cidade: update_data['cidade'] = cidade
+        if numero: update_data['numero'] = numero
+        if posicao: update_data['posicao'] = posicao
+
+        if update_data:
+            try:
+                supabase.table('usuarios').update(update_data).eq('email', session['user_email']).execute()
+                flash('Perfil atualizado com sucesso!', 'success')
+            except Exception as e:
+                logging.error(f"Erro ao atualizar perfil de {session['user_email']}: {e}")
+                flash('Ocorreu um erro ao atualizar seu perfil.', 'danger')
+        else:
+            flash('Nenhum dado foi alterado.', 'info')
+        
+        return redirect(url_for('pagina_usuario'))
+
+    user_data = get_user_by_email(session['user_email'])
+    if not user_data:
+        flash('Usuário não encontrado.', 'danger')
+        return redirect(url_for('pagina_inicial'))
+
+    return render_template('TelaDeUsuario/editar_perfil.html', usuario=user_data)
+    
 # --- EXECUÇÃO DA APLICAÇÃO ---
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
