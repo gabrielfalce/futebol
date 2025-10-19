@@ -12,20 +12,20 @@ key = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
 # --- Configuração de Caminhos e Flask ---
+# Define o diretório raiz do projeto para encontrar as pastas de templates e arquivos estáticos
 app_dir = os.path.dirname(os.path.abspath(__file__))
-template_root = os.path.abspath(os.path.join(app_dir, '..'))  # Ajustado para apontar diretamente para ArquivosGerais
-print(f"Template root set to: {template_root}")  # Depuração
+template_root = os.path.abspath(os.path.join(app_dir, '..'))
 
 app = Flask(
     __name__,
     template_folder=template_root,
-    static_folder=os.path.join(template_root, 'STATIC'),
-    static_url_path='/static'
+    # Define uma pasta estática geral, mas as rotas abaixo são mais específicas
+    static_folder=os.path.join(template_root, 'STATIC') 
 )
-app.secret_key = 'uma_chave_muito_secreta_e_dificil_de_adivinhar'
-app.config['SKIP_LOGIN_CHECK'] = False  # Configuração para desativar verificação de login
+# É crucial ter uma chave secreta para gerenciar sessões
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", 'uma_chave_muito_secreta_e_dificil_de_adivinhar')
 
-# --- Rotas para Arquivos Estáticos em Outras Pastas ---
+# --- Rotas para servir arquivos estáticos (CSS, JS, Imagens) de cada pasta ---
 @app.route('/Cadastrar_templates/<path:filename>')
 def serve_cadastrar_static(filename):
     return send_from_directory(os.path.join(template_root, 'Cadastrar_templates'), filename)
@@ -46,24 +46,25 @@ def serve_loading_static(filename):
 def serve_usuario_static(filename):
     return send_from_directory(os.path.join(template_root, 'TelaDeUsuario'), filename)
 
-# --- Filtro para formatar data ---
+# --- Filtro Jinja para formatar data ---
 @app.template_filter('format_date')
 def format_date(date_str):
+    if not date_str:
+        return ""
     try:
         date_obj = datetime.strptime(date_str, '%Y-%m-%d')
         return date_obj.strftime('%d/%m/%Y')
-    except ValueError:
+    except (ValueError, TypeError):
         return date_str
 
-# --- Rotas ---
+# --- Rotas Principais da Aplicação ---
 
 @app.route("/")
 def index():
-    if not app.config['SKIP_LOGIN_CHECK']:
-        if 'user_email' not in session:
-            flash('Você precisa fazer login para aceder a esta página.', 'warning')
-            return redirect(url_for('login'))
-    return redirect(url_for('pagina_inicial'))
+    # Se houver um usuário na sessão, redireciona para a página inicial, senão para o login
+    if 'user_email' in session:
+        return redirect(url_for('pagina_inicial'))
+    return redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -88,41 +89,37 @@ def login():
             flash('Email ou senha incorretos. Tente novamente.', 'danger')
             return render_template('telaDeLogin/telaLogin.html')
             
-    try:
-        return render_template('telaDeLogin/telaLogin.html')
-    except TemplateNotFound:
-        flash('Erro interno: Template de login não encontrado.', 'danger')
-        return "<h1>Erro: Template de login não encontrado.</h1>", 500
+    return render_template('telaDeLogin/telaLogin.html')
 
 @app.route("/inicio")
 def pagina_inicial():
-    if not app.config['SKIP_LOGIN_CHECK'] and 'user_email' not in session:
+    if 'user_email' not in session:
         flash('Você precisa fazer login para aceder a esta página.', 'warning')
         return redirect(url_for('login'))
         
     lista_de_usuarios = get_all_users()
-    try:
-        return render_template("TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
-    except TemplateNotFound:
-        flash('Erro interno: Template da tela inicial não encontrado.', 'danger')
-        return "<h1>Erro: Template da tela inicial não encontrado.</h1>", 500
+    return render_template("TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
 
 @app.route("/usuario")
 def pagina_usuario():
-    if not app.config['SKIP_LOGIN_CHECK'] and 'user_email' not in session:
+    if 'user_email' not in session:
         flash('Você precisa fazer login para aceder a esta página.', 'warning')
         return redirect(url_for('login'))
         
+    # Busca os dados completos do usuário logado
     user_data = get_user_by_email(session['user_email'])
+    
     if user_data:
+        # Passa o dicionário completo do usuário para o template
         return render_template("TelaDeUsuario/TelaUser.html", usuario=user_data)
     else:
-        flash('Erro: Dados do usuário não encontrados.', 'danger')
-        return redirect(url_for('index'))
+        flash('Erro: Dados do usuário não encontrados. Por favor, faça login novamente.', 'danger')
+        session.pop('user_email', None) # Limpa a sessão corrompida
+        return redirect(url_for('login'))
 
 @app.route("/loading")
 def tela_de_loading():
-    if not app.config['SKIP_LOGIN_CHECK'] and 'user_email' not in session:
+    if 'user_email' not in session:
         return redirect(url_for('login'))
     return render_template("TelaLoading/Telaloading.html")
 
@@ -168,41 +165,21 @@ def cadastrar():
         flash(mensagem, 'danger')
         return redirect(url_for('cadastro'))
 
-@app.route("/api/usuarios", methods=['GET'])
-def buscar_usuarios():
-    query = request.args.get('q', '').lower()
-    usuarios = get_all_users()
-    if query:
-        usuarios = [u for u in usuarios if query in u['nome'].lower() or query in u['cidade'].lower()]
-    return jsonify(usuarios)
-
-@app.route("/debug/files")
-def debug_files():
-    import glob
-    template_files = glob.glob(os.path.join(app.template_folder, '**', '*.html'), recursive=True)
-    static_files = (
-        glob.glob(os.path.join(template_root, 'Cadastrar_templates', '**', '*'), recursive=True) +
-        glob.glob(os.path.join(template_root, 'telaDeLogin', '**', '*'), recursive=True) +
-        glob.glob(os.path.join(template_root, 'TelaInicial', '**', '*'), recursive=True) +
-        glob.glob(os.path.join(template_root, 'TelaLoading', '**', '*'), recursive=True) +
-        glob.glob(os.path.join(template_root, 'TelaDeUsuario', '**', '*'), recursive=True)
-    )
-    return {
-        "templates": [os.path.relpath(f, app.template_folder) for f in template_files],
-        "static_files": [os.path.relpath(f, template_root) for f in static_files]
-    }
-
 @app.route("/logout")
 def logout():
     session.pop('user_email', None)
     flash('Você foi desconectado.', 'success')
     return redirect(url_for('login'))
 
+# --- Rota da API para Upload de Imagem ---
+
 @app.route('/upload_image', methods=['POST'])
 def upload_image():
+    # 1. Segurança: Verificar se o usuário está logado
     if 'user_email' not in session:
         return jsonify({'success': False, 'message': 'Usuário não autenticado'}), 401
 
+    # 2. Validação: Verificar se um arquivo foi enviado corretamente
     if 'file' not in request.files:
         return jsonify({'success': False, 'message': 'Nenhum arquivo enviado'}), 400
 
@@ -211,29 +188,42 @@ def upload_image():
         return jsonify({'success': False, 'message': 'Nenhum arquivo selecionado'}), 400
 
     user_email = session['user_email']
-    file_extension = os.path.splitext(file.filename)[1]
-    file_name = f"profile_{user_email}_{datetime.now().strftime('%Y%m%d_%H%M%S')}{file_extension}"
+    
+    # 3. Preparação do Arquivo: Gera um nome único para o arquivo no Storage
+    safe_email = user_email.replace('@', '_').replace('.', '_')
+    file_name = f"public/{safe_email}_{int(datetime.now().timestamp())}.jpg"
 
     try:
-        # Upload para o Supabase Storage
-        response = supabase.storage.from_('profile_images').upload(file_name, file.read(), {
-            'content-type': file.content_type
-        })
-        if response.error:
-            return jsonify({'success': False, 'message': 'Erro ao enviar imagem ao storage'}), 500
+        # 4. Upload para o Supabase Storage
+        file_content = file.read()
+        
+        # Faz o upload para o bucket 'profile_images'. 
+        # 'upsert=True' substituiria um arquivo com o mesmo nome, mas nosso nome é sempre único.
+        supabase.storage.from_('profile_images').upload(
+            path=file_name,
+            file=file_content,
+            file_options={"content-type": file.content_type, "upsert": "false"}
+        )
 
-        # Obter URL pública da imagem
+        # 5. Obtenção da URL Pública da imagem recém-enviada
         image_url = supabase.storage.from_('profile_images').get_public_url(file_name)
 
-        # Atualizar o banco de dados com a URL da imagem
+        # 6. Atualização do Banco de Dados com a nova URL
         sucesso, mensagem = update_user_profile_image(user_email, image_url)
+        
         if not sucesso:
             return jsonify({'success': False, 'message': mensagem}), 500
 
+        # 7. Retorno de Sucesso para o Frontend
         return jsonify({'success': True, 'image_url': image_url})
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
 
+    except Exception as e:
+        print(f"Erro crítico no upload da imagem: {str(e)}")
+        return jsonify({'success': False, 'message': f'Erro interno do servidor: {str(e)}'}), 500
+
+# --- Execução da Aplicação ---
 if __name__ == '__main__':
+    # Usa a porta definida pelo Render ou 10000 como padrão para desenvolvimento
     port = int(os.environ.get("PORT", 10000))
+    # 'debug=True' é ótimo para desenvolver, mas considere desativá-lo em produção final
     app.run(host='0.0.0.0', port=port, debug=True)
