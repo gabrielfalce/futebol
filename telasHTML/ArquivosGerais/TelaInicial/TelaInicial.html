@@ -40,7 +40,19 @@
     {% endfor %}
 </div>
 
-<div id="toast-notification" class="toast"></div>
+<!-- Este div agora receberá os dados da mensagem via atributos data-* -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div id="toast-notification" 
+             class="toast" 
+             data-message="{{ messages[0][1] }}" 
+             data-category="{{ messages[0][0] }}">
+        </div>
+    {% else %}
+        <div id="toast-notification" class="toast"></div>
+    {% endif %}
+{% endwith %}
+
 
 <!-- ÁREA DE NAVEGAÇÃO -->
 <div class="navigation-links">
@@ -48,26 +60,35 @@
     <a href="{{ url_for('pagina_usuario') }}" class="nav-button profile-button">Ver Perfil</a>
     <a href="{{ url_for('logout') }}" class="nav-button logout-button">Sair</a>
 </div>
-    <script>
-        function searchUsers() {
-            const input = document.getElementById("search").value.toLowerCase();
-            const cards = document.querySelectorAll(".user-card");
-            
-            cards.forEach(card => {
-                const text = card.textContent.toLowerCase();
-                card.style.display = text.includes(input) ? "flex" : "none";
-            });
-        }
+<script>
+    // Função de busca de usuários (continua a mesma)
+    function searchUsers() {
+        const input = document.getElementById("search").value.toLowerCase();
+        const cards = document.querySelectorAll(".user-card-link"); // Seleciona o link <a> em vez do div
+        
+        cards.forEach(cardLink => {
+            const text = cardLink.textContent.toLowerCase();
+            cardLink.style.display = text.includes(input) ? "block" : "none"; // Usa block para o link
+        });
+    }
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                const toast = document.getElementById("toast-notification");
-                toast.textContent = "{{ messages[0][1] }}";
-                toast.style.backgroundColor = "{{ 'var(--cor-primaria)' if messages[0][0] == 'success' else '#ff4d4d' }}";
-                toast.classList.add("show");
-                setTimeout(() => toast.classList.remove("show"), 4000);
-            {% endif %}
-        {% endwith %}
-    </script>
+    // Lógica para exibir a notificação (agora separada)
+    document.addEventListener('DOMContentLoaded', (event) => {
+        const toast = document.getElementById("toast-notification");
+        
+        // Verifica se o elemento tem os atributos data-* que o Jinja criou
+        if (toast.dataset.message) {
+            toast.textContent = toast.dataset.message;
+            toast.style.backgroundColor = toast.dataset.category === 'success' 
+                ? 'var(--cor-primaria)' 
+                : '#ff4d4d';
+            
+            toast.classList.add("show");
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 4000);
+        }
+    });
+</script>
 </body>
 </html>
