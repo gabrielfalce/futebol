@@ -6,17 +6,18 @@ from dotenv import load_dotenv
 import bcrypt
 from datetime import datetime
 
-# Tenta carregar variáveis do .env (se existir)
+# Carrega variáveis de ambiente de um arquivo .env, se existir (para desenvolvimento local)
 load_dotenv() 
 
-# Usa apenas as variáveis de ambiente do Render
+# Pega as credenciais do Supabase a partir das variáveis de ambiente (funciona no Render)
 url = os.environ.get("SUPABASE_URL")
 key = os.environ.get("SUPABASE_KEY")
 
 supabase: Optional[Client] = None
 
+# Inicializa o cliente Supabase de forma segura
 if not url or not key:
-    print("Erro: Variáveis de ambiente do Supabase não configuradas no ambiente.")
+    print("Erro: Variáveis de ambiente SUPABASE_URL e SUPABASE_KEY não configuradas.")
 else:
     try:
         supabase = create_client(url, key)
@@ -29,13 +30,11 @@ def inserir_usuario(nome: str, email: str, senha_hash: bytes, cidade: str, posic
     if supabase is None:
         return False, "Erro de servidor: Banco de dados indisponível."
     
-    # Validação da data de nascimento no formato ISO
     try:
         datetime.strptime(nascimento, '%Y-%m-%d')
     except ValueError:
         return False, "Erro: A data de nascimento fornecida não está no formato correto (AAAA-MM-DD)."
     
-    # Checagem de e-mail duplicado
     try:
         if supabase.table('usuarios').select('email').eq('email', email).execute().data:
             return False, "Erro: Este e-mail já está cadastrado."
@@ -43,7 +42,6 @@ def inserir_usuario(nome: str, email: str, senha_hash: bytes, cidade: str, posic
         print(f"Erro ao checar e-mail duplicado: {e}")
         return False, "Erro ao verificar e-mail. Tente novamente."
 
-    # Dados a serem inseridos
     data = {
         "nome": nome, 
         "email": email, 
@@ -90,28 +88,41 @@ def get_all_users() -> List[Dict[str, Any]]:
     if supabase is None:
         return []
     try:
-        response = supabase.table("usuarios").select("nome, cidade").execute()
+        response = supabase.table("usuarios").select("nome, cidade, profile_image_url").execute()
         return response.data if response.data else []
     except Exception as e:
         print(f"--- ERRO DURANTE A BUSCA DE USUÁRIOS ---: {e}")
         return []
 
 def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
-    """Busca os dados de um usuário pelo email."""
+    """Busca os dados de um usuário pelo email, incluindo a URL da imagem de perfil."""
     if supabase is None:
         return None
     try:
-        response = supabase.table("usuarios").select("nome, email, cidade, posicao, nascimento, numero").eq("email", email).limit(1).execute()
+        # Seleciona também a coluna 'profile_image_url'
+        response = supabase.table("usuarios").select("nome, email, cidade, posicao, nascimento, numero, profile_image_url").eq("email", email).limit(1).execute()
         return response.data[0] if response.data else None
     except Exception as e:
         print(f"--- ERRO DURANTE A BUSCA DE USUÁRIO POR EMAIL ---: {e}")
         return None
 
-def update_user_profile_image(email, image_url):
+def update_user_profile_image(email: str, image_url: str) -> tuple[bool, str]:
+    """Atualiza a URL da imagem de perfil de um usuário no banco de dados."""
+    if supabase is None:
+        return False, "Erro de servidor: Banco de dados indisponível."
+
     try:
-        response = supabase.table('usuarios').update({'profile_image_url': image_url}).eq('email', email).execute()
-        if response.data:
-            return True, 'Imagem de perfil atualizada com sucesso.'
-        return False, 'Erro ao atualizar a imagem de perfil.'
+        # A operação de 'update' no Supabase não retorna dados ('data') se for bem-sucedida,
+        # mas lança uma exceção (APIError) se houver um problema.
+        supabase.table('usuarios').update({'profile_image_url': image_url}).eq('email', email).execute()
+        
+        # Se a linha acima não gerou uma exceção, a operação foi um sucesso.
+        return True, 'Imagem de perfil atualizada com sucesso.'
+
+    except APIError as e:
+        print(f"Erro de API do Supabase ao atualizar imagem: {e.message}")
+        return False, f'Erro no banco de dados: {e.message}'
     except Exception as e:
-        return False, f'Erro no banco de dados: {str(e)}'
+        print(f"Erro inesperado ao atualizar imagem: {str(e)}")
+        return False, f'Erro inesperado no servidor: {str(e)}'
+
