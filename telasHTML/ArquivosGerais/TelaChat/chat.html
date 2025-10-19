@@ -55,11 +55,12 @@
 
     <!-- Passando dados do Flask para o JavaScript -->
     <script>
-        // Passa as variáveis do backend (Flask) para o nosso chat.js poder usá-las
-        const REMETENTE_ID = {{ remetente.id }};
-        const DESTINATARIO_ID = {{ destinatario.id }};
-        const SUPABASE_URL = "{{ url_for('_external', _scheme='https' )[:-1] }}"; // truque para pegar a URL base
-        const SUPABASE_KEY = "{{ key }}"; // Passando a chave pública do Supabase
-    </script>
-</body>
+    // Passa as variáveis do backend (Flask) para o nosso chat.js poder usá-las
+    const REMETENTE_ID = {{ remetente.id }};
+    const DESTINATARIO_ID = {{ destinatario.id }};
+    // CORREÇÃO: Usando as variáveis diretas que passamos pelo app.py
+    const SUPABASE_URL = "{{ supabase_url }}";
+    const SUPABASE_KEY = "{{ supabase_key }}";
+      </script>
+  </body>
 </html>
