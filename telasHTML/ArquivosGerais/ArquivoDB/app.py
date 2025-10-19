@@ -224,25 +224,30 @@ def upload_image():
 def serve_chat_static(filename):
     return send_from_directory(os.path.join(template_root, 'TelaChat'), filename)
 
-# Rota para abrir a página de chat com um usuário específico
-@app.route('/chat/<int:destinatario_id>')
+#@app.route('/chat/<int:destinatario_id>')
 def pagina_chat(destinatario_id):
     if 'user_email' not in session:
         return redirect(url_for('login'))
 
-    # Busca os dados do remetente (usuário logado)
     remetente = supabase.table('usuarios').select('id, nome').eq('email', session['user_email']).single().execute().data
     if not remetente:
         return redirect(url_for('login'))
 
-    # Busca os dados do destinatário
     destinatario = supabase.table('usuarios').select('id, nome, profile_image_url').eq('id', destinatario_id).single().execute().data
     if not destinatario:
         flash('Usuário para chat não encontrado.', 'danger')
         return redirect(url_for('pagina_inicial'))
 
-    # Renderiza a página de chat, passando os dados dos dois usuários
-    return render_template('TelaChat/chat.html', remetente=remetente, destinatario=destinatario)
+    # CORREÇÃO: Passando a URL e a Chave diretamente para o template
+    supabase_url = os.environ.get("SUPABASE_URL")
+    supabase_key = os.environ.get("SUPABASE_KEY")
+
+    return render_template('TelaChat/chat.html', 
+                           remetente=remetente, 
+                           destinatario=destinatario, 
+                           supabase_url=supabase_url, 
+                           supabase_key=supabase_key)
+
 
 
 # Rota de API para buscar o histórico de mensagens
