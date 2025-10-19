@@ -1,124 +1,181 @@
 <!DOCTYPE html>
-   <html lang="pt-BR">
-   <head>
-       <meta charset="UTF-8">
-       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-       <title>Cortar Imagem como no WhatsApp</title>
-       <!-- CSS do Cropper.js -->
-       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
-       <!-- CSS personalizado -->
-       <link rel="stylesheet" href="/TelaDeUsuario/stylesTest.css">
-       <link rel="icon" href="/TelaDeUsuario/imagens/iconeUser.png">
-   </head>
-   <body>
-       <!-- ===== Tela principal ===== -->
-       <div id="mainScreen">
-           <!-- Container para perfil e botão de edição -->
-           <div id="profileContainer">
-               <div id="profileInfo">
-                   <!-- Imagem de perfil -->
-                   <div id="perfilImagemGeralCaixa">
-                       <img id="preview" src="/TelaDeUsuario/imagens/user-icon-placeholder.png" alt="Prévia da imagem cortada">
-                   </div>
-                   <p id="nomeUsuario">Nome de usuário</p>
-               </div>
-               <button id="openModalButton">editar perfil</button>
-           </div>
-       </div>      
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil de {{ usuario.nome }}</title>
+    
+    <!-- CSS do Cropper.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+    
+    <!-- CSS e Ícone personalizados usando url_for para garantir que o caminho esteja correto -->
+    <link rel="stylesheet" href="{{ url_for('serve_usuario_static', filename='stylesTest.css' ) }}">
+    <link rel="icon" href="{{ url_for('serve_usuario_static', filename='imagens/iconeUser.png') }}">
+</head>
+<body>
+    <!-- ===== Tela principal ===== -->
+    <div id="mainScreen">
+        <!-- Container para perfil e botão de edição -->
+        <div id="profileContainer">
+            <div id="profileInfo">
+                <!-- Imagem de perfil -->
+                <div id="perfilImagemGeralCaixa">
+                    <!-- 
+                        Carrega a imagem de perfil do banco de dados ('usuario.profile_image_url').
+                        Se for nula ou vazia, carrega uma imagem padrão usando 'url_for'.
+                    -->
+                    <img id="preview" 
+                         src="{{ usuario.profile_image_url or url_for('serve_usuario_static', filename='imagens/user-icon-placeholder.png') }}" 
+                         alt="Imagem de perfil do usuário">
+                </div>
+                <!-- Exibe o nome do usuário que veio do banco de dados -->
+                <p id="nomeUsuario">{{ usuario.nome or 'Nome de usuário' }}</p>
+            </div>
+            <button id="openModalButton">editar perfil</button>
+        </div>
+    </div>      
 
-       <!-- ===== Modal de corte de imagem ===== -->
-       <div id="cropModal" class="modal">
-           <div class="modal-content">
-               <button id="closeModalButton" class="close-button">Salvar</button>
-               <h2>Cortar Imagem</h2>
-               <input type="file" id="imageInput" accept="image/*">
-               <img id="image" src="" alt="Imagem para cortar">
-               <button id="cropButton">Cortar Imagem</button>
-           </div>
-       </div>
+    <!-- ===== Modal de corte de imagem ===== -->
+    <div id="cropModal" class="modal">
+        <div class="modal-content">
+            <button id="closeModalButton" class="close-button">Salvar</button>
+            <h2>Cortar Imagem</h2>
+            <p>Escolha uma imagem e ajuste o corte.</p>
+            <input type="file" id="imageInput" accept="image/*">
+            <div class="image-container">
+                <img id="image" src="" alt="Imagem para cortar">
+            </div>
+            <!-- O botão de corte manual foi removido para simplificar o fluxo. O salvamento acontece ao fechar o modal. -->
+        </div>
+    </div>
 
-       <!-- ===== Botão flutuante de home ===== -->
-       <div class="floating-button-container">
-           <div class="floating-button-bar"></div>
-           <a id="linkTela" href="{{ url_for('tela_de_loading') }}">
-               <button id="adicionarUsuarioBtn" class="floating-button">
-                   <img src="/TelaDeUsuario/imagens/bolaLogo.png" alt="Ir para tela de loading">
-               </button>
-           </a>
-       </div>
-       
-       <!-- publicações usuario -->
-       <div class="BoxePublicacoes">      
-           <h1>publicações do Usuário</h1>
-           <div id="imagemPublicaçãoUsuario">
-               <img class="publicacaoImagem" src="/TelaDeUsuario/imagens/WallpaperTest.jpg" alt="">
-           </div>
-       </div>
+    <!-- ===== Botão flutuante de home ===== -->
+    <div class="floating-button-container">
+        <div class="floating-button-bar"></div>
+        <!-- Link para a tela de loading/inicial -->
+        <a id="linkTela" href="{{ url_for('tela_de_loading') }}">
+            <button id="adicionarUsuarioBtn" class="floating-button">
+                <img src="{{ url_for('serve_usuario_static', filename='imagens/bolaLogo.png') }}" alt="Ir para tela inicial">
+            </button>
+        </a>
+    </div>
+    
+    <!-- ===== Seção de Publicações do Usuário (Placeholder) ===== -->
+    <div class="BoxePublicacoes">      
+        <h1>Publicações do Usuário</h1>
+        <div id="imagemPublicaçãoUsuario">
+            <!-- Exemplo estático, pode ser transformado em um loop no futuro -->
+            <img class="publicacaoImagem" src="{{ url_for('serve_usuario_static', filename='imagens/WallpaperTest.jpg') }}" alt="Exemplo de publicação">
+        </div>
+    </div>
 
-       <!-- ===== Scripts ===== -->
-       <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-       <script>
-           let cropper;
+    <!-- ===== Scripts ===== -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <script>
+        let cropper;
 
-           // Abrir modal e inicializar Cropper.js
-           document.getElementById('openModalButton').addEventListener('click', () => {
-               document.getElementById('cropModal').style.display = 'block';
-           });
+        // --- Elementos do DOM ---
+        const openModalButton = document.getElementById('openModalButton' );
+        const closeModalButton = document.getElementById('closeModalButton');
+        const cropModal = document.getElementById('cropModal');
+        const imageInput = document.getElementById('imageInput');
+        const imageToCrop = document.getElementById('image');
+        const previewImage = document.getElementById('preview');
 
-           // Fechar modal
-           document.getElementById('closeModalButton').addEventListener('click', () => {
-               if (cropper) {
-                   const canvas = cropper.getCroppedCanvas();
-                   if (canvas) {
-                       canvas.toBlob(blob => {
-                           uploadImage(blob);
-                       }, 'image/jpeg');
-                   }
-                   document.getElementById('cropModal').style.display = 'none';
-               }
-           });
+        // --- Abrir modal ---
+        openModalButton.addEventListener('click', () => {
+            cropModal.style.display = 'block';
+        });
 
-           // Lidar com a seleção de imagem
-           document.getElementById('imageInput').addEventListener('change', (e) => {
-               const file = e.target.files[0];
-               if (file) {
-                   const reader = new FileReader();
-                   reader.onload = (event) => {
-                       const image = document.getElementById('image');
-                       image.src = event.target.result;
-                       if (cropper) cropper.destroy();
-                       cropper = new Cropper(image, {
-                           aspectRatio: 1, // Quadrado, como no WhatsApp
-                           viewMode: 1,
-                       });
-                   };
-                   reader.readAsDataURL(file);
-               }
-           });
+        // --- Lidar com a seleção de imagem ---
+        imageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
 
-           // Função para upload da imagem (placeholder - a ser integrado com Supabase)
-           async function uploadImage(blob) {
-               const formData = new FormData();
-               formData.append('file', blob, `profile_${Date.now()}.jpg`);
-               formData.append('user_email', '{{ session["user_email"] if session["user_email"] else "" }}');
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                imageToCrop.src = event.target.result;
+                
+                // Destrói a instância anterior do Cropper, se houver
+                if (cropper) {
+                    cropper.destroy();
+                }
+                
+                // Inicializa o Cropper na nova imagem
+                cropper = new Cropper(imageToCrop, {
+                    aspectRatio: 1,      // Proporção quadrada
+                    viewMode: 1,         // Restringe a área de corte à imagem
+                    background: false,   // Remove o fundo quadriculado
+                    autoCropArea: 0.9,   // A área de corte inicial ocupa 90% da imagem
+                });
+            };
+            reader.readAsDataURL(file);
+        });
 
-               try {
-                   const response = await fetch('/upload_image', {
-                       method: 'POST',
-                       body: formData,
-                   });
-                   const data = await response.json();
-                   if (data.success) {
-                       document.getElementById('preview').src = data.image_url;
-                       alert('Imagem salva com sucesso!');
-                   } else {
-                       alert('Erro ao salvar a imagem.');
-                   }
-               } catch (error) {
-                   console.error('Erro no upload:', error);
-                   alert('Erro ao conectar ao servidor.');
-               }
-           }
-       </script>
-   </body>
-   </html>
+        // --- Fechar modal e salvar a imagem cortada ---
+        closeModalButton.addEventListener('click', () => {
+            cropModal.style.display = 'none'; // Fecha o modal imediatamente para o usuário
+
+            if (!cropper) {
+                // Se nenhum arquivo foi selecionado, não faz nada
+                return;
+            }
+
+            // Pega o canvas com a imagem cortada (com tamanho definido)
+            const canvas = cropper.getCroppedCanvas({
+                width: 256,
+                height: 256,
+            });
+
+            if (!canvas) {
+                console.error("Canvas não pôde ser criado.");
+                return;
+            }
+
+            // Converte o canvas para Blob (formato de arquivo) e faz o upload
+            canvas.toBlob(blob => {
+                if (blob) {
+                    uploadImage(blob);
+                }
+            }, 'image/jpeg', 0.9); // Formato JPEG com 90% de qualidade
+        });
+
+        // --- Função para fazer o upload da imagem para o backend ---
+        async function uploadImage(blob) {
+            const formData = new FormData();
+            formData.append('file', blob, 'profile.jpg');
+
+            try {
+                // Envia a requisição para o endpoint do Flask
+                const response = await fetch("{{ url_for('upload_image') }}", {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Sucesso! Atualiza a imagem de perfil na página com a nova URL
+                    // Adiciona um timestamp para evitar problemas de cache do navegador
+                    previewImage.src = data.image_url + '?t=' + new Date().getTime();
+                    alert('Imagem de perfil atualizada com sucesso!');
+                } else {
+                    // Exibe a mensagem de erro vinda do servidor
+                    alert('Erro ao salvar a imagem: ' + (data.message || 'Erro desconhecido.'));
+                }
+            } catch (error) {
+                console.error('Erro na requisição de upload:', error);
+                alert('Não foi possível conectar ao servidor para salvar a imagem.');
+            } finally {
+                // Limpa o input de arquivo e destrói o cropper para a próxima vez
+                imageInput.value = '';
+                if (cropper) {
+                    cropper.destroy();
+                    cropper = null;
+                }
+                imageToCrop.src = '';
+            }
+        }
+    </script>
+</body>
+</html>
