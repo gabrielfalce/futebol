@@ -20,15 +20,27 @@
     </div>
 
     <div class="user-list" id="user-list">
-        {% for user in usuarios %}
-            <div class="user-card">
-                <p class="user-name">Nome: {{ user.nome }}</p>
-                <p class="user-city">Cidade: {{ user.cidade }}</p>
-            </div>
-        {% endfor %}
-    </div>
+    {% for user in usuarios %}
+        {# Verifica para não exibir o próprio usuário na lista de chat #}
+        {% if user.id != session.user_id %} 
+            <!-- Transforma o card inteiro em um link para o chat com aquele usuário -->
+            <a href="{{ url_for('pagina_chat', destinatario_id=user.id) }}" class="user-card-link">
+                <div class="user-card">
+                    <!-- Adiciona a imagem de perfil do usuário -->
+                    <img src="{{ user.profile_image_url or url_for('serve_usuario_static', filename='imagens/user-icon-placeholder.png') }}" alt="Foto de perfil de {{ user.nome }}" class="user-card-avatar">
+                    
+                    <div class="user-card-info">
+                        <!-- Remove o "Nome:" e "Cidade:" para um visual mais limpo -->
+                        <p class="user-name">{{ user.nome }}</p>
+                        <p class="user-city">{{ user.cidade }}</p>
+                    </div>
+                </div>
+            </a>
+        {% endif %}
+    {% endfor %}
+</div>
 
-    <div id="toast-notification" class="toast"></div>
+ <div id="toast-notification" class="toast"></div>
     <a href="{{ url_for('logout') }}" class="logout-link">Sair</a>
     <a href="{{ url_for('pagina_usuario') }}" class="profile-link">Ver Perfil</a>
 
