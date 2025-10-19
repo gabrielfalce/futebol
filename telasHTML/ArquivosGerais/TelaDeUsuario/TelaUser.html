@@ -13,7 +13,7 @@
     
     <!-- wallpaper do usuarios -->
     <div class="Wallpaper">
-   <img class="imagemWallpaper"  src="imagens/hM94BRC.jpeg" alt="Wallpaper de fundo">
+   <img class="imagemWallpaper"  src="imagens/WallpaperTest.jpg " alt="Wallpaper de fundo">
     </div>
 </head>
 <body>
@@ -26,7 +26,7 @@
                 <div id="perfilImagemGeralCaixa">
                     <img id="preview" src="imagens/user-icon-placeholder.png" alt="Prévia da imagem cortada">
                 </div>
-                <p id="nomeUsuario" >Nome de usuário</p>
+                <p id="nomeUsuario" class="nomeUsuario" >Nome de usuário</p>
             </div>
             <button id="openModalButton">editar perfil</button>
         </div>
@@ -57,15 +57,26 @@
     
 <!-- publicações usuario -->
 <div class="BoxePublicacoes" >      
-    <h1>publicações do Usuário</h1>
+    <h1 id="nomeUsuario" class="nomeUsuarioPublicação" >publicações do Usuário</h1>
     <div id="imagemPublicaçãoUsuario"  >
-        <img class="publicacaoImagem" src="imagens/WallpaperTest.jpg" alt="">
+        <img class="publicacaoImagem" src="imagens/hM94BRC.jpeg" alt="">
     </div>
     
 
 
 </div>
+<div class="BoxePublicacoes" >
+    <h3 id="FotoDePerfil" class="fotoUserPublicacao" >
+        
+    </h3>      
+    <h2 id="nomeUsuario" class="nomeUsuarioPublicação" >publicações do Usuário</h2>
+    <div id="imagemPublicaçãoUsuario"  >
+        <img class="publicacaoImagem" src="imagens/hM94BRC.jpeg" alt="">
+    </div>
+    
 
+
+</div>
 
     <!-- ===== Scripts ===== -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
