@@ -196,7 +196,55 @@ def upload_image():
         logging.critical(f"ERRO CRÍTICO INESPERADO: Tipo={type(e).__name__}, Erro={str(e)}", exc_info=True)
         return jsonify({'success': False, 'message': 'Erro interno do servidor ao processar a imagem.'}), 500
 
-# --- EXECUÇÃO DA APLICAÇÃO ---
+# Em app.py, adicione estas rotas no final do arquivo, antes do if __name__ == '__main__':
+
+# Rota para servir os arquivos estáticos da pasta do chat
+@app.route('/TelaChat/<path:filename>')
+def serve_chat_static(filename):
+    return send_from_directory(os.path.join(template_root, 'TelaChat'), filename)
+
+# Rota para abrir a página de chat com um usuário específico
+@app.route('/chat/<int:destinatario_id>')
+def pagina_chat(destinatario_id):
+    if 'user_email' not in session:
+        return redirect(url_for('login'))
+
+    # Busca os dados do remetente (usuário logado)
+    remetente = supabase.table('usuarios').select('id, nome').eq('email', session['user_email']).single().execute().data
+    if not remetente:
+        return redirect(url_for('login'))
+
+    # Busca os dados do destinatário
+    destinatario = supabase.table('usuarios').select('id, nome, profile_image_url').eq('id', destinatario_id).single().execute().data
+    if not destinatario:
+        flash('Usuário para chat não encontrado.', 'danger')
+        return redirect(url_for('pagina_inicial'))
+
+    # Renderiza a página de chat, passando os dados dos dois usuários
+    return render_template('TelaChat/chat.html', remetente=remetente, destinatario=destinatario)
+
+
+# Rota de API para buscar o histórico de mensagens
+@app.route('/api/chat/historico/<int:destinatario_id>')
+def get_historico_chat(destinatario_id):
+    if 'user_email' not in session:
+        return jsonify({"error": "Não autorizado"}), 401
+    
+    # Pega o ID do usuário logado
+    remetente_id = supabase.table('usuarios').select('id').eq('email', session['user_email']).single().execute().data['id']
+
+    # Busca mensagens onde o remetente é o logado e o destinatário é o outro, OU vice-versa
+    query1 = supabase.table('mensagens').select('*').eq('remetente_id', remetente_id).eq('destinatario_id', destinatario_id)
+    query2 = supabase.table('mensagens').select('*').eq('remetente_id', destinatario_id).eq('destinatario_id', remetente_id)
+    
+    # Combina as duas buscas
+    mensagens = query1.execute().data + query2.execute().data
+    
+    # Ordena as mensagens pela data de criação
+    mensagens.sort(key=lambda m: m['created_at'])
+    
+    return jsonify(mensagens)
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     # debug=False é o recomendado para produção e para o logging funcionar melhor com Gunicorn
