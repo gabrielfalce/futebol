@@ -279,15 +279,17 @@ def editar_perfil():
         # Pega os dados do formulário
         nome = request.form.get('nome')
         cidade = request.form.get('cidade')
-        numero = request.form.get('numero')
         posicao = request.form.get('posicao')
+        numero_telefone = request.form.get('numero_telefone') # Novo campo
+        numero_camisa = request.form.get('numero_camisa')   # Novo campo
 
         # Cria o dicionário apenas com os campos que o usuário preencheu
         update_data = {}
         if nome: update_data['nome'] = nome
         if cidade: update_data['cidade'] = cidade
-        if numero: update_data['numero'] = numero
         if posicao: update_data['posicao'] = posicao
+        if numero_telefone: update_data['numero'] = numero_telefone # Salva na coluna 'numero'
+        if numero_camisa: update_data['numero_camisa'] = numero_camisa # Salva na nova coluna
 
         if update_data:
             try:
@@ -301,6 +303,7 @@ def editar_perfil():
         
         return redirect(url_for('pagina_usuario'))
 
+    # Certifique-se de que get_user_by_email busca a nova coluna também
     user_data = get_user_by_email(session['user_email'])
     if not user_data:
         flash('Usuário não encontrado.', 'danger')
