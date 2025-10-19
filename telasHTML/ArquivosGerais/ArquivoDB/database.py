@@ -60,16 +60,13 @@ def inserir_usuario(nome: str, email: str, senha_hash: bytes, cidade: str, posic
     except APIError as e:
         error_message = f"Erro de banco de dados: {e.message}"
         print(f"--- ERRO DE API SUPABASE ---: {error_message}")
-        return False, "Erro ao salvar: Verifique se todos os campos estão corretos e tente novamente."
-    except Exception as e:
-        print(f"--- ERRO INESPERADO AO INSERIR ---: {e}")
-        return False, "Ocorreu um erro inesperado ao cadastrar. Tente novamente mais tarde."
+        return False, error_message
 
 def check_user(email: str, senha_texto_puro: str) -> Optional[Dict[str, Any]]:
-    """Verifica as credenciais do usuário e retorna os dados se o login for bem-sucedido."""
+    """Verifica as credenciais de um usuário e retorna seus dados se válidos."""
     if supabase is None:
         return None
-        
+    
     try:
         response = supabase.table("usuarios").select("senha_hash, nome, email").eq("email", email).limit(1).execute()
         
@@ -109,15 +106,6 @@ def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
     except Exception as e:
         print(f"--- ERRO DURANTE A BUSCA DE USUÁRIO POR EMAIL ---: {e}")
         return None
-
-   def update_user_profile_image(email, image_url):
-       try:
-           response = supabase.table('usuarios').update({'profile_image_url': image_url}).eq('email', email).execute()
-           if response.data:
-               return True, 'Imagem de perfil atualizada com sucesso.'
-           return False, 'Erro ao atualizar a imagem de perfil.'
-       except Exception as e:
-           return False, f'Erro no banco de dados: {str(e)}'
 
 def update_user_profile_image(email, image_url):
     try:
