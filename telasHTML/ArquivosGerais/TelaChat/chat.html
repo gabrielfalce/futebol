@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat com {{ destinatario.nome }}</title>
+    <!-- Vamos criar este CSS no próximo passo -->
+    <link rel="stylesheet" href="{{ url_for('serve_chat_static', filename='chat.css') }}">
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Cabeçalho do Chat -->
+        <header class="chat-header">
+            <a href="{{ url_for('pagina_inicial') }}" class="back-button">&larr;</a>
+            <img src="{{ destinatario.profile_image_url or url_for('serve_usuario_static', filename='imagens/user-icon-placeholder.png') }}" alt="Avatar" class="avatar">
+            <div class="user-info">
+                <h2>{{ destinatario.nome }}</h2>
+                <!-- Poderíamos adicionar um status "online" aqui no futuro -->
+            </div>
+        </header>
+
+        <!-- Corpo do Chat (onde as mensagens aparecem) -->
+        <main class="chat-body" id="chat-body">
+            <!-- As mensagens serão inseridas aqui pelo JavaScript -->
+            <!-- Exemplo de como uma mensagem será: -->
+            <!-- 
+            <div class="message-wrapper sent">
+                <div class="message">Olá, tudo bem?</div>
+            </div>
+            <div class="message-wrapper received">
+                <div class="message">Tudo ótimo, e com você?</div>
+            </div>
+             -->
+        </main>
+
+        <!-- Rodapé/Formulário de Envio -->
+        <footer class="chat-footer">
+            <form id="message-form" class="message-form">
+                <input type="text" id="message-input" placeholder="Digite uma mensagem..." autocomplete="off">
+                <button type="submit">
+                    <!-- Ícone de envio (SVG) -->
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                    </svg>
+                </button>
+            </form>
+        </footer>
+    </div>
+
+    <!-- Incluindo a biblioteca do Supabase no frontend -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Nosso script do chat, que vamos criar a seguir -->
+    <script src="{{ url_for('serve_chat_static', filename='chat.js' ) }}"></script>
+
+    <!-- Passando dados do Flask para o JavaScript -->
+    <script>
+        // Passa as variáveis do backend (Flask) para o nosso chat.js poder usá-las
+        const REMETENTE_ID = {{ remetente.id }};
+        const DESTINATARIO_ID = {{ destinatario.id }};
+        const SUPABASE_URL = "{{ url_for('_external', _scheme='https' )[:-1] }}"; // truque para pegar a URL base
+        const SUPABASE_KEY = "{{ key }}"; // Passando a chave pública do Supabase
+    </script>
+</body>
+</html>
