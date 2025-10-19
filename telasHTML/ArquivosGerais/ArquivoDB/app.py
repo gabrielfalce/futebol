@@ -244,6 +244,32 @@ def get_historico_chat(destinatario_id):
     
     return jsonify(mensagens)
 
+# --- API PARA POSTS COM PAGINAÇÃO ---
+@app.route('/api/posts')
+def get_posts():
+    if 'user_email' not in session:
+        return jsonify({"error": "Não autorizado"}), 401
+    
+    try:
+        page = int(request.args.get('page', 1))
+        limit = int(request.args.get('limit', 10))
+    except ValueError:
+        return jsonify({"error": "Parâmetros 'page' e 'limit' devem ser números."}), 400
+
+    offset = (page - 1) * limit
+
+    try:
+        response = supabase.table('posts').select('''
+            *,
+            autor:usuarios ( nome, profile_image_url )
+        ''').order('created_at', desc=True).range(offset, offset + limit - 1).execute()
+
+        return jsonify(response.data or [])
+    except Exception as e:
+        logging.error(f"Erro ao buscar posts: {e}")
+        return jsonify({"error": "Erro interno ao buscar posts."}), 500
+
+
 # --- ROTAS DE RECUPERAÇÃO DE SENHA ---
 
 @app.route('/esqueci-senha', methods=['GET', 'POST'] )
