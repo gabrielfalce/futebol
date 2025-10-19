@@ -130,19 +130,43 @@ def cadastro():
 
 @app.route("/cadastrar", methods=['POST'])
 def cadastrar():
-    nome, email, senha_texto_puro = request.form.get("nome"), request.form.get("email"), request.form.get("senha")
-    cidade, posicao, nascimento_str, numero = request.form.get("cidade"), request.form.get("posicao"), request.form.get("nascimento"), request.form.get("numero")
-    if not all([nome, email, senha_texto_puro, cidade, posicao, nascimento_str, numero]):
+    # Pega todos os dados do formulário, incluindo o novo campo
+    nome = request.form.get("nome")
+    email = request.form.get("email")
+    senha_texto_puro = request.form.get("senha")
+    cidade = request.form.get("cidade")
+    posicao = request.form.get("posicao")
+    nascimento_str = request.form.get("nascimento")
+    numero = request.form.get("numero")
+    numero_camisa = request.form.get("numero_camisa") # NOVO CAMPO
+
+    # Validação para garantir que todos os campos foram preenchidos
+    if not all([nome, email, senha_texto_puro, cidade, posicao, nascimento_str, numero, numero_camisa]):
         flash("Erro no cadastro: Todos os campos são obrigatórios.", 'danger')
         return redirect(url_for('cadastro'))
+        
     try:
-        data_obj = datetime.strptime(nascimento_str, '%d/%m/%Y')
+        # A data pode vir no formato AAAA-MM-DD do input type="date" ou DD/MM/AAAA do texto
+        try:
+            data_obj = datetime.strptime(nascimento_str, '%Y-%m-%d')
+        except ValueError:
+            data_obj = datetime.strptime(nascimento_str, '%d/%m/%Y')
+        
         data_nascimento_iso = data_obj.strftime('%Y-%m-%d')
     except ValueError:
-        flash("Erro: A data de nascimento deve ser no formato DD/MM/AAAA.", 'danger')
+        flash("Erro: A data de nascimento deve estar no formato DD/MM/AAAA ou ser selecionada no calendário.", 'danger')
         return redirect(url_for('cadastro'))
+
     senha_hash = bcrypt.hashpw(senha_texto_puro.encode('utf-8'), bcrypt.gensalt())
-    sucesso, mensagem = inserir_usuario(nome=nome, email=email, senha_hash=senha_hash, cidade=cidade, posicao=posicao, nascimento=data_nascimento_iso, numero=numero)
+    
+    # Chama a função de inserir, agora passando também o numero_camisa
+    # (Precisamos atualizar a função inserir_usuario em database.py)
+    sucesso, mensagem = inserir_usuario(
+        nome=nome, email=email, senha_hash=senha_hash, cidade=cidade,
+        posicao=posicao, nascimento=data_nascimento_iso, numero=numero,
+        numero_camisa=numero_camisa # NOVO PARÂMETRO
+    )
+
     if sucesso:
         session['user_email'] = email
         flash(mensagem, 'success')
@@ -150,6 +174,7 @@ def cadastrar():
     else:
         flash(mensagem, 'danger')
         return redirect(url_for('cadastro'))
+
 
 @app.route("/logout")
 def logout():
