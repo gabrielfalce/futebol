@@ -22,7 +22,7 @@
             {% for usuario in usuarios %}
                 <a href="{{ url_for('pagina_chat', destinatario_id=usuario.id) }}" class="user-card-link">
                     <div class="user-card">
-                        <img src="{{ usuario.profile_image_url or url_for('static', filename='default_profile.png') }}" 
+                        <img src="{{ usuario.profile_image_url or url_for('serve_inicial_static', filename='default_profile.png') }}" 
                              alt="Foto de perfil de {{ usuario.nome }}">
                         
                         <span class="user-name">{{ usuario.nome }}</span>
@@ -34,7 +34,7 @@
                 <p>Nenhum outro usuário cadastrado no momento.</p>
             {% endif %}
         </div>
-        </main>
+    </main>
 
     <nav class="navigation-links">
         <a href="{{ url_for('pagina_feed') }}" class="nav-button feed-button">Ver Feed</a>
@@ -52,22 +52,25 @@
     {% endwith %}
 
     <script>
-        // ... (Seu script searchUsers() permanece inalterado) ...
         function searchUsers() {
+            // Obtém o valor da busca em minúsculas
             const filter = document.getElementById("search-input").value.toLowerCase();
             const userList = document.getElementById("user-list");
             const userCards = userList.getElementsByClassName("user-card-link");
 
+            // Itera sobre cada cartão de usuário
             for (let i = 0; i < userCards.length; i++) {
                 const card = userCards[i];
+                // Encontra o nome do usuário dentro do cartão
                 const userNameElement = card.querySelector(".user-name");
                 
                 if (userNameElement) {
                     const userName = userNameElement.textContent || userNameElement.innerText;
+                    // Compara o nome do usuário com o filtro da busca
                     if (userName.toLowerCase().includes(filter)) {
-                        card.style.display = "";
+                        card.style.display = ""; // Mostra o cartão se corresponder
                     } else {
-                        card.style.display = "none";
+                        card.style.display = "none"; // Oculta o cartão se não corresponder
                     }
                 }
             }
@@ -77,15 +80,18 @@
         document.addEventListener('DOMContentLoaded', (event) => {
             const toast = document.getElementById("toast-notification");
             
+            // Verifica se a notificação existe e tem uma mensagem
             if (toast && toast.dataset.message) {
                 toast.textContent = toast.dataset.message;
                 
+                // Define a cor de fundo com base na categoria da mensagem
                 toast.style.backgroundColor = toast.dataset.category === 'success' 
-                    ? 'var(--cor-primaria)' // Defina sua variável CSS aqui
+                    ? 'var(--cor-primaria)' // Cor para sucesso (defina em seu CSS)
                     : '#ff4d4d'; // Cor para erro/danger
 
                 toast.classList.add("show");
                 
+                // Oculta a notificação após 4 segundos
                 setTimeout(() => {
                     toast.classList.remove("show");
                 }, 4000);
