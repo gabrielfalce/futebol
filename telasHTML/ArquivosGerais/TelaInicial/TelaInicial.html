@@ -27,7 +27,9 @@
             <a href="{{ url_for('pagina_chat', destinatario_id=user.id) }}" class="user-card-link">
                 <div class="user-card">
                     <!-- Adiciona a imagem de perfil do usuário -->
-                    <img src="{{ user.profile_image_url or url_for('serve_inicial_static', filename='iconuser.png') }}" alt="Foto de perfil de {{ user.nome }}" class="user-card-avatar">">
+                    <img src="{{ user.profile_image_url or url_for('serve_inicial_static', filename='iconuser.png') }}" 
+     alt="Foto de perfil de {{ user.nome }}" 
+     class="user-card-avatar {% if not user.profile_image_url %}avatar-fallback{% endif %}">
 
                     
                     <div class="user-card-info">

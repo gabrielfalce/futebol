@@ -190,9 +190,7 @@ body {
     }
 }
 
-/* =======================
-   LINKS DE NAVEGAÇÃO (NOVO)
-   ======================= */
+
    .navigation-links {
     display: flex;
     justify-content: center;
@@ -227,4 +225,10 @@ body {
     background-color: var(--cor-card);
     color: var(--cor-texto-card);
     border: 1px solid var(--cor-borda);
+}
+
+.avatar-fallback {
+    object-fit: contain;  
+    background-color: #444; 
+    padding: 10px; /* Adiciona um pequeno preenchimento para a imagem não tocar as bordas */
 }
