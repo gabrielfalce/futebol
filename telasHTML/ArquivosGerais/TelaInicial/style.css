@@ -8,7 +8,8 @@
     --cor-texto: #FFFFFF;
     --cor-card: #2C2C2C;
     --cor-texto-card: #E0E0E0;
-    --sombra: 0 4px 12px rgba(0,0,0,0.3);
+    /* Sombra sólida deslocada para a esquerda e para baixo */
+    --sombra: -8px 8px 0px var(--cor-primaria);
 }
 
 /* =======================
@@ -109,15 +110,14 @@ body {
 }
 
 .user-card {
-    background: var(--cor-card);
+    background: #ffffff; /* Cor do card alterada para branco */
     border-radius: 16px;
     padding: 25px;
     box-shadow: var(--sombra);
     transition: transform 0.3s ease;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+    flex-direction: row; /* Alinha os itens (imagem e texto) lado a lado */
+    align-items: center; /* Centraliza verticalmente a imagem e o texto */
 }
 
 .user-card:hover {
@@ -129,13 +129,17 @@ body {
     height: 90px;
     border-radius: 50%; /* Deixa a imagem redonda */
     object-fit: cover; /* Garante que a imagem preencha o círculo sem distorcer */
-    margin-bottom: 20px;
+    margin-right: 20px; /* Adiciona espaço entre a imagem e o nome */
     border: 3px solid var(--cor-primaria);
     background-color: #444; /* Cor de fundo caso a imagem não carregue */
 }
 
+.user-info {
+    text-align: left; /* Alinha o texto à esquerda */
+}
+
 .user-name {
-    color: var(--cor-texto-card);
+    color: #333333; /* Cor do texto alterada para escuro para ser legível em fundo branco */
     font-size: 1.4rem;
     margin-bottom: 8px;
     font-weight: 600;
