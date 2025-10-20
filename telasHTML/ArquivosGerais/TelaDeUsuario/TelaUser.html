@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
     <!-- CSS personalizado -->
     <link rel="stylesheet" href="stylesTest.css">
-    <link rel="icon" href="imagens/iconeUser.png">
 
     
     <!-- wallpaper do usuarios -->
@@ -32,10 +31,12 @@
                     <img id="preview" 
                          src="{{ usuario.profile_image_url or url_for('serve_usuario_static', filename='imagens/user-icon-placeholder.png') }}" 
                          alt="Imagem de perfil do usuário">
-                </div>
+                <img src="imagens/user-icon-placeholder.png" alt="">
+                
+                        </div>
                 <p id="nomeUsuario" >Nome de usuário</p>
             </div>
-            <a href="{{ url_for('editar_perfil') }}" class="edit-profile-button">editar perfil</a>
+            <a id="openModalButton" href="{{ url_for('editar_perfil') }}" class="edit-profile-button">editar perfil</a>
         </div>
     </div>      
 
@@ -59,6 +60,7 @@
         <!-- Link para a tela de loading/inicial -->
         <a id="linkTela" href="{{ url_for('tela_de_loading') }}">
             <button id="adicionarUsuarioBtn" class="floating-button">
+                <img src="imagens/bolaLogo.png" alt="">
                 <img src="{{ url_for('serve_usuario_static', filename='imagens/bolaLogo.png') }}" alt="Ir para tela inicial">
             </button>
         </a>

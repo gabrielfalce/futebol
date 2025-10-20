@@ -84,6 +84,7 @@ body {
 
 /* abrir modal  */
 #openModalButton {
+    text-decoration: none;
     margin-top: -110px;
     margin-left: 2090px;
     padding: 5px 15px;
@@ -381,6 +382,7 @@ img {
         color: var(--cor-texto);
         font-weight: bold;
         text-align: flex-start;
+
         
     } 
 }
@@ -394,7 +396,8 @@ img {
     border-radius: 12px;
     padding: 10px 2px;
     width: 400px;
-    margin: 60px auto;
+    margin: 60
+    px auto;
     box-shadow: 0 4px 2px rgb(72, 187, 5);
     }
 
