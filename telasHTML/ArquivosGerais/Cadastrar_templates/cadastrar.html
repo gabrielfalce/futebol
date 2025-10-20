@@ -10,17 +10,20 @@
     <img src="/TelaLoading/logoGeral.png" alt="Bola Verde">
     <h1 class="titulo">Cadastro</h1>
     <div id="toast-notification" class="toast"></div>
-    <form action="/cadastrar" method="post">
-        <input placeholder="Nome" type="text" name="nome" required>
-        <input placeholder="Email" type="email" name="email" required>
-        <input placeholder="Senha" type="password" name="senha" required>
-        <input placeholder="Cidade" type="text" name="cidade" required>
-        <input placeholder="Posição" type="text" name="posicao" required>
-        <input placeholder="Data de Nascimento (DD/MM/AAAA)" type="text" name="nascimento" required>
-        <input placeholder="Número" type="text" name="numero" required>
-        <button type="submit">Cadastrar</button>
-        <a href="{{ url_for('login') }}">Voltar para Login</a>
-    </form>
+   <form action="/cadastrar" method="post">
+    <input placeholder="Nome Completo" type="text" name="nome" required>
+    <input placeholder="Email" type="email" name="email" required>
+    <input placeholder="Senha" type="password" name="senha" required minlength="6">
+    <input placeholder="Cidade" type="text" name="cidade" required>
+    <input placeholder="Posição em Campo" type="text" name="posicao" required>
+    <input placeholder="Data de Nascimento (DD/MM/AAAA)" type="text" name="nascimento" required onfocus="(this.type='date')" onblur="(this.type='text')">
+    
+    <!-- CAMPO CORRIGIDO PARA NÚMERO DE TELEFONE -->
+    <input placeholder="Número de Telefone" type="tel" name="numero" required>
+    <input placeholder="Número da Camisa" type="number" name="numero_camisa" required>
+    <button type="submit">Cadastrar</button>
+    <a href="{{ url_for('login') }}">Voltar para Login</a>
+</form>
 
     <script>
         {% with messages = get_flashed_messages(with_categories=true) %}

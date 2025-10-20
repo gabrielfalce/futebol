@@ -4,9 +4,10 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from database import inserir_usuario, check_user, get_all_users, get_user_by_email, update_user_profile_image
 import bcrypt
 from datetime import datetime
-from jinja2.exceptions import TemplateNotFound
 from supabase import create_client, Client
 from postgrest.exceptions import APIError
+
+
 
 # --- CONFIGURAÇÃO DE LOGGING PROFISSIONAL ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -51,6 +52,19 @@ def serve_usuario_static(filename):
 @app.route('/TelaChat/<path:filename>')
 def serve_chat_static(filename):
     return send_from_directory(os.path.join(template_root, 'TelaChat'), filename)
+
+@app.route('/feed')
+def pagina_feed():
+    if 'user_email' not in session:
+        return redirect(url_for('login'))
+    
+    return render_template('TelaFeed/feed.html')
+
+
+@app.route('/TelaFeed/<path:filename>')
+def serve_feed_static(filename):
+    return send_from_directory(os.path.join(template_root, 'TelaFeed'), filename)
+
 
 # --- FILTRO JINJA ---
 @app.template_filter('format_date')
@@ -130,19 +144,43 @@ def cadastro():
 
 @app.route("/cadastrar", methods=['POST'])
 def cadastrar():
-    nome, email, senha_texto_puro = request.form.get("nome"), request.form.get("email"), request.form.get("senha")
-    cidade, posicao, nascimento_str, numero = request.form.get("cidade"), request.form.get("posicao"), request.form.get("nascimento"), request.form.get("numero")
-    if not all([nome, email, senha_texto_puro, cidade, posicao, nascimento_str, numero]):
+    # Pega todos os dados do formulário, incluindo o novo campo
+    nome = request.form.get("nome")
+    email = request.form.get("email")
+    senha_texto_puro = request.form.get("senha")
+    cidade = request.form.get("cidade")
+    posicao = request.form.get("posicao")
+    nascimento_str = request.form.get("nascimento")
+    numero = request.form.get("numero")
+    numero_camisa = request.form.get("numero_camisa") # NOVO CAMPO
+
+    # Validação para garantir que todos os campos foram preenchidos
+    if not all([nome, email, senha_texto_puro, cidade, posicao, nascimento_str, numero, numero_camisa]):
         flash("Erro no cadastro: Todos os campos são obrigatórios.", 'danger')
         return redirect(url_for('cadastro'))
+        
     try:
-        data_obj = datetime.strptime(nascimento_str, '%d/%m/%Y')
+        # A data pode vir no formato AAAA-MM-DD do input type="date" ou DD/MM/AAAA do texto
+        try:
+            data_obj = datetime.strptime(nascimento_str, '%Y-%m-%d')
+        except ValueError:
+            data_obj = datetime.strptime(nascimento_str, '%d/%m/%Y')
+        
         data_nascimento_iso = data_obj.strftime('%Y-%m-%d')
     except ValueError:
-        flash("Erro: A data de nascimento deve ser no formato DD/MM/AAAA.", 'danger')
+        flash("Erro: A data de nascimento deve estar no formato DD/MM/AAAA ou ser selecionada no calendário.", 'danger')
         return redirect(url_for('cadastro'))
+
     senha_hash = bcrypt.hashpw(senha_texto_puro.encode('utf-8'), bcrypt.gensalt())
-    sucesso, mensagem = inserir_usuario(nome=nome, email=email, senha_hash=senha_hash, cidade=cidade, posicao=posicao, nascimento=data_nascimento_iso, numero=numero)
+    
+    # Chama a função de inserir, agora passando também o numero_camisa
+    # (Precisamos atualizar a função inserir_usuario em database.py)
+    sucesso, mensagem = inserir_usuario(
+        nome=nome, email=email, senha_hash=senha_hash, cidade=cidade,
+        posicao=posicao, nascimento=data_nascimento_iso, numero=numero,
+        numero_camisa=numero_camisa # NOVO PARÂMETRO
+    )
+
     if sucesso:
         session['user_email'] = email
         flash(mensagem, 'success')
@@ -150,6 +188,7 @@ def cadastrar():
     else:
         flash(mensagem, 'danger')
         return redirect(url_for('cadastro'))
+
 
 @app.route("/logout")
 def logout():
@@ -219,6 +258,124 @@ def get_historico_chat(destinatario_id):
     
     return jsonify(mensagens)
 
+# --- API PARA POSTS COM PAGINAÇÃO ---
+@app.route('/api/posts')
+def get_posts():
+    if 'user_email' not in session:
+        return jsonify({"error": "Não autorizado"}), 401
+    
+    try:
+        page = int(request.args.get('page', 1))
+        limit = int(request.args.get('limit', 10))
+    except ValueError:
+        return jsonify({"error": "Parâmetros 'page' e 'limit' devem ser números."}), 400
+
+    offset = (page - 1) * limit
+
+    try:
+        response = supabase.table('posts').select('''
+            *,
+            autor:usuarios ( nome, profile_image_url )
+        ''').order('created_at', desc=True).range(offset, offset + limit - 1).execute()
+
+        return jsonify(response.data or [])
+    except Exception as e:
+        logging.error(f"Erro ao buscar posts: {e}")
+        return jsonify({"error": "Erro interno ao buscar posts."}), 500
+
+
+# --- ROTAS DE RECUPERAÇÃO DE SENHA ---
+
+@app.route('/esqueci-senha', methods=['GET', 'POST'] )
+def esqueci_senha():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        if not email:
+            flash('Por favor, insira um e-mail.', 'danger')
+            return redirect(url_for('esqueci_senha'))
+        
+        try:
+            # Esta é a função mágica do Supabase
+            supabase.auth.reset_password_for_email(email)
+            flash('Se o e-mail estiver cadastrado, um link para redefinição de senha foi enviado.', 'success')
+        except Exception as e:
+            # Não informamos o erro exato para não vazar se um e-mail existe ou não
+            logging.error(f"Tentativa de reset de senha para {email} falhou: {e}")
+            flash('Se o e-mail estiver cadastrado, um link para redefinição de senha foi enviado.', 'info')
+
+        return redirect(url_for('login'))
+        
+    return render_template('RecuperarSenha/esqueci_senha.html')
+
+@app.route('/redefinir-senha', methods=['GET', 'POST'])
+def redefinir_senha():
+    if request.method == 'POST':
+        nova_senha = request.form.get('nova_senha')
+        if not nova_senha or len(nova_senha) < 6:
+            flash('A senha precisa ter no mínimo 6 caracteres.', 'danger')
+            return render_template('RecuperarSenha/redefinir_senha.html')
+
+        try:
+            # O Supabase usa o token da URL para identificar o usuário
+            user = supabase.auth.get_user()
+            if user:
+                supabase.auth.update_user({'password': nova_senha})
+                flash('Senha redefinida com sucesso! Você já pode fazer login.', 'success')
+                return redirect(url_for('login'))
+            else:
+                flash('Link de redefinição inválido ou expirado. Tente novamente.', 'danger')
+                return redirect(url_for('esqueci_senha'))
+        except Exception as e:
+            logging.error(f"Erro ao redefinir senha: {e}")
+            flash('Ocorreu um erro ao redefinir sua senha. O link pode ter expirado.', 'danger')
+            return redirect(url_for('esqueci_senha'))
+
+    return render_template('RecuperarSenha/redefinir_senha.html')
+
+
+# --- ROTAS DE EDIÇÃO DE PERFIL ---
+
+@app.route('/editar-perfil', methods=['GET', 'POST'])
+def editar_perfil():
+    if 'user_email' not in session:
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        # Pega os dados do formulário
+        nome = request.form.get('nome')
+        cidade = request.form.get('cidade')
+        posicao = request.form.get('posicao')
+        numero_telefone = request.form.get('numero_telefone') # Novo campo
+        numero_camisa = request.form.get('numero_camisa')   # Novo campo
+
+        # Cria o dicionário apenas com os campos que o usuário preencheu
+        update_data = {}
+        if nome: update_data['nome'] = nome
+        if cidade: update_data['cidade'] = cidade
+        if posicao: update_data['posicao'] = posicao
+        if numero_telefone: update_data['numero'] = numero_telefone # Salva na coluna 'numero'
+        if numero_camisa: update_data['numero_camisa'] = numero_camisa # Salva na nova coluna
+
+        if update_data:
+            try:
+                supabase.table('usuarios').update(update_data).eq('email', session['user_email']).execute()
+                flash('Perfil atualizado com sucesso!', 'success')
+            except Exception as e:
+                logging.error(f"Erro ao atualizar perfil de {session['user_email']}: {e}")
+                flash('Ocorreu um erro ao atualizar seu perfil.', 'danger')
+        else:
+            flash('Nenhum dado foi alterado.', 'info')
+        
+        return redirect(url_for('pagina_usuario'))
+
+    # Certifique-se de que get_user_by_email busca a nova coluna também
+    user_data = get_user_by_email(session['user_email'])
+    if not user_data:
+        flash('Usuário não encontrado.', 'danger')
+        return redirect(url_for('pagina_inicial'))
+
+    return render_template('TelaDeUsuario/editar_perfil.html', usuario=user_data)
+    
 # --- EXECUÇÃO DA APLICAÇÃO ---
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))

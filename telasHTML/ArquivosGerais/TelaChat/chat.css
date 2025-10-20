@@ -1,0 +1,147 @@
+/* Estilo geral e variáveis de cor */
+:root {
+    --cor-fundo: #121212;
+    --cor-fundo-secundaria: #1e1e1e;
+    --cor-primaria: #00bfa5; /* Verde-azulado, como no WhatsApp */
+    --cor-texto: #e0e0e0;
+    --cor-texto-secundario: #b0b0b0;
+    --cor-balao-enviado: #005c4b;
+    --cor-balao-recebido: #2a2a2a;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--cor-fundo);
+    color: var(--cor-texto);
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Container principal do chat */
+.chat-container {
+    width: 100%;
+    max-width: 800px; /* Limita a largura em telas grandes */
+    height: 100vh; /* Ocupa a tela inteira */
+    display: flex;
+    flex-direction: column;
+    background-color: var(--cor-fundo-secundaria);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+
+/* Cabeçalho do Chat */
+.chat-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: #2a2a2a;
+    border-bottom: 1px solid #333;
+}
+
+.back-button {
+    color: var(--cor-texto);
+    text-decoration: none;
+    font-size: 24px;
+    margin-right: 15px;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 15px;
+}
+
+.user-info h2 {
+    margin: 0;
+    font-size: 1.1em;
+    font-weight: 500;
+}
+
+/* Corpo do Chat (área das mensagens) */
+.chat-body {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto; /* A mágica do scroll */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Wrapper para cada balão de mensagem */
+.message-wrapper {
+    display: flex;
+    margin-bottom: 10px;
+    max-width: 70%;
+}
+
+.message {
+    padding: 10px 15px;
+    border-radius: 18px;
+    font-size: 0.95em;
+    line-height: 1.4;
+}
+
+/* Estilo para mensagens ENVIADAS (à direita) */
+.message-wrapper.sent {
+    align-self: flex-end; /* Alinha à direita */
+}
+.message-wrapper.sent .message {
+    background-color: var(--cor-balao-enviado);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+/* Estilo para mensagens RECEBIDAS (à esquerda) */
+.message-wrapper.received {
+    align-self: flex-start; /* Alinha à esquerda */
+}
+.message-wrapper.received .message {
+    background-color: var(--cor-balao-recebido);
+    border-bottom-left-radius: 4px;
+}
+
+/* Rodapé com o campo de texto */
+.chat-footer {
+    padding: 10px 15px;
+    background-color: #2a2a2a;
+    border-top: 1px solid #333;
+}
+
+.message-form {
+    display: flex;
+    align-items: center;
+}
+
+#message-input {
+    flex-grow: 1;
+    border: none;
+    padding: 12px 15px;
+    border-radius: 20px;
+    background-color: #3c3c3c;
+    color: var(--cor-texto);
+    font-size: 1em;
+    outline: none;
+}
+
+.message-form button {
+    background: none;
+    border: none;
+    padding: 8px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.message-form button svg {
+    fill: var(--cor-primaria);
+    transition: transform 0.2s;
+}
+
+.message-form button:hover svg {
+    transform: scale(1.1);
+}
