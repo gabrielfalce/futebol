@@ -7,10 +7,14 @@
     
     <!-- CSS do Cropper.js -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+    <!-- CSS personalizado -->
+    <link rel="stylesheet" href="stylesTest.css">
+
     
-    <!-- CSS e Ícone personalizados usando url_for para garantir que o caminho esteja correto -->
-    <link rel="stylesheet" href="{{ url_for('serve_usuario_static', filename='stylesTest.css' ) }}">
-    <link rel="icon" href="{{ url_for('serve_usuario_static', filename='imagens/iconeUser.png') }}">
+    <!-- wallpaper do usuarios -->
+    <div class="Wallpaper">
+   <img class="imagemWallpaper"  src="imagens/hM94BRC.jpeg" alt="Wallpaper de fundo">
+    </div>
 </head>
 <body>
     <!-- ===== Tela principal ===== -->
@@ -27,11 +31,12 @@
                     <img id="preview" 
                          src="{{ usuario.profile_image_url or url_for('serve_usuario_static', filename='imagens/user-icon-placeholder.png') }}" 
                          alt="Imagem de perfil do usuário">
-                </div>
-                <!-- Exibe o nome do usuário que veio do banco de dados -->
-                <p id="nomeUsuario">{{ usuario.nome or 'Nome de usuário' }}</p>
+                <img src="imagens/user-icon-placeholder.png" alt="">
+                
+                        </div>
+                <p id="nomeUsuario" >Nome de usuário</p>
             </div>
-            <a href="{{ url_for('editar_perfil') }}" class="edit-profile-button">editar perfil</a>
+            <a id="openModalButton" href="{{ url_for('editar_perfil') }}" class="edit-profile-button">editar perfil</a>
         </div>
     </div>      
 
@@ -55,19 +60,23 @@
         <!-- Link para a tela de loading/inicial -->
         <a id="linkTela" href="{{ url_for('tela_de_loading') }}">
             <button id="adicionarUsuarioBtn" class="floating-button">
+                <img src="imagens/bolaLogo.png" alt="">
                 <img src="{{ url_for('serve_usuario_static', filename='imagens/bolaLogo.png') }}" alt="Ir para tela inicial">
             </button>
         </a>
     </div>
     
-    <!-- ===== Seção de Publicações do Usuário (Placeholder) ===== -->
-    <div class="BoxePublicacoes">      
-        <h1>Publicações do Usuário</h1>
-        <div id="imagemPublicaçãoUsuario">
-            <!-- Exemplo estático, pode ser transformado em um loop no futuro -->
-            <img class="publicacaoImagem" src="{{ url_for('serve_usuario_static', filename='imagens/WallpaperTest.jpg') }}" alt="Exemplo de publicação">
-        </div>
+<!-- publicações usuario -->
+<div class="BoxePublicacoes" >      
+    <h1>publicações do Usuário</h1>
+    <div id="imagemPublicaçãoUsuario"  >
+        <img class="publicacaoImagem" src="imagens/WallpaperTest.jpg" alt="">
     </div>
+    
+
+
+</div>
+
 
     <!-- ===== Scripts ===== -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>

@@ -84,7 +84,8 @@ body {
 
 /* abrir modal  */
 #openModalButton {
-    margin-top: -75px;
+    text-decoration: none;
+    margin-top: -110px;
     margin-left: 2090px;
     padding: 5px 15px;
     background: #129542;
@@ -263,7 +264,7 @@ img {
 
 .floating-button:hover {
     transform: scale(1.1);
-    box-shadow: 0 6px 12px rgba(65, 167, 2, 0.734);
+    box-shadow: 0 6px 12px rgba(167, 2, 2, 0.734);
 }
 
 .floating-button img {
@@ -356,7 +357,9 @@ img {
 
     .BoxePublicacoes {
         /* Ajusta as margens laterais para 5px em telas mobile */
-        margin: 20px 50px;
+        margin: 50px 2px;
+        max-width: 300px;
+    
     }
 
     /* Novo container para imagem e nome */
@@ -367,7 +370,21 @@ img {
         gap: 5px; /* Espaço entre a imagem e o nome */
     }
     
+    .BoxePublicacoes H1{
+    color: var(--cor-texto);    
+    font-size: 15px;
     
+}
+    .nomeUsuarioPublicação{ 
+        font-size: 18px;
+        margin-top: 10px;
+        margin: 15px 0;
+        color: var(--cor-texto);
+        font-weight: bold;
+        text-align: flex-start;
+
+        
+    } 
 }
 
 
@@ -377,9 +394,10 @@ img {
     background: var(--cor-fundo);
     border: 2px solid var(--cor-borda);
     border-radius: 12px;
-    padding: 10px  20px;
-    max-width: 400px;
-    margin: 20px auto;
+    padding: 10px 2px;
+    width: 400px;
+    margin: 60
+    px auto;
     box-shadow: 0 4px 2px rgb(72, 187, 5);
     }
 
@@ -390,10 +408,17 @@ img {
 
 }
 
+/* imagemDaPublicaçõa */
+
+.publicacaoImagem {
+    width: 80%;
+    height: auto;
+    border-radius: 8px;
+}
 
 /* informações usuario */
 
-#nomeUsuario {
+.nomeUsuario {
     font-size: 12px;
     margin-top: 5px;
     color: var(--cor-texto);
@@ -401,6 +426,15 @@ img {
 
 
 
+}
+
+.nomeUsuarioPublicação {
+    font-size: 18px;
+    margin-top: 10px;
+    margin: 15px 0;
+    color: var(--cor-texto);
+    font-weight: bold;
+    text-align: flex-start;
 }
 
 
