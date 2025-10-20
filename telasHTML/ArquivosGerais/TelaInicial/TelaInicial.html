@@ -16,7 +16,7 @@
 
     <div class="search-container">
         <input type="text" id="search" placeholder="Buscar usuários..." onkeyup="searchUsers()">
-        <img src="/TelaInicial/lupa.png" alt="Lupa" class="search-icon">
+        <img src="{{ url_for('serve_inicial_static', filename='lupa.png') }}" alt="Lupa" class="search-icon">
     </div>
 
     <div class="user-list" id="user-list">
@@ -27,7 +27,8 @@
             <a href="{{ url_for('pagina_chat', destinatario_id=user.id) }}" class="user-card-link">
                 <div class="user-card">
                     <!-- Adiciona a imagem de perfil do usuário -->
-                    <img src="{{ user.profile_image_url or url_for('serve_usuario_static', filename='imagens/user-icon-placeholder.png') }}" alt="Foto de perfil de {{ user.nome }}" class="user-card-avatar">
+                    <img src="{{ user.profile_image_url or url_for('serve_inicial_static', filename='iconuser.png') }}" alt="Foto de perfil de {{ user.nome }}" class="user-card-avatar">">
+
                     
                     <div class="user-card-info">
                         <!-- Remove o "Nome:" e "Cidade:" para um visual mais limpo -->
