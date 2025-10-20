@@ -4,6 +4,7 @@
    :root {
     --cor-primaria: #2BBF90;
     --cor-fundo: #1E1E1E;
+    --cor-fundo: #313131;
     --cor-texto: #FFFFFF;
     --cor-card: #2C2C2C;
     --cor-texto-card: #E0E0E0;
@@ -31,9 +32,9 @@ body {
    CABEÇALHO
    ======================= */
 .page-header {
-    text-align: center;
-    padding: 20px 0;
-    margin-bottom: 10px;
+    text-align: center; 
+    padding: 0; /* Remove o padding superior e inferior */
+    margin-bottom: 0; /* Remove a margem inferior */
 }
 
 .logo-container img {
@@ -51,18 +52,19 @@ body {
    CAMPO DE PESQUISA
    ======================= */
 .search-container {
-    max-width: 500px;
-    margin: 0 auto 30px;
+    max-width: 2000px;
+    /* Adiciona margem no topo para não colar na borda e mantém a centralização */
+    margin: 20px 5px 30px;
     position: relative;
 }
 
 #search-input {
     width: 100%;
-    padding: 16px 50px 16px 20px;
-    border: 2px solid var(--cor-primaria);
+    padding: 5px 500px 5px 20px;
+    border: 2px solid rgb(0, 0, 0);
     border-radius: 30px;
     font-size: 16px;
-    background-color: var(--cor-card);
+    background-color: #ffffff;
     color: var(--cor-texto);
     transition: all 0.3s ease;
 }
@@ -172,7 +174,8 @@ body {
     }
     
     #search-input {
-        padding: 14px 40px 14px 15px;
+        /* Reduz o padding vertical para deixar a barra mais fina no mobile */
+        padding: 10px 40px 10px 15px;
     }
     
     .titulo {
