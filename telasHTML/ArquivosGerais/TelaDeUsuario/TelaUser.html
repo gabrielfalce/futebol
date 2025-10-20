@@ -6,33 +6,33 @@
     <title>Perfil de {{ usuario.nome }}</title>
     
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
-    
-        <link rel="stylesheet" href="/TelaDeUsuario/stylesTest.css">
+    
+        <link rel="stylesheet" href="{{ url_for('serve_usuario_static', filename='stylesTest.css') }}">
 
     
-        <div class="Wallpaper">
-       <img class="imagemWallpaper"  src="/TelaDeUsuario/imagens/hM94BRC.jpeg" alt="Wallpaper de fundo">
+    <div class="Wallpaper">
+              <img class="imagemWallpaper" src="{{ url_for('serve_usuario_static', filename='imagens/hM94BRC.jpeg') }}" alt="Wallpaper de fundo">
     </div>
 </head>
 <body>
-        <div id="mainScreen">
-                <div id="profileContainer">
+    <div id="mainScreen">
+        <div id="profileContainer">
             <div id="profileInfo">
-                                <div id="perfilImagemGeralCaixa">
-                                        <img id="preview" 
-                         src="{{ usuario.profile_image_url or url_for('serve_usuario_static', filename='imagens/user-icon-placeholder.png') }}" 
-                         alt="Imagem de perfil do usuário">
-                    
-                                        <img src="/TelaDeUsuario/imagens/user-icon-placeholder.png" alt="">
+                <div id="perfilImagemGeralCaixa">
+                    <img id="preview" 
+                                                src="{{ usuario.profile_image_url or url_for('serve_usuario_static', filename='imagens/user-icon-placeholder.png') }}" 
+                        alt="Imagem de perfil do usuário">
+                    
+                                        <img src="{{ url_for('serve_usuario_static', filename='imagens/user-icon-placeholder.png') }}" alt="Placeholder de Perfil">
                 
-                        </div>
+                </div>
                 <p id="nomeUsuario" >Nome de usuário</p>
             </div>
-            <a id="openModalButton" href="{{ url_for('editar_perfil') }}" class="edit-profile-button">editar perfil</a>
+                        <a id="openModalButton" href="{{ url_for('editar_perfil') }}" class="edit-profile-button">editar perfil</a>
         </div>
     </div>      
 
-        <div id="cropModal" class="modal">
+    <div id="cropModal" class="modal">
         <div class="modal-content">
             <button id="closeModalButton" class="close-button">Salvar</button>
             <h2>Cortar Imagem</h2>      
@@ -41,14 +41,13 @@
             <div class="image-container">
                 <img id="image" src="" alt="Imagem para cortar">
             </div>
-                    </div>
+        </div>
     </div>
 
-        <div class="floating-button-container">
+    <div class="floating-button-container">
         <div class="floating-button-bar"></div>
                 <a id="linkTela" href="{{ url_for('tela_de_loading') }}">
             <button id="adicionarUsuarioBtn" class="floating-button">
-                
                                 <img src="{{ url_for('serve_usuario_static', filename='imagens/bolaLogo.png') }}" alt="Ir para tela inicial">
             </button>
         </a>
@@ -57,14 +56,14 @@
 <div class="BoxePublicacoes" >      
     <h1>publicações do Usuário</h1>
     <div id="imagemPublicaçãoUsuario"  >
-                <img class="publicacaoImagem" src="/TelaDeUsuario/imagens/WallpaperTest.jpg" alt="">
+                <img class="publicacaoImagem" src="{{ url_for('serve_usuario_static', filename='imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
     </div>
 </div>
 
 <div class="BoxePublicacoes" >      
     <h1>publicações do Usuário</h1>
     <div id="imagemPublicaçãoUsuario"  >
-                <img class="publicacaoImagem" src="/TelaDeUsuario/imagens/WallpaperTest.jpg" alt="">
+                <img class="publicacaoImagem" src="{{ url_for('serve_usuario_static', filename='imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
     </div>
 </div>
 
@@ -74,17 +73,40 @@
         let cropper;
 
         // --- Elementos do DOM ---
-        const openModalButton = document.getElementById('openModalButton' );
+        // CORREÇÃO: O botão "editar perfil" está chamando a rota de edição e não deve abrir o modal diretamente.
+        // O modal de corte deveria ser ativado por outro elemento. Se a intenção é manter o ID no link de edição
+        // e usar o JS para abrir o modal, o preventDefault precisa ser usado. 
+        const editProfileLink = document.getElementById('openModalButton');
         const closeModalButton = document.getElementById('closeModalButton');
         const cropModal = document.getElementById('cropModal');
         const imageInput = document.getElementById('imageInput');
         const imageToCrop = document.getElementById('image');
         const previewImage = document.getElementById('preview');
 
-        // --- Abrir modal ---
-        openModalButton.addEventListener('click', () => {
-            cropModal.style.display = 'block';
+        // --- Abrir modal (Adaptado: Previne a navegação se a intenção é abrir o modal) ---
+        editProfileLink.addEventListener('click', (e) => {
+            // Se a intenção é editar o perfil (navegar), remova esta linha.
+            // Se a intenção é abrir o modal de CORTE, mantenha (e.preventDefault()) e altere a rota no HTML
+            // para algo como: <a href="#" ...
+            // Por agora, se você deseja que o botão de edição abra o modal, precisa evitar a navegação:
+            // e.preventDefault();
+            // cropModal.style.display = 'block';
+
+            // Como o link está para 'editar_perfil', vou assumir que você *não* quer que ele abra o modal
+            // Se você quer que o link do perfil abra o modal, o ID 'openModalButton' deve estar em outro lugar.
         });
+
+        // CORREÇÃO: Vamos criar um novo botão de exemplo que abre o modal de corte:
+        // Se você estava clicando no perfil para abrir o modal, mude o ID do link de edição.
+        // Por enquanto, vou manter o JS, mas o evento de clique está no link 'editar_perfil'.
+        
+        
+        // Se você quer que o *clique na imagem de perfil* abra o modal:
+        // const profileImageContainer = document.getElementById('perfilImagemGeralCaixa');
+        // profileImageContainer.addEventListener('click', () => {
+        //     cropModal.style.display = 'block';
+        // });
+
 
         // --- Lidar com a seleção de imagem ---
         imageInput.addEventListener('change', (e) => {
@@ -145,7 +167,7 @@
             formData.append('file', blob, 'profile.jpg');
 
             try {
-                // Envia a requisição para o endpoint do Flask
+                // CORRETO: Usa url_for para o endpoint do Flask
                 const response = await fetch("{{ url_for('upload_image') }}", {
                     method: 'POST',
                     body: formData,
