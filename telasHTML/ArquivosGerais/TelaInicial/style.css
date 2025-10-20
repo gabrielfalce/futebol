@@ -31,9 +31,9 @@ body {
    CABEÇALHO
    ======================= */
 .page-header {
-    text-align: center;
-    padding: 20px 0;
-    margin-bottom: 10px;
+    text-align: center; 
+    padding: 0; /* Remove o padding superior e inferior */
+    margin-bottom: 0; /* Remove a margem inferior */
 }
 
 .logo-container img {
@@ -52,7 +52,8 @@ body {
    ======================= */
 .search-container {
     max-width: 500px;
-    margin: 0 auto 30px;
+    /* Adiciona margem no topo para não colar na borda e mantém a centralização */
+    margin: 20px auto 30px;
     position: relative;
 }
 
