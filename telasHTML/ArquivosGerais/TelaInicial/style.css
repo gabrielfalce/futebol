@@ -129,7 +129,8 @@ body {
     height: 90px;
     border-radius: 50%; /* Deixa a imagem redonda */
     object-fit: cover; /* Garante que a imagem preencha o círculo sem distorcer */
-    margin-right: 20px; /* Adiciona espaço entre a imagem e o nome */
+    flex-shrink: 0; /* Impede que a imagem seja espremida pelo texto */
+    margin-right: 5px; /* Adiciona espaço entre a imagem e o nome */
     border: 3px solid var(--cor-primaria);
     background-color: #444; /* Cor de fundo caso a imagem não carregue */
 }
@@ -140,7 +141,7 @@ body {
 
 .user-name {
     color: #333333; /* Cor do texto alterada para escuro para ser legível em fundo branco */
-    font-size: 1.4rem;
+    font-size: 1.0rem;
     margin-bottom: 8px;
     font-weight: 600;
 }
