@@ -60,6 +60,12 @@ def pagina_feed():
     
     return render_template('TelaFeed/feed.html')
 
+
+@app.route('/TelaFeed/<path:filename>')
+def serve_feed_static(filename):
+    return send_from_directory(os.path.join(template_root, 'TelaFeed'), filename)
+
+
 # --- FILTRO JINJA ---
 @app.template_filter('format_date')
 def format_date(date_str):
