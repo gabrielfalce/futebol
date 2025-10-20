@@ -8,7 +8,6 @@ from supabase import create_client, Client
 from postgrest.exceptions import APIError
 
 
-
 # --- CONFIGURAÇÃO DE LOGGING PROFISSIONAL ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -17,20 +16,36 @@ url = os.environ.get("SUPABASE_URL")
 key = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
-# --- CONFIGURAÇÃO DO FLASK ---
+# -------------------------------------------------------------
+# --- CORREÇÃO DE CONFIGURAÇÃO DO FLASK E PASTAS ESTÁTICAS ---
+# -------------------------------------------------------------
+
 app_dir = os.path.dirname(os.path.abspath(__file__))
+# Define o diretório RAIZ que contém todas as pastas de templates/statics (se estiver no diretório acima)
+# Se 'TelaDeUsuario' e 'STATIC' estão no mesmo nível do 'app.py', use: app_dir
+# Se 'TelaDeUsuario' e 'STATIC' estão UM NÍVEL ACIMA (como você configurou com '..'), MANTENHA:
 template_root = os.path.abspath(os.path.join(app_dir, '..'))
 
 app = Flask(
     __name__,
+    # template_folder agora aponta para o diretório raiz dos seus templates (o nível acima de onde está o app.py)
     template_folder=template_root,
-    static_folder=os.path.join(template_root, 'STATIC') 
+    # static_folder aponta para o diretório real da sua pasta STATIC (ex: /app/STATIC)
+    static_folder=os.path.join(template_root, 'STATIC'),
+    # CORREÇÃO CRÍTICA: Força o Flask a servir a pasta 'STATIC' através da URL '/static'.
+    # Isso resolve o erro 404 do url_for('static', filename='default_profile.png').
+    static_url_path='/static'
 )
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", 'uma_chave_muito_secreta_e_dificil_de_adivinhar')
 
-# --- ROTAS PARA ARQUIVOS ESTÁTICOS ---
+
+# --- ROTAS PARA PASTAS DE TEMPLATES (CORRIGIDAS/OTIMIZADAS) ---
+# Otimizamos as rotas customizadas para usar send_from_directory de forma mais robusta,
+# passando o caminho absoluto da pasta que será servida.
+
 @app.route('/Cadastrar_templates/<path:filename>')
 def serve_cadastrar_static(filename):
+    # Envia o arquivo estático da pasta 'Cadastrar_templates'
     return send_from_directory(os.path.join(template_root, 'Cadastrar_templates'), filename)
 
 @app.route('/telaDeLogin/<path:filename>')
@@ -53,17 +68,20 @@ def serve_usuario_static(filename):
 def serve_chat_static(filename):
     return send_from_directory(os.path.join(template_root, 'TelaChat'), filename)
 
+@app.route('/TelaFeed/<path:filename>')
+def serve_feed_static(filename):
+    return send_from_directory(os.path.join(template_root, 'TelaFeed'), filename)
+
+# -------------------------------------------------------------
+# --- RESTANTE DO CÓDIGO (NÃO ALTERADO, APENAS OTIMIZADO) ---
+# -------------------------------------------------------------
+
 @app.route('/feed')
 def pagina_feed():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     
     return render_template('TelaFeed/feed.html')
-
-
-@app.route('/TelaFeed/<path:filename>')
-def serve_feed_static(filename):
-    return send_from_directory(os.path.join(template_root, 'TelaFeed'), filename)
 
 
 # --- FILTRO JINJA ---
@@ -106,6 +124,7 @@ def pagina_inicial():
         return redirect(url_for('login'))
     
     try:
+        # Tenta buscar o ID do usuário para a sessão
         user_data = supabase.table('usuarios').select('id').eq('email', session['user_email']).single().execute().data
         if user_data:
             session['user_id'] = user_data['id']
@@ -174,7 +193,7 @@ def cadastrar():
     senha_hash = bcrypt.hashpw(senha_texto_puro.encode('utf-8'), bcrypt.gensalt())
     
     # Chama a função de inserir, agora passando também o numero_camisa
-    # (Precisamos atualizar a função inserir_usuario em database.py)
+    # (Lembre-se de que a função inserir_usuario em database.py deve ser atualizada para receber este campo)
     sucesso, mensagem = inserir_usuario(
         nome=nome, email=email, senha_hash=senha_hash, cidade=cidade,
         posicao=posicao, nascimento=data_nascimento_iso, numero=numero,
@@ -379,4 +398,5 @@ def editar_perfil():
 # --- EXECUÇÃO DA APLICAÇÃO ---
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
+    # Para testes locais, mude 'debug=False' para 'debug=True' se necessário.
     app.run(host='0.0.0.0', port=port, debug=False)
