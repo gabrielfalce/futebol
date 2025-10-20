@@ -19,12 +19,10 @@
     <main>
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Buscar usuários..." onkeyup="searchUsers()">
-            <img src="{{ url_for('serve_inicial_static', filename='lupa.png') }}" alt="Ícone de busca" class="search-icon">
+            <img src="lupa.png" alt="Ícone de busca" class="search-icon">
         </div>
 
         <div class="user-list" id="user-list">
-            {% for user in usuarios %}
-                {% if user.id != session.user_id %}
                     <a href="{{ url_for('pagina_chat', destinatario_id=user.id) }}" class="user-card-link">
                         <div class="user-card">
                             <!-- Imagem de perfil com alt text dinâmico -->
@@ -33,8 +31,6 @@
                             <span class="user-name">{{ user.nome }}</span>
                         </div>
                     </a>
-                {% endif %}
-            {% endfor %}
         </div>
     </main>
 
@@ -46,11 +42,7 @@
     </nav>
 
     <!-- Toast Notification para feedback ao usuário -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
             <div id="toast-notification" class="toast" data-message="{{ messages[0][1] }}" data-category="{{ messages[0][0] }}"></div>
-        {% endif %}
-    {% endwith %}
 
     <script>
         function searchUsers() {
