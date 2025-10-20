@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tela Inicial</title>
-    <link rel="stylesheet" href="/TelaInicial/style.css">
+    <!-- Usando url_for para garantir que o caminho do CSS esteja sempre correto -->
+    <link rel="stylesheet" href="{{ url_for('serve_inicial_static', filename='style.css') }}">
 </head>
 <body>
     <header class="page-header">
         <div class="logo-container">
-            <img src="/TelaLoading/logoGeral.png" alt="Logo">
+            <!-- Corrigindo também o caminho da logo para usar a rota correta -->
+            <img src="{{ url_for('serve_loading_static', filename='logoGeral.png') }}" alt="Logo">
         </div>
         <h1 class="titulo">Tela Inicial</h1>
     </header>
@@ -21,21 +23,24 @@
 
     <div class="user-list" id="user-list">
     {% for user in usuarios %}
-        {# Verifica para não exibir o próprio usuário na lista de chat #}
         {% if user.id != session.user_id %} 
-            <!-- Transforma o card inteiro em um link para o chat com aquele usuário -->
             <a href="{{ url_for('pagina_chat', destinatario_id=user.id) }}" class="user-card-link">
                 <div class="user-card">
-                    <!-- Adiciona a imagem de perfil do usuário -->
-                   <!-- VERSÃO FINAL E CORRETA -->
-<img src="{{ user.profile_image_url or url_for('serve_inicial_static', filename='iconuser.png') }}" 
-alt="Foto de perfil de {{ user.nome }}" 
-class="user-card-avatar {% if not user.profile_image_url %}avatar-fallback{% endif %}">
-
-
                     
+                    <!-- 
+                        *** A GRANDE MUDANÇA ESTÁ AQUI ***
+                        Vamos usar a tag <object> que é mais robusta para lidar com tipos de arquivo.
+                        Ela tem um fallback embutido: se não conseguir carregar a imagem, ela mostra o texto dentro dela.
+                    -->
+                    <object 
+                        data="{{ user.profile_image_url or url_for('serve_inicial_static', filename='iconuser.png') }}" 
+                        type="image/png" 
+                        class="user-card-avatar {% if not user.profile_image_url %}avatar-fallback{% endif %}">
+                        <!-- Este texto só aparecerá se a imagem falhar em carregar -->
+                        Imagem de perfil indisponível
+                    </object>
+
                     <div class="user-card-info">
-                        <!-- Remove o "Nome:" e "Cidade:" para um visual mais limpo -->
                         <p class="user-name">{{ user.nome }}</p>
                         <p class="user-city">{{ user.cidade }}</p>
                     </div>
@@ -43,57 +48,56 @@ class="user-card-avatar {% if not user.profile_image_url %}avatar-fallback{% end
             </a>
         {% endif %}
     {% endfor %}
-</div>
+    </div>
 
-<!-- Este div agora receberá os dados da mensagem via atributos data-* -->
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        <div id="toast-notification" 
-             class="toast" 
-             data-message="{{ messages[0][1] }}" 
-             data-category="{{ messages[0][0] }}">
-        </div>
-    {% else %}
-        <div id="toast-notification" class="toast"></div>
-    {% endif %}
-{% endwith %}
+    <!-- Bloco de Notificação (Toast) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div id="toast-notification" 
+                 class="toast" 
+                 data-message="{{ messages[0][1] }}" 
+                 data-category="{{ messages[0][0] }}">
+            </div>
+        {% else %}
+            <div id="toast-notification" class="toast"></div>
+        {% endif %}
+    {% endwith %}
 
+    <!-- Links de Navegação -->
+    <div class="navigation-links">
+        <a href="{{ url_for('pagina_feed') }}" class="nav-button feed-button">Ver Feed</a>
+        <a href="{{ url_for('pagina_usuario') }}" class="nav-button profile-button">Ver Perfil</a>
+        <a href="{{ url_for('logout') }}" class="nav-button logout-button">Sair</a>
+    </div>
 
-<!-- ÁREA DE NAVEGAÇÃO -->
-<div class="navigation-links">
-    <a href="{{ url_for('pagina_feed') }}" class="nav-button feed-button">Ver Feed</a>
-    <a href="{{ url_for('pagina_usuario') }}" class="nav-button profile-button">Ver Perfil</a>
-    <a href="{{ url_for('logout') }}" class="nav-button logout-button">Sair</a>
-</div>
-<script>
-    // Função de busca de usuários (continua a mesma)
-    function searchUsers() {
-        const input = document.getElementById("search").value.toLowerCase();
-        const cards = document.querySelectorAll(".user-card-link"); // Seleciona o link <a> em vez do div
-        
-        cards.forEach(cardLink => {
-            const text = cardLink.textContent.toLowerCase();
-            cardLink.style.display = text.includes(input) ? "block" : "none"; // Usa block para o link
-        });
-    }
-
-    // Lógica para exibir a notificação (agora separada)
-    document.addEventListener('DOMContentLoaded', (event) => {
-        const toast = document.getElementById("toast-notification");
-        
-        // Verifica se o elemento tem os atributos data-* que o Jinja criou
-        if (toast.dataset.message) {
-            toast.textContent = toast.dataset.message;
-            toast.style.backgroundColor = toast.dataset.category === 'success' 
-                ? 'var(--cor-primaria)' 
-                : '#ff4d4d';
+    <script>
+        // Função de busca de usuários
+        function searchUsers() {
+            const input = document.getElementById("search").value.toLowerCase();
+            const cards = document.querySelectorAll(".user-card-link");
             
-            toast.classList.add("show");
-            setTimeout(() => {
-                toast.classList.remove("show");
-            }, 4000);
+            cards.forEach(cardLink => {
+                const text = cardLink.textContent.toLowerCase();
+                cardLink.style.display = text.includes(input) ? "block" : "none";
+            });
         }
-    });
-</script>
+
+        // Lógica para exibir a notificação
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const toast = document.getElementById("toast-notification");
+            
+            if (toast.dataset.message) {
+                toast.textContent = toast.dataset.message;
+                toast.style.backgroundColor = toast.dataset.category === 'success' 
+                    ? 'var(--cor-primaria)' 
+                    : '#ff4d4d';
+                
+                toast.classList.add("show");
+                setTimeout(() => {
+                    toast.classList.remove("show");
+                }, 4000);
+            }
+        });
+    </script>
 </body>
 </html>
