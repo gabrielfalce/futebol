@@ -319,11 +319,8 @@ img {
 
 
 @media (max-width: 768px) {
-    
-    #mainScreen {
-        margin-top: 200px; /* Ajusta a margem para que a foto sobreponha o wallpaper */
-        justify-content: flex-start; /* Alinha o container do perfil à esquerda */
-        padding: 0 15px;
+    body{
+    overflow-x: hidden;
     }
 
     #profileContainer {
@@ -356,10 +353,10 @@ img {
     }
 
     .BoxePublicacoes {
-        /* Ajusta as margens laterais para 5px em telas mobile */
-        margin: 50px 2px;
-        max-width: 300px;
-    
+        /* Centraliza a caixa e a torna responsiva em telas menores */
+        width: 90%;
+        max-width: 310px; /* Mantém uma largura máxima razoável */
+        margin: 35px auto; /* Centraliza horizontalmente */
     }
 
     /* Novo container para imagem e nome */
@@ -394,10 +391,9 @@ img {
     background: var(--cor-fundo);
     border: 2px solid var(--cor-borda);
     border-radius: 12px;
-    padding: 10px 2px;
+    padding: 10px;
     width: 400px;
-    margin: 60
-    px auto;
+    margin: 60px auto; /* Corrigido: valor de margem em uma única linha para centralizar */
     box-shadow: 0 4px 2px rgb(72, 187, 5);
     }
 
@@ -439,7 +435,7 @@ img {
 
 
 
-.InformaçõesUsuario {
+ .InformaçõesUsuario {
     display: none;
     background: var(--cor-fundo);
     border: 2px solid var(--cor-borda);
