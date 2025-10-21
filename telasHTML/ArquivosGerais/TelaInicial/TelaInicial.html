@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tela Inicial</title>
-    <link rel="stylesheet" href="style.css">
+    
     <link rel="stylesheet" href="{{ url_for('serve_inicial_static', filename='style.css') }}">
 </head>
 <body>
@@ -44,7 +44,11 @@
 
     <nav class="navigation-links">
         <a href="{{ url_for('pagina_feed') }}" class="nav-button feed-button">Ver Feed</a>
-        <a href="{{ url_for('pagina_usuario') }}" class="nav-button profile-button"><img src="BotaoUsuario.ico" alt=""></a>
+        
+        <a href="{{ url_for('pagina_usuario') }}" class="nav-button profile-button">
+            <img src="{{ url_for('serve_inicial_static', filename='BotaoUsuario.ico') }}" alt="Ver Perfil">
+        </a>
+        
         <a href="{{ url_for('logout') }}" class="nav-button logout-button">Sair</a>
     </nav>
 
