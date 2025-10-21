@@ -4,7 +4,7 @@ from typing import Optional, List, Dict, Any
 from postgrest.exceptions import APIError
 from dotenv import load_dotenv 
 import bcrypt
-from datetime import datetime
+from datetime import datetime # datetime é necessário para calcular a idade
 
 # Carrega variáveis de ambiente de um arquivo .env, se existir (para desenvolvimento local)
 load_dotenv() 
@@ -55,7 +55,7 @@ def inserir_usuario(nome: str, email: str, senha_hash: bytes, cidade: str, posic
         "posicao": posicao, 
         "nascimento": nascimento,
         "numero": numero,
-        "numero_camisa": numero_camisa # NOVO CAMPO
+        "numero_camisa": numero_camisa 
     }
     
     try:
@@ -91,13 +91,35 @@ def check_user(email: str, senha_texto_puro: str) -> Optional[Dict[str, Any]]:
         return None
 
 def get_all_users() -> List[Dict[str, Any]]:
-    """Busca todos os usuários da tabela 'usuarios'."""
+    """Busca todos os usuários, calcula a idade e retorna a lista."""
     if supabase is None:
         return []
     try:
-        # MUDANÇA: Adicionei 'id' e 'profile_image_url' à seleção.
-        response = supabase.table("usuarios").select("id, nome, cidade, profile_image_url").execute()
-        return response.data if response.data else []
+        # Busca ID, nome, cidade, posição, data de nascimento e imagem de perfil
+        response = supabase.table("usuarios").select("id, nome, cidade, posicao, nascimento, profile_image").execute()
+        
+        # Lógica para calcular a idade
+        users_with_age = []
+        today = datetime.now()
+        
+        for user in response.data:
+            # 1. Renomeia a coluna da imagem para consistência com o template HTML
+            user['profile_image_url'] = user.pop('profile_image', None)
+            
+            # 2. Calcula a idade com base na data de nascimento
+            if user.get('nascimento'):
+                try:
+                    birth_date = datetime.strptime(user['nascimento'], '%Y-%m-%d')
+                    age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+                    user['idade'] = age
+                except ValueError:
+                    user['idade'] = "N/A"
+            else:
+                 user['idade'] = "N/A"
+            
+            users_with_age.append(user)
+            
+        return users_with_age if users_with_age else []
     except Exception as e:
         print(f"--- ERRO DURANTE A BUSCA DE USUÁRIOS ---: {e}")
         return []
@@ -109,9 +131,16 @@ def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
     if supabase is None:
         return None
     try:
-        # MUDANÇA: Adicionada a coluna 'numero_camisa'
-        response = supabase.table("usuarios").select("nome, email, cidade, posicao, nascimento, numero, numero_camisa").eq("email", email).limit(1).execute()
-        return response.data[0] if response.data else None
+        # Busca os dados do perfil
+        response = supabase.table("usuarios").select("nome, email, cidade, posicao, nascimento, numero, numero_camisa, profile_image").eq("email", email).limit(1).execute()
+        
+        # Renomeia profile_image para profile_image_url antes de retornar
+        if response.data:
+            user_data = response.data[0]
+            user_data['profile_image_url'] = user_data.pop('profile_image', None)
+            return user_data
+        
+        return None
     except Exception as e:
         print(f"--- ERRO DURANTE A BUSCA DE USUÁRIO POR EMAIL ---: {e}")
         return None
@@ -122,11 +151,8 @@ def update_user_profile_image(email: str, image_url: str) -> tuple[bool, str]:
         return False, "Erro de servidor: Banco de dados indisponível."
 
     try:
-        # A operação de 'update' no Supabase não retorna dados ('data') se for bem-sucedida,
-        # mas lança uma exceção (APIError) se houver um problema.
-        supabase.table('usuarios').update({'profile_image_url': image_url}).eq('email', email).execute()
-        
-        # Se a linha acima não gerou uma exceção, a operação foi um sucesso.
+        # Usa o nome da coluna do banco de dados: 'profile_image'
+        supabase.table('usuarios').update({'profile_image': image_url}).eq('email', email).execute()
         return True, 'Imagem de perfil atualizada com sucesso.'
 
     except APIError as e:
@@ -135,4 +161,3 @@ def update_user_profile_image(email: str, image_url: str) -> tuple[bool, str]:
     except Exception as e:
         print(f"Erro inesperado ao atualizar imagem: {str(e)}")
         return False, f'Erro inesperado no servidor: {str(e)}'
-
