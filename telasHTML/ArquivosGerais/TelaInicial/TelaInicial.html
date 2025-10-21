@@ -24,14 +24,14 @@
             {% for usuario in usuarios %} 
                 <a href="{{ url_for('pagina_chat', destinatario_id=usuario.id) }}" class="user-card-link">
                     <div class="user-card">
-                        <img src="{{ usuario.profile_image_url or url_for('serve_inicial_static', filename='default_profile.png') }}" 
+                        <img id="user-foto" src="{{ usuario.profile_image_url or url_for('serve_inicial_static', filename='default_profile.png') }}" 
                              alt="Foto de perfil de {{ usuario.nome }}">
                         
                         <div class="user-info">
                             <span class="user-name">{{ usuario.nome }}</span>
-                            <span class="user-posicao">{{ usuario.posicao }}</span>
+                            <!-- <span class="user-posicao">{{ usuario.posicao }}</span>
                             <span class="user-cidade">{{ usuario.cidade }}</span>
-                            <span class="user-idade">{{ usuario.idade }}</span> 	
+                            <span class="user-idade">{{ usuario.idade }}</span> 	 -->
                         </div>
                     </div>
                 </a>
