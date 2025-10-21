@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tela Inicial</title>
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="{{ url_for('serve_inicial_static', filename='style.css') }}">
 </head>
 <body>
@@ -19,7 +20,7 @@
         </div>
 
         <div class="user-list" id="user-list">
-            {% for usuario in usuarios %}
+                                                   
                 <a href="{{ url_for('pagina_chat', destinatario_id=usuario.id) }}" class="user-card-link">
                     <div class="user-card">
                         <img src="{{ usuario.profile_image_url or url_for('serve_inicial_static', filename='default_profile.png') }}" 
@@ -28,11 +29,9 @@
                         <span class="user-name">{{ usuario.nome }}</span>
                     </div>
                 </a>
-            {% endfor %}
+           
+                <!-- <p>Nenhum outro usuário cadastrado no momento.</p> -->
             
-            {% if not usuarios %}
-                <p>Nenhum outro usuário cadastrado no momento.</p>
-            {% endif %}
         </div>
     </main>
 
@@ -42,14 +41,14 @@
         <a href="{{ url_for('logout') }}" class="nav-button logout-button">Sair</a>
     </nav>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
+    <!-- {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            {% set category, message = messages[0] %}
+            {% set category, message = messages[0] %} -->
             <div id="toast-notification" class="toast" data-message="{{ message }}" data-category="{{ category }}"></div>
-        {% else %}
+        <!-- {% else %} -->
             <div id="toast-notification" class="toast" data-message="" data-category=""></div>
-        {% endif %}
-    {% endwith %}
+        <!-- {% endif %}
+    {% endwith %} -->
 
     <script>
         function searchUsers() {

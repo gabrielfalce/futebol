@@ -3,12 +3,12 @@
     ======================= */
     :root {
         --cor-primaria: #2BBF90;
-        --cor-fundo: #1E1E1E; /* Removida a linha duplicada */
-        --cor-fundo-secundaria: #313131; /* Nova variável para o segundo fundo se for necessário */
+        --cor-fundo: #1E1E1E; /* Fundo principal */
+        --cor-fundo-secundaria: #313131; /* Fundo secundário (mantido do HEAD) */
         --cor-texto: #FFFFFF;
         --cor-card: #2C2C2C;
         --cor-texto-card: #E0E0E0;
-        --cor-borda: #444444; /* Adicionada para uso no .profile-button, se não for var(--cor-card) */
+        --cor-borda: #444444; /* Adicionada para uso no .profile-button (mantida do HEAD) */
         /* Sombra sólida deslocada para a esquerda e para baixo */
         --sombra: -8px 8px 0px var(--cor-primaria);
     }
@@ -26,6 +26,8 @@
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         background-color: var(--cor-fundo);
         color: var(--cor-texto);
+        /* Removido: background-image: url('bolaLogo.png') ; (Se você quiser esta imagem, ela deve ser aplicada em um elemento específico ou via url_for) */
+        /* Removido: opacity: 10; (opacity vai de 0 a 1) */
         line-height: 1.6;
         /* Aumenta o padding inferior para não esconder conteúdo atrás da navbar fixa */
         padding-bottom: 80px;
@@ -63,7 +65,7 @@
     
     #search-input {
         width: 100%;
-        /* CORREÇÃO: Padding lateral exagerado (500px) foi ajustado para 40px */
+        /* CORRIGIDO: Padding lateral exagerado (500px) ajustado para 40px */
         padding: 5px 40px 5px 20px; 
         border: 2px solid rgb(0, 0, 0);
         border-radius: 30px;
@@ -79,7 +81,7 @@
         border-color: var(--cor-primaria);
     }
     
-    /* CORREÇÃO: Seletor de placeholder corrigido para usar o ID do input */
+    /* CORRIGIDO: Seletor de placeholder de #search para #search-input */
     #search-input::placeholder {
         color: rgba(255, 255, 255, 0.6);
     }
@@ -129,7 +131,6 @@
     
     .user-card img {
         /* ADICIONADO: Classe profile-image para referenciar no HTML e no CSS */
-        /* Assumindo que a imagem no HTML tem a classe 'profile-image' */
         width: 90px;
         height: 90px;
         border-radius: 50%; /* Deixa a imagem redonda */
@@ -140,21 +141,18 @@
         background-color: #444; /* Cor de fundo caso a imagem não carregue */
     }
     
-    /* NOVO BLOCO: Estilo para a sobreposição do perfil padrão (Assumindo que o Flask envia o caminho 'default_profile.png' e que a imagem tem a classe 'profile-image') */
+    /* NOVO BLOCO: Estilo para a sobreposição do perfil padrão */
     .user-card img[src*='default_profile.png'] {
-        /* Usa as imagens como background para sobrepô-las */
+        /* Usa as imagens como background para sobrepô-las (BotaoUsuario na frente de iconeUser) */
         background-image: 
-            /* iconeUser.png (fundo circular preto) */
-            url("{{ url_for('serve_inicial_static', filename='iconeUser.png') }}"), 
-            /* BotaoUsuario.ico (ícone menor em cima) */
-            url("{{ url_for('serve_inicial_static', filename='BotaoUsuario.ico') }}");
+            url("{{ url_for('serve_inicial_static', filename='BotaoUsuario.ico') }}"), /* Ícone (FRENTE) */
+            url("{{ url_for('serve_inicial_static', filename='iconeUser.png') }}");   /* Círculo (FUNDO) */
         
         /* Posição dos fundos (centralizados) */
         background-position: center, center;
         
         /* Tamanho do fundo (cover para o círculo, 50% para o ícone) */
-        /* Ajuste o '50%' se o ícone estiver muito grande ou pequeno */
-        background-size: cover, 50%; 
+        background-size: 50%, cover; 
         
         background-repeat: no-repeat;
         
