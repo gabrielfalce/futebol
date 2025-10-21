@@ -46,7 +46,7 @@ def inserir_usuario(nome: str, email: str, senha_hash: bytes, cidade: str, posic
         print(f"Erro ao checar e-mail duplicado: {e}")
         return False, "Erro ao verificar e-mail. Tente novamente."
 
-    # Dados a serem inseridos, incluindo o novo campo
+    # Dados a serem inseridos
     data = {
         "nome": nome, 
         "email": email, 
@@ -110,6 +110,7 @@ def get_all_users() -> List[Dict[str, Any]]:
             if user.get('nascimento'):
                 try:
                     birth_date = datetime.strptime(user['nascimento'], '%Y-%m-%d')
+                    # Cálculo da idade: subtrai o ano e ajusta se o aniversário não passou
                     age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
                     user['idade'] = age
                 except ValueError:

@@ -4,13 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tela Inicial</title>
-    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="{{ url_for('serve_inicial_static', filename='style.css') }}">
 </head>
 <body>
     <header class="page-header">
         <div class="logo-container">   
-            </div>
+        </div>
     </header>
 
     <main>
@@ -20,21 +19,24 @@
         </div>
 
         <div class="user-list" id="user-list">
-                                                   
+            
+            {% for usuario in usuarios %}
                 <a href="{{ url_for('pagina_chat', destinatario_id=usuario.id) }}" class="user-card-link">
                     <div class="user-card">
                         <img src="{{ usuario.profile_image_url or url_for('serve_inicial_static', filename='default_profile.png') }}" 
                              alt="Foto de perfil de {{ usuario.nome }}">
+                        
                         <div class="user-info">
                             <span class="user-name">{{ usuario.nome }}</span>
-                            <span class="user-posicao" >{{ usuario.posicao }}</span>
-                            <span class="user-cidade" >{{ usuario.cidade }}</span>
-                            <span class="user-idade" >{{ usuario.idade }}</span>     
+                            <span class="user-posicao">{{ usuario.posicao }}</span>
+                            <span class="user-cidade">{{ usuario.cidade }}</span>
+                            <span class="user-idade">{{ usuario.idade }}</span> 	
                         </div>
                     </div>
                 </a>
-           
-                <!-- <p>Nenhum outro usuário cadastrado no momento.</p> -->
+            {% else %}
+                <p>Nenhum outro usuário cadastrado no momento.</p>
+            {% endfor %}
             
         </div>
     </main>
@@ -45,14 +47,14 @@
         <a href="{{ url_for('logout') }}" class="nav-button logout-button">Sair</a>
     </nav>
 
-    <!-- {% with messages = get_flashed_messages(with_categories=true) %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            {% set category, message = messages[0] %} -->
+            {% set category, message = messages[0] %}
             <div id="toast-notification" class="toast" data-message="{{ message }}" data-category="{{ category }}"></div>
-        <!-- {% else %} -->
+        {% else %}
             <div id="toast-notification" class="toast" data-message="" data-category=""></div>
-        <!-- {% endif %}
-    {% endwith %} -->
+        {% endif %}
+    {% endwith %}
 
     <script>
         function searchUsers() {
@@ -62,15 +64,13 @@
 
             for (let i = 0; i < userCards.length; i++) {
                 const card = userCards[i];
-                const userNameElement = card.querySelector(".user-name");
+                // Busca em todas as informações visíveis do card para a função de pesquisa
+                const userInfo = card.textContent || card.innerText;
                 
-                if (userNameElement) {
-                    const userName = userNameElement.textContent || userNameElement.innerText;
-                    if (userName.toLowerCase().includes(filter)) {
-                        card.style.display = "";
-                    } else {
-                        card.style.display = "none";
-                    }
+                if (userInfo.toLowerCase().includes(filter)) {
+                    card.style.display = "";
+                } else {
+                    card.style.display = "none";
                 }
             }
         }
