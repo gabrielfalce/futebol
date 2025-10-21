@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link rel="stylesheet" href="/telaDeLogin/style.css">
+    <link rel="stylesheet" href="{{ url_for('serve_login_static', filename='style.css') }}">
+    
     <style>
         .soccer-ball {
             width: 20vw;
@@ -13,7 +14,10 @@
             height: 20vw;
             max-height: 120px;
             min-height: 60px;
-            background: url('/telaDeLogin/bolaverde 3.png') no-repeat center;
+            
+            /* CORREÇÃO 2: Usa url_for para o background-image com o nome renomeado */
+            background: url("{{ url_for('serve_login_static', filename='bolaverde_3.png') }}") no-repeat center;
+            
             background-size: cover;
             animation: spin 1s linear infinite;
             margin-bottom: 20px;
@@ -22,15 +26,17 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        form { margin-top: 0; } /* Ajusta para evitar sobreposição com a bola */
+        form { margin-top: 0; }
     </style>
 </head>
 <body>
     <div class="soccer-ball"></div>
-    <img src="/TelaLoading/logoGeral.png" alt="Bola Verde">
+    <img src="{{ url_for('serve_loading_static', filename='logoGeral.png') }}" alt="Logotipo Geral da Aplicação">
+    
     <h1 class="titulo">Login</h1>
     <div id="toast-notification" class="toast"></div>
-    <form action="/login" method="post">
+    
+    <form action="{{ url_for('login') }}" method="post">
         <input placeholder="Email" type="email" name="email" required>
         <input placeholder="Senha" type="password" name="senha" required>
         <a class="esqueceuSenha" href="{{ url_for('esqueci_senha') }}">Esqueceu a senha?</a>
@@ -41,10 +47,15 @@
     <script>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
+                // Nota: Usar Jinja2 dentro de um bloco <script> é ok, mas é mais limpo passar como data-attributes na div Toast.
                 const message = "{{ messages[0][1] }}";
+                const category = "{{ messages[0][0] }}";
                 const toast = document.getElementById("toast-notification");
+                
                 toast.textContent = message;
-                toast.style.backgroundColor = "{{ 'green' if messages[0][0] == 'success' else '#f44336' }}";
+                // Define a cor baseada na categoria
+                toast.style.backgroundColor = category === 'success' ? 'green' : '#f44336';
+                
                 toast.classList.add("show");
                 setTimeout(() => toast.classList.remove("show"), 4000);
             {% endif %}
