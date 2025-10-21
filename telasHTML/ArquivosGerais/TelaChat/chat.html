@@ -5,15 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat com {{ destinatario.nome }}</title>
     <!-- Vamos criar este CSS no próximo passo -->
-    <link rel="stylesheet" href="{{ url_for('serve_chat_static', filename='chat.css') }}">
+    <link rel="stylesheet" href="chat.css">
+    <!-- <link rel="stylesheet" href="{{ url_for('serve_chat_static', filename='chat.css') }}"> -->
 </head>
 <body>
     <div class="chat-container">
         <!-- Cabeçalho do Chat -->
         <header class="chat-header">
             <a href="{{ url_for('pagina_inicial') }}" class="back-button">&larr;</a>
-            <img src="{{ destinatario.profile_image_url or url_for('serve_usuario_static', filename='imagens/user-icon-placeholder.png') }}" alt="Avatar" class="avatar">
-            <div class="user-info">
+            <img id="fotoUser" src="{{ destinatario.profile_image_url or url_for('serve_usuario_static', filename='imagens/user-icon-placeholder.png') }}" alt="Avatar" class="avatar">
+            <div id="nomeUser" class="user-info">
                 <h2>{{ destinatario.nome }}</h2>
                 <!-- Poderíamos adicionar um status "online" aqui no futuro -->
             </div>
