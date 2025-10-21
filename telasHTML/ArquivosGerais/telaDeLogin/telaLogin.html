@@ -15,7 +15,7 @@
             max-height: 120px;
             min-height: 60px;
             
-            /* CORREÇÃO 2: Usa url_for para o background-image com o nome renomeado */
+            /* Caminho corrigido para 'bolaverde_3.png' e usando url_for */
             background: url("{{ url_for('serve_login_static', filename='bolaverde_3.png') }}") no-repeat center;
             
             background-size: cover;
@@ -34,7 +34,18 @@
     <img src="{{ url_for('serve_loading_static', filename='logoGeral.png') }}" alt="Logotipo Geral da Aplicação">
     
     <h1 class="titulo">Login</h1>
-    <div id="toast-notification" class="toast"></div>
+    
+    <div id="toast-notification" class="toast"
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                data-message="{{ messages[0][1] }}" 
+                data-category="{{ messages[0][0] }}"
+            {% else %}
+                data-message="" 
+                data-category=""
+            {% endif %}
+        {% endwith %}
+    ></div>
     
     <form action="{{ url_for('login') }}" method="post">
         <input placeholder="Email" type="email" name="email" required>
@@ -45,21 +56,23 @@
     </form>
 
     <script>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                // Nota: Usar Jinja2 dentro de um bloco <script> é ok, mas é mais limpo passar como data-attributes na div Toast.
-                const message = "{{ messages[0][1] }}";
-                const category = "{{ messages[0][0] }}";
-                const toast = document.getElementById("toast-notification");
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const toast = document.getElementById("toast-notification");
+            
+            // Lógica JS simples que lê os data attributes
+            if (toast && toast.dataset.message) {
+                const message = toast.dataset.message;
+                const category = toast.dataset.category;
                 
                 toast.textContent = message;
+                
                 // Define a cor baseada na categoria
                 toast.style.backgroundColor = category === 'success' ? 'green' : '#f44336';
                 
                 toast.classList.add("show");
                 setTimeout(() => toast.classList.remove("show"), 4000);
-            {% endif %}
-        {% endwith %}
+            }
+        });
     </script>
 </body>
 </html>

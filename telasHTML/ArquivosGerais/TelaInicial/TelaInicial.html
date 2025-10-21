@@ -4,26 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tela Inicial</title>
-    <!-- Assumindo que seu CSS está na pasta 'static' do blueprint 'inicial' -->
-    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="{{ url_for('serve_inicial_static', filename='style.css') }}">
 </head>
 <body>
     <header class="page-header">
-         <div class="logo-container">   <!-- comentado temporariamente -->
-            <!-- Texto alternativo mais descritivo -->
-            <!-- <img src="{{ url_for('serve_loading_static', filename='logoGeral.png') }}" alt="Logotipo da Aplicação"> -->
-        </div>
+        <div class="logo-container">   
+            </div>
     </header>
 
     <main>
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Buscar usuários..." onkeyup="searchUsers()">
-            <img src="lupa.png" alt="Ícone de busca" class="search-icon">
+            <img src="{{ url_for('serve_inicial_static', filename='lupa.png') }}" alt="Ícone de busca" class="search-icon">
         </div>
 
         <div class="user-list" id="user-list">
-<<<<<<< HEAD
             {% for usuario in usuarios %}
                 <a href="{{ url_for('pagina_chat', destinatario_id=usuario.id) }}" class="user-card-link">
                     <div class="user-card">
@@ -38,77 +33,57 @@
             {% if not usuarios %}
                 <p>Nenhum outro usuário cadastrado no momento.</p>
             {% endif %}
-=======
-                    <a href="{{ url_for('pagina_chat', destinatario_id=user.id) }}" class="user-card-link">
-                        <div class="user-card">
-                            <!-- Imagem de perfil com alt text dinâmico -->
-                            <img src="{{ user.profile_image_url or url_for('static', filename='default_profile.png') }}" alt="Foto de perfil de {{ user.nome }}">
-                            <!-- Adicionado um span para o nome, essencial para a busca funcionar -->
-                            <span class="user-name">{{ user.nome }}</span>
-                        </div>
-                    </a>
->>>>>>> 9df09d598a072627035878cdf863113661915933
         </div>
     </main>
 
-    <!-- Barra de navegação movida para um elemento <nav> para melhor semântica -->
     <nav class="navigation-links">
         <a href="{{ url_for('pagina_feed') }}" class="nav-button feed-button">Ver Feed</a>
-        <a href="{{ url_for('pagina_usuario') }}" class="nav-button profile-button">
-            <img class="botaoPerfil" src="BotaoUsuario.ico" alt="">
-        </a>
+        <a href="{{ url_for('pagina_usuario') }}" class="nav-button profile-button">Ver Perfil</a>
         <a href="{{ url_for('logout') }}" class="nav-button logout-button">Sair</a>
     </nav>
 
-    <!-- Toast Notification para feedback ao usuário -->
-            <div id="toast-notification" class="toast" data-message="{{ messages[0][1] }}" data-category="{{ messages[0][0] }}"></div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% set category, message = messages[0] %}
+            <div id="toast-notification" class="toast" data-message="{{ message }}" data-category="{{ category }}"></div>
+        {% else %}
+            <div id="toast-notification" class="toast" data-message="" data-category=""></div>
+        {% endif %}
+    {% endwith %}
 
     <script>
         function searchUsers() {
-            // Obtém o valor da busca em minúsculas
             const filter = document.getElementById("search-input").value.toLowerCase();
             const userList = document.getElementById("user-list");
             const userCards = userList.getElementsByClassName("user-card-link");
 
-            // Itera sobre cada cartão de usuário
             for (let i = 0; i < userCards.length; i++) {
                 const card = userCards[i];
-                // Encontra o nome do usuário dentro do cartão
                 const userNameElement = card.querySelector(".user-name");
                 
                 if (userNameElement) {
                     const userName = userNameElement.textContent || userNameElement.innerText;
-                    // Compara o nome do usuário com o filtro da busca
                     if (userName.toLowerCase().includes(filter)) {
-                        card.style.display = ""; // Mostra o cartão se corresponder
+                        card.style.display = "";
                     } else {
-                        card.style.display = "none"; // Oculta o cartão se não corresponder
+                        card.style.display = "none";
                     }
                 }
             }
         }
 
-        // Script para exibir a notificação (toast)
         document.addEventListener('DOMContentLoaded', (event) => {
             const toast = document.getElementById("toast-notification");
             
-            // Verifica se a notificação existe e tem uma mensagem
             if (toast && toast.dataset.message) {
                 toast.textContent = toast.dataset.message;
                 
-                // Define a cor de fundo com base na categoria da mensagem
                 toast.style.backgroundColor = toast.dataset.category === 'success' 
-<<<<<<< HEAD
-                    ? 'var(--cor-primaria)' // Cor para sucesso (defina em seu CSS)
-                    : '#ff4d4d'; // Cor para erro/danger
-=======
-                    ? 'var(--cor-primaria)' // Cor para sucesso
-                    : '#ff4d4d'; // Cor para erro
->>>>>>> 9df09d598a072627035878cdf863113661915933
+                    ? 'var(--cor-primaria)' 
+                    : '#ff4d4d'; 
 
                 toast.classList.add("show");
                 
-                // Oculta a notificação após 4 segundos
                 setTimeout(() => {
                     toast.classList.remove("show");
                 }, 4000);
