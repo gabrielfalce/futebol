@@ -22,9 +22,11 @@
 }
 
 body {
+    background-image: url('bolaLogo.png') ;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--cor-fundo);
     color: var(--cor-texto);
+    opacity: 10;
     line-height: 1.6;
     /* Aumenta o padding inferior para não esconder conteúdo atrás da navbar fixa */
     padding-bottom: 80px;
