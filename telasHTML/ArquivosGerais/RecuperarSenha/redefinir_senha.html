@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redefinir Senha</title>
+    <title>Definir Nova Senha</title>
     <link rel="stylesheet" href="{{ url_for('serve_cadastrar_static', filename='estilo.css') }}">
 </head>
 <body>
@@ -27,6 +27,8 @@
                 </div>
             {% endif %}
         {% endwith %}
+        
+        <a href="{{ url_for('login') }}" class="back-link">Voltar para o Login</a>
     </div>
 </body>
 </html>
