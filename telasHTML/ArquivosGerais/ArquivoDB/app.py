@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
 from dotenv import load_dotenv
 from database import inserir_usuario, check_user, get_all_users, get_user_by_email, update_user_profile_image
 import bcrypt
@@ -25,15 +25,27 @@ logging.info("Sucesso: Cliente Supabase inicializado.")
 
 # --- CONFIGURAÇÃO DO FLASK ---
 app_dir = os.path.dirname(os.path.abspath(__file__))
+
+# CORREÇÃO 1: Simplificada a inicialização do Flask.
+# As pastas de templates e estáticos serão gerenciadas pelas rotas.
+# O caminho para `template_folder` foi ajustado para apontar para a pasta `telasHTML`.
 app = Flask(
     __name__,
-    template_folder=os.path.join(app_dir, '..'),  # Ajustado para telasHTML/ArquivosGerais
-    static_folder=os.path.join(app_dir, 'static'),
-    static_url_path='/static'
+    template_folder=os.path.join(app_dir, 'telasHTML')
 )
 app.secret_key = os.environ.get("SUPABASE_SERVICE_KEY")
 if not app.secret_key:
     raise ValueError("SUPABASE_SERVICE_KEY deve estar definido nas variáveis de ambiente.")
+
+
+# --- CORREÇÃO 2: ROTAS PARA SERVIR ARQUIVOS ESTÁTICOS DE PASTAS ESPECÍFICAS ---
+# Estas rotas dizem ao Flask como encontrar os arquivos CSS e de imagem.
+
+# Rota para arquivos na pasta 'ArquivosGerais' (e subpastas)
+@app.route('/assets/gerais/<path:filename>')
+def assets_gerais(filename):
+    directory = os.path.join(app.root_path, 'telasHTML', 'ArquivosGerais')
+    return send_from_directory(directory, filename)
 
 # --- FILTRO JINJA ---
 @app.template_filter('format_date')
@@ -62,7 +74,7 @@ def login():
         senha = request.form.get('senha')
         if not email or not senha:
             flash('Email e senha são obrigatórios.', 'danger')
-            return render_template('telaDeLogin/telaLogin.html')
+            return render_template('ArquivosGerais/telaDeLogin/telaLogin.html') # Caminho ajustado
         
         user_data = check_user(email, senha)
         if user_data:
@@ -71,8 +83,8 @@ def login():
             return redirect(url_for('tela_de_loading'))
         else:
             flash('Email ou senha incorretos. Tente novamente.', 'danger')
-            return render_template('telaDeLogin/telaLogin.html')
-    return render_template('telaDeLogin/telaLogin.html')
+            return render_template('ArquivosGerais/telaDeLogin/telaLogin.html') # Caminho ajustado
+    return render_template('ArquivosGerais/telaDeLogin/telaLogin.html') # Caminho ajustado
 
 @app.route("/inicio")
 def pagina_inicial():
@@ -81,14 +93,12 @@ def pagina_inicial():
         return redirect(url_for('login'))
     
     try:
-        # Verificar sessão com Supabase
         user = supabase.auth.get_user()
         if not user or user.user.email != session['user_email']:
             flash('Sessão inválida, por favor faça login novamente.', 'danger')
             session.clear()
             return redirect(url_for('login'))
 
-        # Buscar ID do usuário
         user_data = supabase.table('usuarios').select('id').eq('email', session['user_email']).single().execute().data
         if user_data:
             session['user_id'] = user_data['id']
@@ -98,7 +108,7 @@ def pagina_inicial():
             return redirect(url_for('login'))
 
         lista_de_usuarios = get_all_users()
-        return render_template("TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
+        return render_template("ArquivosGerais/TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios) # Caminho ajustado
     except APIError as e:
         logging.error(f"Erro ao buscar ID do usuário na página inicial: {e}")
         flash('Ocorreu um erro ao carregar seus dados. Tente novamente.', 'danger')
@@ -115,7 +125,7 @@ def pagina_usuario():
         return redirect(url_for('login'))
     user_data = get_user_by_email(session['user_email'])
     if user_data:
-        return render_template("TelaDeUsuario/TelaUser.html", usuario=user_data)
+        return render_template("ArquivosGerais/TelaDeUsuario/TelaUser.html", usuario=user_data) # Caminho ajustado
     else:
         flash('Erro: Dados do usuário não encontrados. Por favor, faça login novamente.', 'danger')
         session.pop('user_email', None)
@@ -126,11 +136,14 @@ def pagina_usuario():
 def tela_de_loading():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    return render_template("TelaLoading/Telaloading.html")
+    return render_template("ArquivosGerais/TelaLoading/Telaloading.html") # Caminho ajustado
 
 @app.route("/cadastro")
 def cadastro():
-    return render_template("Cadastrar_templates/cadastrar.html")
+    return render_template("Cadastrar_templates/cadastrar.html") # Caminho ajustado
+
+# ... (o restante do seu código permanece igual) ...
+# O código de /cadastrar, /logout, /feed, /upload_image, /chat, etc. não precisa de alteração.
 
 @app.route("/cadastrar", methods=['POST'])
 def cadastrar():
@@ -143,7 +156,6 @@ def cadastrar():
     numero = request.form.get("numero")
     numero_camisa = request.form.get("numero_camisa")
 
-    # Validar entradas
     if not all([nome, email, senha_texto_puro, cidade, posicao, nascimento_str, numero, numero_camisa]):
         flash("Erro no cadastro: Todos os campos são obrigatórios.", 'danger')
         return redirect(url_for('cadastro'))
@@ -196,7 +208,7 @@ def logout():
 def pagina_feed():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    return render_template('TelaFeed/feed.html')
+    return render_template('ArquivosGerais/TelaFeed/feed.html') # Caminho ajustado
 
 @app.route('/upload_image', methods=['POST'])
 def upload_image():
@@ -217,7 +229,6 @@ def upload_image():
         file_content = file.read()
         file_name = f"public/{user_email.replace('@', '_')}_{int(datetime.now().timestamp())}.jpg"
         
-        # Upload file
         upload_response = supabase_admin.storage.from_('profile_images').upload(
             path=file_name,
             file=file_content,
@@ -229,7 +240,6 @@ def upload_image():
         
         image_url = supabase.storage.from_('profile_images').get_public_url(file_name)
         
-        # Remover imagem antiga, se existir
         old_image_url = get_user_by_email(user_email).get('profile_image_url')
         if old_image_url:
             old_file_name = old_image_url.split('/')[-1]
@@ -270,7 +280,7 @@ def pagina_chat(destinatario_id):
         
         supabase_url = os.environ.get("SUPABASE_URL")
         supabase_key = os.environ.get("SUPABASE_KEY")
-        return render_template('TelaChat/chat.html', remetente=remetente, destinatario=destinatario, supabase_url=supabase_url, supabase_key=supabase_key)
+        return render_template('ArquivosGerais/TelaChat/chat.html', remetente=remetente, destinatario=destinatario, supabase_url=supabase_url, supabase_key=supabase_key) # Caminho ajustado
     except APIError as e:
         logging.error(f"Erro ao buscar dados do chat: {e}")
         flash('Erro ao carregar dados do chat.', 'danger')

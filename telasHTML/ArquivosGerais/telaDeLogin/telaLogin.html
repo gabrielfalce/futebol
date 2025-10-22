@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- CORRIGIDO: Usando a nova rota 'assets_gerais' -->
+    <link rel="stylesheet" href="{{ url_for('assets_gerais', filename='telaDeLogin/style.css') }}">
     
     <style>
         .soccer-ball {
@@ -14,10 +15,8 @@
             height: 20vw;
             max-height: 120px;
             min-height: 60px;
-            
-            /* Caminho corrigido para 'bolaverde_3.png' usando url_for */
-            background: url("{{ url_for('static', filename='bolaverde_3.png') }}") no-repeat center;
-            
+            /* CORRIGIDO: Usando a nova rota 'assets_gerais' */
+            background: url("{{ url_for('assets_gerais', filename='telaDeLogin/bolaverde_3.png') }}") no-repeat center;
             background-size: cover;
             animation: spin 1s linear infinite;
             margin-bottom: 20px;
@@ -31,7 +30,8 @@
 </head>
 <body>
     <div class="soccer-ball"></div>
-    <img src="{{ url_for('static', filename='logoGeral.png') }}" alt="Logotipo Geral da Aplicação">
+    <!-- CORRIGIDO: Usando a nova rota 'assets_gerais'. Assumindo que 'bolaLogo.png' está em 'TelaInicial' -->
+    <img src="{{ url_for('assets_gerais', filename='TelaInicial/bolaLogo.png') }}" alt="Logotipo Geral da Aplicação">
     
     <h1 class="titulo">Login</h1>
     
@@ -59,14 +59,12 @@
         document.addEventListener('DOMContentLoaded', (event) => {
             const toast = document.getElementById("toast-notification");
             
-            // Lógica JS simples que lê os data attributes
             if (toast && toast.dataset.message) {
                 const message = toast.dataset.message;
                 const category = toast.dataset.category;
                 
                 toast.textContent = message;
                 
-                // Define a cor baseada na categoria
                 toast.style.backgroundColor = category === 'success' ? 'green' : '#f44336';
                 
                 toast.classList.add("show");
