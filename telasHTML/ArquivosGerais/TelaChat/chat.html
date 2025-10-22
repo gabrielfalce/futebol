@@ -38,10 +38,6 @@
         // IDs: Assumimos que são números inteiros, sem aspas.
         const REMETENTE_ID = {{ remetente.id }};
         const DESTINATARIO_ID = {{ destinatario.id }};
-        
-        // CORREÇÃO FINAL: Tentando a inversão de aspas e removendo comentários para isolar o problema.
-        // O linter do VS Code é muito sensível ao {{ ... }} dentro de aspas duplas.
-        // Usamos aspas simples no JS e, se necessário, o filtro "tojson" do Jinja, mas geralmente não é preciso.
         const SUPABASE_URL = '{{ supabase_url }}';
         const SUPABASE_KEY = '{{ supabase_key }}';
     </script>
