@@ -4,3 +4,4 @@ bcrypt
 supabase
 gunicorn
 python-dotenv
+email-validator

@@ -1,12 +1,15 @@
 import os
 import logging
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from dotenv import load_dotenv
 from database import inserir_usuario, check_user, get_all_users, get_user_by_email, update_user_profile_image
 import bcrypt
 from datetime import datetime
 from supabase import create_client, Client
 from postgrest.exceptions import APIError
-from email_validator import validate_email, EmailNotValidError
+
+# Carrega variáveis de ambiente do .env
+load_dotenv()
 
 # --- CONFIGURAÇÃO DE LOGGING PROFISSIONAL ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -14,9 +17,11 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # --- CONFIGURAÇÃO DE SUPABASE ---
 url = os.environ.get("SUPABASE_URL")
 key = os.environ.get("SUPABASE_KEY")
-if not url or not key:
-    raise ValueError("SUPABASE_URL e SUPABASE_KEY devem estar definidos nas variáveis de ambiente.")
+service_key = os.environ.get("SUPABASE_SERVICE_KEY")
+if not url or not key or not service_key:
+    raise ValueError("SUPABASE_URL, SUPABASE_KEY e SUPABASE_SERVICE_KEY devem estar definidos nas variáveis de ambiente.")
 supabase: Client = create_client(url, key)
+logging.info("Sucesso: Cliente Supabase inicializado.")
 
 # --- CONFIGURAÇÃO DO FLASK ---
 app_dir = os.path.dirname(os.path.abspath(__file__))
@@ -57,11 +62,6 @@ def login():
         senha = request.form.get('senha')
         if not email or not senha:
             flash('Email e senha são obrigatórios.', 'danger')
-            return render_template('telaDeLogin/telaLogin.html')
-        try:
-            validate_email(email, check_deliverability=False)
-        except EmailNotValidError:
-            flash('Endereço de e-mail inválido.', 'danger')
             return render_template('telaDeLogin/telaLogin.html')
         
         user_data = check_user(email, senha)
@@ -146,12 +146,6 @@ def cadastrar():
     # Validar entradas
     if not all([nome, email, senha_texto_puro, cidade, posicao, nascimento_str, numero, numero_camisa]):
         flash("Erro no cadastro: Todos os campos são obrigatórios.", 'danger')
-        return redirect(url_for('cadastro'))
-
-    try:
-        validate_email(email, check_deliverability=False)
-    except EmailNotValidError:
-        flash("Erro: Endereço de e-mail inválido.", 'danger')
         return redirect(url_for('cadastro'))
 
     if len(senha_texto_puro) < 8:
@@ -353,11 +347,8 @@ def esqueci_senha():
             return redirect(url_for('esqueci_senha'))
         
         try:
-            validate_email(email, check_deliverability=False)
             supabase.auth.reset_password_for_email(email)
             flash('Se o e-mail estiver cadastrado, um link para redefinição de senha foi enviado.', 'success')
-        except EmailNotValidError:
-            flash('Endereço de e-mail inválido.', 'danger')
         except APIError as e:
             logging.error(f"Tentativa de reset de senha para {email} falhou: {e}")
             flash('Se o e-mail estiver cadastrado, um link para redefinição de senha foi enviado.', 'info')
@@ -404,4 +395,4 @@ def redefinir_senha():
             return redirect(url_for('esqueci_senha'))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
