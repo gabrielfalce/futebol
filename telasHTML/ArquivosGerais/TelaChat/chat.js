@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
             wrapper.classList.add('message-wrapper');
     
             // Define se a mensagem foi 'sent' (enviada) ou 'received' (recebida)
-            // Note que remetente_id deve ser um número, por isso usamos ===
+            // remetente_id deve ser um número, por isso usamos ===
             if (message.remetente_id === REMETENTE_ID) {
                 wrapper.classList.add('sent');
             } else {
@@ -86,7 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('Erro ao enviar mensagem:', error);
                 alert('Não foi possível enviar a mensagem. Verifique a permissão de INSERT no Supabase.');
             } else {
-                // Se o insert for bem-sucedido, adicione a mensagem à sua tela para ser instantâneo
+                // Se o insert for bem-sucedido, adicione a mensagem à sua tela
+                // (a tela do outro usuário será atualizada pelo Realtime)
                 addMessageToScreen(message);
             }
         }
@@ -108,19 +109,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- 4. CONFIGURAÇÃO REALTIME ---
     
         // Listener do Supabase Realtime: "ouve" por novas inserções na tabela 'mensagens'
-        // O filtro otimiza para receber SOMENTE mensagens destinadas a MIM (REMETENTE_ID)
+        // O filtro: escutar apenas mensagens onde EU sou o destinatário (REMETENTE_ID)
         supabase.channel('chat-conversas') 
             .on('postgres_changes', { 
                 event: 'INSERT', 
                 schema: 'public', 
                 table: 'mensagens',
-                // Filtro para escutar apenas mensagens onde EU sou o destinatário
+                // Filtra para receber apenas mensagens destinadas a esta sessão
                 filter: `destinatario_id=eq.${REMETENTE_ID}` 
             }, (payload) => {
                 const newMessage = payload.new;
     
-                // Verifica se o REMETENTE da nova mensagem é o usuário com quem estou conversando (DESTINATARIO_ID)
-                // Isso garante que apenas mensagens DA conversa atual apareçam
+                // Verifica se o remetente é o usuário com quem estou conversando (DESTINATARIO_ID)
                 if (newMessage.remetente_id === DESTINATARIO_ID) {
                     addMessageToScreen(newMessage); // Adiciona a nova mensagem na tela em tempo real
                 }
