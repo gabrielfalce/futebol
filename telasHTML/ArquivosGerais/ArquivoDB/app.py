@@ -17,8 +17,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # --- CONFIGURAÇÃO DE SUPABASE ---
 url = os.environ.get("SUPABASE_URL")
 key = os.environ.get("SUPABASE_KEY")
-if not url or not key:
-    raise ValueError("SUPABASE_URL e SUPABASE_KEY devem estar definidos nas variáveis de ambiente.")
+service_key = os.environ.get("SUPABASE_SERVICE_KEY")
+if not url or not key or not service_key:
+    raise ValueError("SUPABASE_URL, SUPABASE_KEY e SUPABASE_SERVICE_KEY devem estar definidos nas variáveis de ambiente.")
 supabase: Client = create_client(url, key)
 logging.info("Sucesso: Cliente Supabase inicializado.")
 
