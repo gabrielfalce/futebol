@@ -14,12 +14,14 @@
             <a href="{{ url_for('pagina_inicial') }}" class="back-button">&larr;</a>
             <img src="{{ destinatario.profile_image_url or url_for('serve_usuario_static', filename='imagens/user-icon-placeholder.png') }}" alt="Avatar" class="avatar">
             <div class="user-info">
-                <h2>{{ destinatario.nome }}</h2>
+                <!-- O nome agora será exibido abaixo do avatar -->
             </div>
+            <p id="nomeDestinatario">{{ destinatario.nome }}</p>
         </header>
 
         <main class="chat-body" id="chat-body">
             <p style="text-align:center; color: #555;">Carregando mensagens...</p>
+
         </main>
 
         <footer class="chat-footer">

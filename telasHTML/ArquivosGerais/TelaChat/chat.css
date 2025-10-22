@@ -187,3 +187,16 @@ body {
     width: 24px;
     height: 24px;
 }
+
+/* Estilo para o nome do destinatário abaixo do avatar */
+#nomeDestinatario {
+    position: absolute;
+    top: calc(100% + 55px); /* Posição do avatar (100% + 10px) + altura do avatar (45px) */
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--cor-texto-recebido);
+    font-size: 0.9rem;
+    font-weight: 500;
+    z-index: 1;
+    margin-top: 10px; /* Adiciona uma margem superior de 10px */
+}
