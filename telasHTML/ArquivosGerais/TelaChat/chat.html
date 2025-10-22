@@ -1,3 +1,4 @@
+<!-- vscode: language=jinja-html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -35,14 +36,14 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
-        // IDs: Assumimos que são números inteiros, sem aspas.
-        const REMETENTE_ID = {{ remetente.id }};
-        const DESTINATARIO_ID = {{ destinatario.id }};
-        const SUPABASE_URL = '{{ supabase_url }}';
-        const SUPABASE_KEY = '{{ supabase_key }}';
+        // IDs e Chaves agora são passados de forma segura com o filtro |tojson.
+        const REMETENTE_ID = {{ remetente.id | tojson }};
+        const DESTINATARIO_ID = {{ destinatario.id | tojson }};
+        const SUPABASE_URL = {{ supabase_url | tojson }};
+        const SUPABASE_KEY = {{ supabase_key | tojson }};
     </script>
 
-    <script src="{{ url_for('serve_chat_static', filename='chat.js' ) }}"></script>
+    <script src="{{ url_for('serve_chat_static', filename='chat.js'  ) }}"></script>
 
 </body>
 </html>
