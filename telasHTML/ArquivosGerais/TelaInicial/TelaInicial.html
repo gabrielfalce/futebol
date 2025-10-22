@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tela Inicial</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='ArquivosGerais/TelaInicial/style.css') }}">
 </head>
 <body>
     <header class="page-header">
@@ -16,7 +16,7 @@
     <main>
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Buscar usuários..." onkeyup="searchUsers()">
-            <img src="{{ url_for('static', filename='lupa.png') }}" alt="Ícone de busca" class="search-icon">
+            <img src="{{ url_for('static', filename='ArquivosGerais/TelaInicial/lupa.png') }}" alt="Ícone de busca" class="search-icon">
         </div>
 
         <div class="user-list" id="user-list">
@@ -24,7 +24,7 @@
             {% for usuario in usuarios %} 
                 <a href="{{ url_for('pagina_chat', destinatario_id=usuario.id) }}" class="user-card-link">
                     <div class="user-card">
-                        <img id="user-foto" src="{{ usuario.profile_image_url or url_for('static', filename='default_profile.png') }}" 
+                        <img id="user-foto" src="{{ usuario.profile_image_url or url_for('static', filename='ArquivosGerais/TelaInicial/default_profile.png') }}" 
                              alt="Foto de perfil de {{ usuario.nome }}">
                         
                         <div class="user-info">
@@ -46,7 +46,7 @@
         <a href="{{ url_for('pagina_feed') }}" class="nav-button feed-button">Ver Feed</a>
         
         <a href="{{ url_for('pagina_usuario') }}" class="nav-button profile-button">
-            <img src="{{ url_for('static', filename='BotaoUsuario.ico') }}" alt="Ver Perfil">
+            <img src="{{ url_for('static', filename='ArquivosGerais/TelaInicial/BotaoUsuario.ico') }}" alt="Ver Perfil">
         </a>
         
         <a href="{{ url_for('logout') }}" class="nav-button logout-button">Sair</a>
