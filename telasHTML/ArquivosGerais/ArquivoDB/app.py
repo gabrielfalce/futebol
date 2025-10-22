@@ -23,29 +23,27 @@ if not url or not key or not service_key:
 supabase: Client = create_client(url, key)
 logging.info("Sucesso: Cliente Supabase inicializado.")
 
-# --- CONFIGURAÇÃO DO FLASK ---
+# --- CONFIGURAÇÃO DO FLASK (CORRIGIDA) ---
+# Pega o diretório onde o app.py está localizado (ex: .../ArquivoDB/)
 app_dir = os.path.dirname(os.path.abspath(__file__))
 
-# CORREÇÃO 1: Simplificada a inicialização do Flask.
-# As pastas de templates e estáticos serão gerenciadas pelas rotas.
-# O caminho para `template_folder` foi ajustado para apontar para a pasta `telasHTML`.
+# Define o caminho raiz para os templates (a pasta 'telasHTML')
+# Sobe dois níveis a partir de '.../ArquivoDB/app.py' para chegar em 'telasHTML'
+template_dir = os.path.abspath(os.path.join(app_dir, '..', '..'))
+
 app = Flask(
     __name__,
-    template_folder=os.path.join(app_dir, 'telasHTML')
+    template_folder=template_dir
 )
 app.secret_key = os.environ.get("SUPABASE_SERVICE_KEY")
 if not app.secret_key:
     raise ValueError("SUPABASE_SERVICE_KEY deve estar definido nas variáveis de ambiente.")
 
-
-# --- CORREÇÃO 2: ROTAS PARA SERVIR ARQUIVOS ESTÁTICOS DE PASTAS ESPECÍFICAS ---
-# Estas rotas dizem ao Flask como encontrar os arquivos CSS e de imagem.
-
-# Rota para arquivos na pasta 'ArquivosGerais' (e subpastas)
-@app.route('/assets/gerais/<path:filename>')
-def assets_gerais(filename):
-    directory = os.path.join(app.root_path, 'telasHTML', 'ArquivosGerais')
-    return send_from_directory(directory, filename)
+# --- ROTA DE ASSETS (CORRIGIDA E SIMPLIFICADA) ---
+# Esta rota única servirá todos os arquivos de dentro da pasta 'telasHTML'
+@app.route('/assets/<path:filename>')
+def assets(filename):
+    return send_from_directory(template_dir, filename)
 
 # --- FILTRO JINJA ---
 @app.template_filter('format_date')
@@ -74,7 +72,7 @@ def login():
         senha = request.form.get('senha')
         if not email or not senha:
             flash('Email e senha são obrigatórios.', 'danger')
-            return render_template('ArquivosGerais/telaDeLogin/telaLogin.html') # Caminho ajustado
+            return render_template('ArquivosGerais/telaDeLogin/telaLogin.html')
         
         user_data = check_user(email, senha)
         if user_data:
@@ -83,8 +81,8 @@ def login():
             return redirect(url_for('tela_de_loading'))
         else:
             flash('Email ou senha incorretos. Tente novamente.', 'danger')
-            return render_template('ArquivosGerais/telaDeLogin/telaLogin.html') # Caminho ajustado
-    return render_template('ArquivosGerais/telaDeLogin/telaLogin.html') # Caminho ajustado
+            return render_template('ArquivosGerais/telaDeLogin/telaLogin.html')
+    return render_template('ArquivosGerais/telaDeLogin/telaLogin.html')
 
 @app.route("/inicio")
 def pagina_inicial():
@@ -108,7 +106,7 @@ def pagina_inicial():
             return redirect(url_for('login'))
 
         lista_de_usuarios = get_all_users()
-        return render_template("ArquivosGerais/TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios) # Caminho ajustado
+        return render_template("ArquivosGerais/TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
     except APIError as e:
         logging.error(f"Erro ao buscar ID do usuário na página inicial: {e}")
         flash('Ocorreu um erro ao carregar seus dados. Tente novamente.', 'danger')
@@ -125,7 +123,7 @@ def pagina_usuario():
         return redirect(url_for('login'))
     user_data = get_user_by_email(session['user_email'])
     if user_data:
-        return render_template("ArquivosGerais/TelaDeUsuario/TelaUser.html", usuario=user_data) # Caminho ajustado
+        return render_template("ArquivosGerais/TelaDeUsuario/TelaUser.html", usuario=user_data)
     else:
         flash('Erro: Dados do usuário não encontrados. Por favor, faça login novamente.', 'danger')
         session.pop('user_email', None)
@@ -136,14 +134,11 @@ def pagina_usuario():
 def tela_de_loading():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    return render_template("ArquivosGerais/TelaLoading/Telaloading.html") # Caminho ajustado
+    return render_template("ArquivosGerais/TelaLoading/Telaloading.html")
 
 @app.route("/cadastro")
 def cadastro():
-    return render_template("Cadastrar_templates/cadastrar.html") # Caminho ajustado
-
-# ... (o restante do seu código permanece igual) ...
-# O código de /cadastrar, /logout, /feed, /upload_image, /chat, etc. não precisa de alteração.
+    return render_template("Cadastrar_templates/cadastrar.html")
 
 @app.route("/cadastrar", methods=['POST'])
 def cadastrar():
@@ -208,7 +203,7 @@ def logout():
 def pagina_feed():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    return render_template('ArquivosGerais/TelaFeed/feed.html') # Caminho ajustado
+    return render_template('ArquivosGerais/TelaFeed/feed.html')
 
 @app.route('/upload_image', methods=['POST'])
 def upload_image():
@@ -280,7 +275,7 @@ def pagina_chat(destinatario_id):
         
         supabase_url = os.environ.get("SUPABASE_URL")
         supabase_key = os.environ.get("SUPABASE_KEY")
-        return render_template('ArquivosGerais/TelaChat/chat.html', remetente=remetente, destinatario=destinatario, supabase_url=supabase_url, supabase_key=supabase_key) # Caminho ajustado
+        return render_template('ArquivosGerais/TelaChat/chat.html', remetente=remetente, destinatario=destinatario, supabase_url=supabase_url, supabase_key=supabase_key)
     except APIError as e:
         logging.error(f"Erro ao buscar dados do chat: {e}")
         flash('Erro ao carregar dados do chat.', 'danger')
