@@ -5,44 +5,166 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Perfil</title>
-    <!-- Você pode criar um CSS específico ou usar um existente -->
-    <link rel="stylesheet" href="{{ url_for('serve_cadastrar_static', filename='estilo.css') }}">
+    <link rel="stylesheet" href="stylesTest.css">
+    <link rel="stylesheet" href="{{ url_for('serve_usuario_static', filename='stylesTest.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
 </head>
 <body>
     <div class="container">
+        <!-- Seção de Imagem de Perfil -->
+        <div class="profile-picture-section">
+            <div id="perfilImagemGeralCaixa" class="edit-mode">
+                <img id="preview" 
+                     src="{{ usuario.profile_image_url or url_for('serve_usuario_static', filename='imagens/user-icon-placeholder.png') }}" 
+                     alt="Imagem de perfil do usuário">
+            </div>
+            <p class="edit-prompt">Clique na imagem para alterar</p>
+        </div>
+
+        <!-- Modal de Corte -->
+        <div id="cropModal" class="modal">
+            <div class="modal-content">
+                <button id="closeModalButton" class="close-button">Salvar</button>
+                <h2>Cortar Imagem</h2>
+                <p>Escolha uma imagem e ajuste o corte.</p>
+                <input type="file" id="imageInput" accept="image/*">
+                <img id="image" src="" alt="Imagem para cortar" style="display:none; max-width:100%;">
+            </div>
+        </div>
+
         <h1>Editar Perfil</h1>
         <p>Preencha apenas os campos que deseja alterar.</p>
         
         <form action="{{ url_for('editar_perfil') }}" method="POST">
-    <div class="form-group">
-        <label for="nome">Nome</label>
-        <input type="text" id="nome" name="nome" placeholder="{{ usuario.nome or 'Não definido' }}">
-    </div>
-    <div class="form-group">
-        <label for="cidade">Cidade</label>
-        <input type="text" id="cidade" name="cidade" placeholder="{{ usuario.cidade or 'Não definida' }}">
-    </div>
-    <div class="form-group">
-        <label for="posicao">Posição em Campo</label>
-        <input type="text" id="posicao" name="posicao" placeholder="{{ usuario.posicao or 'Não definida' }}">
-    </div>
-    
-    <!-- CAMPO CORRIGIDO PARA NÚMERO DA CAMISA -->
-    <div class="form-group">
-        <label for="numero_camisa">Número da Camisa</label>
-        <input type="text" id="numero_camisa" name="numero_camisa" placeholder="{{ usuario.numero_camisa or 'Não definido' }}">
-    </div>
-
-    <!-- NOVO CAMPO PARA NÚMERO DE TELEFONE -->
-    <div class="form-group">
-        <label for="numero_telefone">Número de Telefone</label>
-        <input type="tel" id="numero_telefone" name="numero_telefone" placeholder="{{ usuario.numero or 'Não definido' }}">
-    </div>
-    
-    <button type="submit" class="submit-button">Salvar Alterações</button>
-</form>
+            <div class="form-group">
+                <label for="nome">Nome</label>
+                <input type="text" id="nome" name="nome" placeholder="{{ usuario.nome or 'Não definido' }}">
+            </div>
+            <div class="form-group">
+                <label for="cidade">Cidade</label>
+                <input type="text" id="cidade" name="cidade" placeholder="{{ usuario.cidade or 'Não definida' }}">
+            </div>
+            <div class="form-group">
+                <label for="posicao">Posição em Campo</label>
+                <input type="text" id="posicao" name="posicao" placeholder="{{ usuario.posicao or 'Não definida' }}">
+            </div>
+            
+            <!-- CAMPO CORRIGIDO PARA NÚMERO DA CAMISA -->
+            <div class="form-group">
+                <label for="numero_camisa">Número da Camisa</label>
+                <input type="text" id="numero_camisa" name="numero_camisa" placeholder="{{ usuario.numero_camisa or 'Não definido' }}">
+            </div>
+        
+            <!-- NOVO CAMPO PARA NÚMERO DE TELEFONE -->
+            <div class="form-group">
+                <label for="numero_telefone">Número de Telefone</label>
+                <input type="tel" id="numero_telefone" name="numero_telefone" placeholder="{{ usuario.numero or 'Não definido' }}">
+            </div>
+            
+            <button type="submit" class="submit-button">Salvar Alterações</button>
+        </form>
 
         <a href="{{ url_for('pagina_usuario') }}" class="back-link">Voltar para o Perfil</a>
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <script>
+        let cropper;
+
+        // --- Elementos do DOM ---
+        const profileImageContainer = document.getElementById('perfilImagemGeralCaixa');
+        const closeModalButton = document.getElementById('closeModalButton');
+        const cropModal = document.getElementById('cropModal');
+        const imageInput = document.getElementById('imageInput');
+        const imageToCrop = document.getElementById('image');
+        const previewImage = document.getElementById('preview');
+
+        // --- Abrir o modal ao clicar na imagem de perfil ---
+        profileImageContainer.addEventListener('click', () => {
+            cropModal.style.display = 'flex';
+        });
+
+        // --- Lidar com a seleção de imagem ---
+        imageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                imageToCrop.src = event.target.result;
+                imageToCrop.style.display = 'block';
+                
+                if (cropper) {
+                    cropper.destroy();
+                }
+                
+                cropper = new Cropper(imageToCrop, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    background: false,
+                    autoCropArea: 0.9,
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // --- Fechar modal e salvar a imagem cortada ---
+        closeModalButton.addEventListener('click', () => {
+            cropModal.style.display = 'none';
+
+            if (!cropper) {
+                return;
+            }
+
+            const canvas = cropper.getCroppedCanvas({
+                width: 256,
+                height: 256,
+            });
+
+            if (!canvas) {
+                console.error("Canvas não pôde ser criado.");
+                return;
+            }
+
+            canvas.toBlob(blob => {
+                if (blob) {
+                    uploadImage(blob);
+                }
+            }, 'image/jpeg', 0.9);
+        });
+
+        // --- Função para fazer o upload da imagem para o backend ---
+        async function uploadImage(blob) {
+            const formData = new FormData();
+            formData.append('file', blob, 'profile.jpg');
+
+            try {
+                const response = await fetch("{{ url_for('upload_image') }}", {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    previewImage.src = data.image_url + '?t=' + new Date().getTime();
+                    alert('Imagem de perfil atualizada com sucesso!');
+                } else {
+                    alert('Erro ao salvar a imagem: ' + (data.message || 'Erro desconhecido.'));
+                }
+            } catch (error) {
+                console.error('Erro na requisição de upload:', error);
+                alert('Não foi possível conectar ao servidor para salvar a imagem.');
+            } finally {
+                imageInput.value = '';
+                if (cropper) {
+                    cropper.destroy();
+                    cropper = null;
+                }
+                imageToCrop.src = '';
+                imageToCrop.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>

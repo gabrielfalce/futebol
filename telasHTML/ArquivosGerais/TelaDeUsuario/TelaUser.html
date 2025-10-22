@@ -1,202 +1,68 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil de {{ usuario.nome }}</title>
-    
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
-    
-        <link rel="stylesheet" href="{{ url_for('serve_usuario_static', filename='stylesTest.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil de {{ usuario.nome or 'Usuário' }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+    
+    <link rel="stylesheet" href="{{ url_for('serve_usuario_static', filename='stylesTest.css') }}">
 
-    
-    <div class="Wallpaper">
-              <img class="imagemWallpaper" src="{{ url_for('serve_usuario_static', filename='imagens/hM94BRC.jpeg') }}" alt="Wallpaper de fundo">
-    </div>
+    <div class="Wallpaper">
+        <img class="imagemWallpaper" src="{{ url_for('serve_usuario_static', filename='imagens/hM94BRC.jpeg') }}" alt="Wallpaper de fundo">
+    </div>
 </head>
 <body>
-    <div id="mainScreen">
-        <div id="profileContainer">
-            <div id="profileInfo">
-                <div id="perfilImagemGeralCaixa">
-                    <img id="preview" 
-                                                src="{{ usuario.profile_image_url or url_for('serve_usuario_static', filename='imagens/user-icon-placeholder.png') }}" 
-                        alt="Imagem de perfil do usuário">
-                    
-                                        <img src="{{ url_for('serve_usuario_static', filename='imagens/user-icon-placeholder.png') }}" alt="Placeholder de Perfil">
-                
-                </div>
-                <p id="nomeUsuario" >Nome de usuário</p>
-            </div>
-                        <a id="openModalButton" href="{{ url_for('editar_perfil') }}" class="edit-profile-button">editar perfil</a>
-        </div>
-    </div>      
+    <!-- Wrapper principal para o conteúdo da página -->
+    <div class="main-content-wrapper">
+        <!-- Coluna do Perfil -->
+        <div id="profileContainer">
+            <div id="perfilImagemGeralCaixa">
+                <img id="preview" 
+                    src="{{ usuario.profile_image_url or url_for('serve_usuario_static', filename='imagens/user-icon-placeholder.png') }}" 
+                    alt="Imagem de perfil do usuário">
+            </div>
+            <p class="nomeUsuario">{{ usuario.nome or 'Nome de Usuário' }}</p>
+            <a href="{{ url_for('editar_perfil') }}" class="edit-profile-button">Editar Perfil</a>
+        </div>
 
-    <div id="cropModal" class="modal">
-        <div class="modal-content">
-            <button id="closeModalButton" class="close-button">Salvar</button>
-            <h2>Cortar Imagem</h2>      
-            <p>Escolha uma imagem e ajuste o corte.</p>
-            <input type="file" id="imageInput" accept="image/*">
-            <div class="image-container">
-                <img id="image" src="" alt="Imagem para cortar">
-            </div>
-        </div>
-    </div>
+        <!-- Coluna das Publicações -->
+        <div class="posts-container">
+            <!-- O modal foi movido para a página de edição, onde é realmente usado -->
+            <!-- <div id="cropModal" class="modal">
+        <div class="modal-content">
+            <button id="closeModalButton" class="close-button">Salvar</button>
+            <h2>Cortar Imagem</h2>      
+            <p>Escolha uma imagem e ajuste o corte.</p>
+            <input type="file" id="imageInput" accept="image/*">
+            <div class="image-container">
+                <img id="image" src="" alt="Imagem para cortar">
+            </div>
+        </div>
+    </div> -->
 
-    <div class="floating-button-container">
-        <div class="floating-button-bar"></div>
-                <a id="linkTela" href="{{ url_for('tela_de_loading') }}">
-            <button id="adicionarUsuarioBtn" class="floating-button">
-                                <img src="{{ url_for('serve_usuario_static', filename='imagens/bolaLogo.png') }}" alt="Ir para tela inicial">
-            </button>
-        </a>
-    </div>
-    
-<div class="BoxePublicacoes" >      
-    <h1>publicações do Usuário</h1>
-    <div id="imagemPublicaçãoUsuario"  >
-                <img class="publicacaoImagem" src="{{ url_for('serve_usuario_static', filename='imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
-    </div>
-</div>
+            <div class="BoxePublicacoes">
+                <h1>Publicações do Usuário</h1>
+                <img class="publicacaoImagem" src="{{ url_for('serve_usuario_static', filename='imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
+            </div>
 
-<div class="BoxePublicacoes" >      
-    <h1>publicações do Usuário</h1>
-    <div id="imagemPublicaçãoUsuario"  >
-                <img class="publicacaoImagem" src="{{ url_for('serve_usuario_static', filename='imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
-    </div>
-</div>
+            <div class="BoxePublicacoes">
+                <h1>Outra Publicação</h1>
+                <img class="publicacaoImagem" src="{{ url_for('serve_usuario_static', filename='imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
+            </div>
+        </div>
+    </div>
 
+    <div class="floating-button-container">
+        <div class="floating-button-bar"></div>
+        <a id="linkTela" href="{{ url_for('tela_de_loading') }}">
+            <button id="adicionarUsuarioBtn" class="floating-button">
+                <img src="{{ url_for('serve_usuario_static', filename='imagens/bolaLogo.png') }}" alt="Ir para tela inicial">
+            </button>
+        </a>
+    </div>
 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-    <script>
-        let cropper;
-
-        // --- Elementos do DOM ---
-        // CORREÇÃO: O botão "editar perfil" está chamando a rota de edição e não deve abrir o modal diretamente.
-        // O modal de corte deveria ser ativado por outro elemento. Se a intenção é manter o ID no link de edição
-        // e usar o JS para abrir o modal, o preventDefault precisa ser usado. 
-        const editProfileLink = document.getElementById('openModalButton');
-        const closeModalButton = document.getElementById('closeModalButton');
-        const cropModal = document.getElementById('cropModal');
-        const imageInput = document.getElementById('imageInput');
-        const imageToCrop = document.getElementById('image');
-        const previewImage = document.getElementById('preview');
-
-        // --- Abrir modal (Adaptado: Previne a navegação se a intenção é abrir o modal) ---
-        editProfileLink.addEventListener('click', (e) => {
-            // Se a intenção é editar o perfil (navegar), remova esta linha.
-            // Se a intenção é abrir o modal de CORTE, mantenha (e.preventDefault()) e altere a rota no HTML
-            // para algo como: <a href="#" ...
-            // Por agora, se você deseja que o botão de edição abra o modal, precisa evitar a navegação:
-            // e.preventDefault();
-            // cropModal.style.display = 'block';
-
-            // Como o link está para 'editar_perfil', vou assumir que você *não* quer que ele abra o modal
-            // Se você quer que o link do perfil abra o modal, o ID 'openModalButton' deve estar em outro lugar.
-        });
-
-        // CORREÇÃO: Vamos criar um novo botão de exemplo que abre o modal de corte:
-        // Se você estava clicando no perfil para abrir o modal, mude o ID do link de edição.
-        // Por enquanto, vou manter o JS, mas o evento de clique está no link 'editar_perfil'.
-        
-        
-        // Se você quer que o *clique na imagem de perfil* abra o modal:
-        // const profileImageContainer = document.getElementById('perfilImagemGeralCaixa');
-        // profileImageContainer.addEventListener('click', () => {
-        //     cropModal.style.display = 'block';
-        // });
-
-
-        // --- Lidar com a seleção de imagem ---
-        imageInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                imageToCrop.src = event.target.result;
-                
-                // Destrói a instância anterior do Cropper, se houver
-                if (cropper) {
-                    cropper.destroy();
-                }
-                
-                // Inicializa o Cropper na nova imagem
-                cropper = new Cropper(imageToCrop, {
-                    aspectRatio: 1,      // Proporção quadrada
-                    viewMode: 1,         // Restringe a área de corte à imagem
-                    background: false,   // Remove o fundo quadriculado
-                    autoCropArea: 0.9,   // A área de corte inicial ocupa 90% da imagem
-                });
-            };
-            reader.readAsDataURL(file);
-        });
-
-        // --- Fechar modal e salvar a imagem cortada ---
-        closeModalButton.addEventListener('click', () => {
-            cropModal.style.display = 'none'; // Fecha o modal imediatamente para o usuário
-
-            if (!cropper) {
-                // Se nenhum arquivo foi selecionado, não faz nada
-                return;
-            }
-
-            // Pega o canvas com a imagem cortada (com tamanho definido)
-            const canvas = cropper.getCroppedCanvas({
-                width: 256,
-                height: 256,
-            });
-
-            if (!canvas) {
-                console.error("Canvas não pôde ser criado.");
-                return;
-            }
-
-            // Converte o canvas para Blob (formato de arquivo) e faz o upload
-            canvas.toBlob(blob => {
-                if (blob) {
-                    uploadImage(blob);
-                }
-            }, 'image/jpeg', 0.9); // Formato JPEG com 90% de qualidade
-        });
-
-        // --- Função para fazer o upload da imagem para o backend ---
-        async function uploadImage(blob) {
-            const formData = new FormData();
-            formData.append('file', blob, 'profile.jpg');
-
-            try {
-                // CORRETO: Usa url_for para o endpoint do Flask
-                const response = await fetch("{{ url_for('upload_image') }}", {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                const data = await response.json();
-
-                if (response.ok && data.success) {
-                    // Sucesso! Atualiza a imagem de perfil na página com a nova URL
-                    // Adiciona um timestamp para evitar problemas de cache do navegador
-                    previewImage.src = data.image_url + '?t=' + new Date().getTime();
-                    alert('Imagem de perfil atualizada com sucesso!');
-                } else {
-                    // Exibe a mensagem de erro vinda do servidor
-                    alert('Erro ao salvar a imagem: ' + (data.message || 'Erro desconhecido.'));
-                }
-            } catch (error) {
-                console.error('Erro na requisição de upload:', error);
-                alert('Não foi possível conectar ao servidor para salvar a imagem.');
-            } finally {
-                // Limpa o input de arquivo e destrói o cropper para a próxima vez
-                imageInput.value = '';
-                if (cropper) {
-                    cropper.destroy();
-                    cropper = null;
-                }
-                imageToCrop.src = '';
-            }
-        }
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <!-- O script de corte de imagem foi movido para editar_perfil.html -->
 </body>
 </html>
