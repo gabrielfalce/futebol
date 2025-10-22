@@ -7,8 +7,8 @@ import random
 app = Flask(__name__)
 
 # Configurações do Supabase (preencha com suas credenciais)
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "SUA_URL_DO_SUPABASE_AQUI")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "SUA_CHAVE_DE_API_DO_SUPABASE_AQUI")
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://ulbaklykimxpsdrtkqet.supabase.co")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVsYmFrbHlraW14cHNkcnRrcWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMjc0MjcsImV4cCI6MjA3MzkwMzQyN30.A3_WLF3cNstQtXcOr2Q3OJCvTYqBQe7wmmXHc_WCqAk")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.route("/")
