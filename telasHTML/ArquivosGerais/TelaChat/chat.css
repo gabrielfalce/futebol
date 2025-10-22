@@ -70,10 +70,11 @@ body {
 }
 
 /* Centraliza a imagem de perfil */
-#fotoUser {
+.avatar { /* Changed from #fotoUser to .avatar to match HTML */
     position: absolute;
+    top: 100%; /* Posiciona a borda superior do avatar na borda inferior do cabeçalho */
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%); /* Centraliza horizontalmente, remove o deslocamento vertical */
     width: 45px;
     height: 45px;
     border-radius: 50%;
@@ -95,6 +96,7 @@ body {
     flex-grow: 1; /* Ocupa todo o espaço vertical disponível */
     overflow-y: auto; /* Permite scroll apenas na área de mensagens */
     padding: 20px 15px;
+    margin-top: 70px; /* Adiciona espaço para o avatar que fica abaixo do header */
     display: flex;
     flex-direction: column;
     gap: 12px; /* Espaço entre as bolhas de mensagem */
