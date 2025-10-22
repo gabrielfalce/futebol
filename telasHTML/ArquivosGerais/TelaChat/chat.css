@@ -79,6 +79,7 @@ body {
     height: 45px;
     border-radius: 50%;
     object-fit: cover;
+    margin-top: 10px; /* Adiciona uma pequena margem superior */
     border: 2px solid var(--cor-primaria);
     z-index: 1;
 }
