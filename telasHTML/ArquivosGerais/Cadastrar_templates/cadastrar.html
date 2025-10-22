@@ -4,38 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro</title>
-    <link rel="stylesheet" href="/Cadastrar_templates/estilo.css">
+    <!-- CORREÇÃO: Usando a rota 'assets' para encontrar o CSS -->
+    <link rel="stylesheet" href="{{ url_for('assets', filename='ArquivosGerais/Cadastrar_templates/estilo.css') }}">
 </head>
 <body>
-    <img src="/TelaLoading/logoGeral.png" alt="Bola Verde">
+    <!-- CORREÇÃO: Usando a rota 'assets' para encontrar a imagem -->
+    <img src="{{ url_for('assets', filename='ArquivosGerais/TelaLoading/logoGeral.png') }}" alt="Logotipo">
     <h1 class="titulo">Cadastro</h1>
-    <div id="toast-notification" class="toast"></div>
-   <form action="/cadastrar" method="post">
-    <input placeholder="Nome Completo" type="text" name="nome" required>
-    <input placeholder="Email" type="email" name="email" required>
-    <input placeholder="Senha" type="password" name="senha" required minlength="6">
-    <input placeholder="Cidade" type="text" name="cidade" required>
-    <input placeholder="Posição em Campo" type="text" name="posicao" required>
-    <input placeholder="Data de Nascimento (DD/MM/AAAA)" type="text" name="nascimento" required onfocus="(this.type='date')" onblur="(this.type='text')">
     
-    <!-- CAMPO CORRIGIDO PARA NÚMERO DE TELEFONE -->
-    <input placeholder="Número de Telefone" type="tel" name="numero" required>
-    <input placeholder="Número da Camisa" type="number" name="numero_camisa" required>
-    <button type="submit">Cadastrar</button>
-    <a href="{{ url_for('login') }}">Voltar para Login</a>
-</form>
+    <!-- Toast Notification para exibir mensagens flash -->
+    <div id="toast-notification" class="toast"></div>
+    
+    <form action="{{ url_for('cadastrar') }}" method="post">
+        <input placeholder="Nome Completo" type="text" name="nome" required>
+        <input placeholder="Email" type="email" name="email" required>
+        <input placeholder="Senha" type="password" name="senha" required minlength="8">
+        <input placeholder="Cidade" type="text" name="cidade" required>
+        <input placeholder="Posição em Campo" type="text" name="posicao" required>
+        <input placeholder="Data de Nascimento" type="text" name="nascimento" required onfocus="(this.type='date')" onblur="(this.type='text')">
+        <input placeholder="Número de Telefone" type="tel" name="numero" required>
+        <input placeholder="Número da Camisa" type="number" name="numero_camisa" required>
+        <button type="submit">Cadastrar</button>
+        <a href="{{ url_for('login') }}">Voltar para Login</a>
+    </form>
 
     <script>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                const message = "{{ messages[0][1] }}";
-                const toast = document.getElementById("toast-notification");
-                toast.textContent = message;
-                toast.style.backgroundColor = "{{ 'green' if messages[0][0] == 'success' else '#f44336' }}";
-                toast.classList.add("show");
-                setTimeout(() => toast.classList.remove("show"), 4000);
-            {% endif %}
-        {% endwith %}
+        // Script para exibir as mensagens do Flask (flash messages)
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const toast = document.getElementById("toast-notification");
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    const message = "{{ messages[0][1] | safe }}"; // Usar | safe para evitar problemas com aspas
+                    const category = "{{ messages[0][0] }}";
+                    
+                    toast.textContent = message;
+                    toast.style.backgroundColor = category === 'success' ? 'green' : '#f44336';
+                    
+                    toast.classList.add("show");
+                    setTimeout(() => toast.classList.remove("show"), 4000);
+                {% endif %}
+            {% endwith %}
+        });
     </script>
 </body>
 </html>
