@@ -39,12 +39,14 @@
         const REMETENTE_ID = {{ remetente.id }};
         const DESTINATARIO_ID = {{ destinatario.id }};
         
-        // URL e KEY: Usando aspas simples para evitar conflito de sintaxe do VS Code.
+        // CORREÇÃO FINAL: Tentando a inversão de aspas e removendo comentários para isolar o problema.
+        // O linter do VS Code é muito sensível ao {{ ... }} dentro de aspas duplas.
+        // Usamos aspas simples no JS e, se necessário, o filtro "tojson" do Jinja, mas geralmente não é preciso.
         const SUPABASE_URL = '{{ supabase_url }}';
         const SUPABASE_KEY = '{{ supabase_key }}';
     </script>
 
     <script src="{{ url_for('serve_chat_static', filename='chat.js' ) }}"></script>
 
- </body>
+</body>
 </html>
