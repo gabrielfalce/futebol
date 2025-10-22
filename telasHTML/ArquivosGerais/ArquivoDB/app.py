@@ -31,9 +31,9 @@ app = Flask(
     static_folder=os.path.join(app_dir, 'static'),
     static_url_path='/static'
 )
-app.secret_key = os.environ.get("FLASK_SECRET_KEY")
+app.secret_key = os.environ.get("SUPABASE_SERVICE_KEY")
 if not app.secret_key:
-    raise ValueError("FLASK_SECRET_KEY deve estar definido nas variáveis de ambiente.")
+    raise ValueError("SUPABASE_SERVICE_KEY deve estar definido nas variáveis de ambiente.")
 
 # --- FILTRO JINJA ---
 @app.template_filter('format_date')
