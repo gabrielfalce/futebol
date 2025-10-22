@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link rel="stylesheet" href="{{ url_for('serve_login_static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     
     <style>
         .soccer-ball {
@@ -15,8 +15,8 @@
             max-height: 120px;
             min-height: 60px;
             
-            /* Caminho corrigido para 'bolaverde_3.png' e usando url_for */
-            background: url("{{ url_for('serve_login_static', filename='bolaverde_3.png') }}") no-repeat center;
+            /* Caminho corrigido para 'bolaverde_3.png' usando url_for */
+            background: url("{{ url_for('static', filename='bolaverde_3.png') }}") no-repeat center;
             
             background-size: cover;
             animation: spin 1s linear infinite;
@@ -31,7 +31,7 @@
 </head>
 <body>
     <div class="soccer-ball"></div>
-    <img src="{{ url_for('serve_loading_static', filename='logoGeral.png') }}" alt="Logotipo Geral da Aplicação">
+    <img src="{{ url_for('static', filename='logoGeral.png') }}" alt="Logotipo Geral da Aplicação">
     
     <h1 class="titulo">Login</h1>
     
@@ -52,7 +52,7 @@
         <input placeholder="Senha" type="password" name="senha" required>
         <a class="esqueceuSenha" href="{{ url_for('esqueci_senha') }}">Esqueceu a senha?</a>
         <button type="submit">Login</button>
-        <a href="https://pagina-cadastro.onrender.com">Criar nova conta</a>
+        <a href="{{ url_for('cadastro') }}">Criar nova conta</a>
     </form>
 
     <script>
