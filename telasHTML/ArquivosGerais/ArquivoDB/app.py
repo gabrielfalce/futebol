@@ -3,8 +3,8 @@ import logging
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
 from dotenv import load_dotenv
 # Assumindo que 'database' é um módulo seu
-# CORREÇÃO: Adicionada a importação da função 'atualizar_usuario'
-from database import inserir_usuario, check_user, get_all_users, get_user_by_email, update_user_profile_image, atualizar_usuario
+# CORREÇÃO: Removida a importação de 'atualizar_usuario' do topo para evitar dependência circular.
+from database import inserir_usuario, check_user, get_all_users, get_user_by_email, update_user_profile_image
 import bcrypt
 from datetime import datetime
 from supabase import create_client, Client
@@ -89,7 +89,6 @@ def login():
         if user_data:
             session['user_email'] = email
             flash('Login bem-sucedido!', 'success')
-            # CORREÇÃO: Redireciona para /loading, onde o HTML tem o script de transição
             return redirect(url_for('tela_de_loading')) 
         else:
             flash('Email ou senha incorretos. Tente novamente.', 'danger')
@@ -109,7 +108,6 @@ def pagina_inicial():
         return redirect(url_for('login'))
         
     try:
-        # Busca o ID e valida a sessão
         response = supabase.table('usuarios').select('id, nome, profile_image_url').eq('email', session['user_email']).single().execute()
         user_data_db = response.data
         
@@ -155,14 +153,12 @@ def pagina_usuario():
 
 @app.route("/loading")
 def tela_de_loading():
-    # ROTA DE LOADING MANTIDA: A correção do loop está no script JS do Telaloading.html
     if 'user_email' not in session:
         return redirect(url_for('login'))
     return render_template("ArquivosGerais/TelaLoading/Telaloading.html")
 
 @app.route("/cadastro")
 def cadastro():
-    # CORREÇÃO: Adicionado o caminho completo para o template.
     return render_template("ArquivosGerais/Cadastrar_templates/cadastrar.html")
 
 @app.route("/cadastrar", methods=['POST'])
@@ -203,7 +199,6 @@ def cadastrar():
         flash("Erro: A data de nascimento deve estar em um formato válido (ex: AAAA-MM-DD ou DD/MM/AAAA).", 'danger')
         return redirect(url_for('cadastro'))
 
-    # Gera o hash da senha
     senha_hash = bcrypt.hashpw(senha_texto_puro.encode('utf-8'), bcrypt.gensalt())
     
     sucesso, mensagem = inserir_usuario(
@@ -215,7 +210,6 @@ def cadastrar():
     if sucesso:
         session['user_email'] = email
         flash(mensagem, 'success')
-        # CORREÇÃO: Redireciona para /loading, onde o HTML tem o script de transição
         return redirect(url_for('tela_de_loading')) 
     else:
         flash(mensagem, 'danger')
@@ -227,17 +221,18 @@ def editar_perfil():
         flash('Você precisa fazer login para acessar esta página.', 'warning')
         return redirect(url_for('login'))
 
-    # CORREÇÃO: Adicionada a lógica para o método POST
     if request.method == 'POST':
+        # CORREÇÃO: Importação local para quebrar a dependência circular
+        from database import atualizar_usuario
+        
         dados_para_atualizar = {
             'nome': request.form.get('nome'),
             'cidade': request.form.get('cidade'),
             'posicao': request.form.get('posicao'),
             'numero_camisa': request.form.get('numero_camisa'),
-            'numero': request.form.get('numero_telefone') # Note que o nome do campo no HTML é 'numero_telefone'
+            'numero': request.form.get('numero_telefone')
         }
         
-        # Filtra apenas os campos que foram preenchidos
         dados_preenchidos = {chave: valor for chave, valor in dados_para_atualizar.items() if valor}
 
         if not dados_preenchidos:
@@ -253,10 +248,8 @@ def editar_perfil():
         
         return redirect(url_for('pagina_usuario'))
 
-    # Lógica para o método GET (exibir o formulário)
     user_data = get_user_by_email(session['user_email'])
     if user_data:
-        # CORREÇÃO: Garantindo que o caminho para o template está correto.
         return render_template("ArquivosGerais/TelaDeUsuario/editar_perfil.html", usuario=user_data)
     else:
         flash('Erro ao carregar dados para edição.', 'danger')
@@ -299,17 +292,14 @@ def upload_image():
         file_extension = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
         file_name = f"public/{user_email.replace('@', '_').replace('.', '-')}_{int(datetime.now().timestamp())}.{file_extension}"
         
-        # Faz o upload
         supabase_admin.storage.from_('profile_images').upload(
             path=file_name,
             file=file_content,
             file_options={"content-type": file.content_type}
         )
         
-        # Pega a URL pública
         image_url = supabase.storage.from_('profile_images').get_public_url(file_name)
         
-        # Lógica para remover imagem antiga
         user_data = get_user_by_email(user_email)
         old_image_url = user_data.get('profile_image_url') if user_data else None
         
@@ -322,7 +312,6 @@ def upload_image():
                 except Exception as e:
                     logging.warning(f"Não foi possível remover a imagem antiga '{old_file_path_in_bucket}': {e}")
         
-        # Atualiza a URL no banco de dados
         sucesso, mensagem = update_user_profile_image(user_email, image_url)
         if not sucesso:
             return jsonify({'success': False, 'message': mensagem}), 500
@@ -458,8 +447,6 @@ def redefinir_senha():
             return redirect(url_for('login'))
 
         try:
-            # O Supabase usa o JWT (que estaria na URL ou cookies/local storage) para identificar o usuário
-            # no momento da redefinição.
             supabase.auth.update_user(password=nova_senha)
             flash('Sua senha foi redefinida com sucesso. Faça login.', 'success')
             return redirect(url_for('login'))
