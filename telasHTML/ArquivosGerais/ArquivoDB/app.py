@@ -161,6 +161,7 @@ def tela_de_loading():
 
 @app.route("/cadastro")
 def cadastro():
+    # CORREÇÃO: Adicionado o caminho completo para o template.
     return render_template("ArquivosGerais/Cadastrar_templates/cadastrar.html")
 
 @app.route("/cadastrar", methods=['POST'])
