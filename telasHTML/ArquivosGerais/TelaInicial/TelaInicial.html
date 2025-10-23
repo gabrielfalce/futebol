@@ -1,103 +1,108 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tela Inicial</title>
-    
-    <link rel="stylesheet" href="{{ url_for('static', filename='ArquivosGerais/TelaInicial/style.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tela Inicial</title>
+    
+    <!-- CORREÇÃO: Alterado de 'static' para 'assets' -->
+    <link rel="stylesheet" href="{{ url_for('assets', filename='ArquivosGerais/TelaInicial/style.css') }}">
 </head>
 <body>
-    <header class="page-header">
-        <div class="logo-container"> 
-                        <img src="{{ url_for('static', filename='ArquivosGerais/TelaInicial/TresPontos.png') }}" alt="Menu" class="menu-icon">
-        </div>
-    </header>
+    <header class="page-header">
+        <div class="logo-container"> 
+            <!-- CORREÇÃO: Alterado de 'static' para 'assets' -->
+            <img src="{{ url_for('assets', filename='ArquivosGerais/TelaInicial/TresPontos.png') }}" alt="Menu" class="menu-icon">
+        </div>
+    </header>
 
-    <main>
-        <div class="search-container">
-            <input type="text" id="search-input" placeholder="Buscar usuários..." onkeyup="searchUsers()">
-            <img src="{{ url_for('static', filename='ArquivosGerais/TelaInicial/lupa.png') }}" alt="Ícone de busca" class="search-icon">
-        </div>
+    <main>
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Buscar usuários..." onkeyup="searchUsers()">
+            <!-- CORREÇÃO: Alterado de 'static' para 'assets' -->
+            <img src="{{ url_for('assets', filename='ArquivosGerais/TelaInicial/lupa.png') }}" alt="Ícone de busca" class="search-icon">
+        </div>
 
-        <div class="user-list" id="user-list">
-            
-            {% for usuario in usuarios %} 
-                <a href="{{ url_for('pagina_chat', destinatario_id=usuario.id) }}" class="user-card-link">
-                    <div class="user-card">
-                        <img id="user-foto" src="{{ usuario.profile_image_url or url_for('static', filename='ArquivosGerais/TelaInicial/default_profile.png') }}" 
-                             alt="Foto de perfil de {{ usuario.nome }}">
-                        
-                        <div class="user-info">
-                            <span class="user-name">{{ usuario.nome }}</span>
-                            <span class="user-posicao">{{ usuario.posicao }}</span>
-                            <span class="user-cidade">{{ usuario.cidade }}</span>
-                            <span class="user-idade">{{ usuario.idade }}</span>      
-                        </div>
-                    </div>
-                </a>
-            {% else %} 
-                <p>Nenhum outro usuário cadastrado no momento.</p> 
-            {% endfor %} 
-            
-        </div>
-    </main>
+        <div class="user-list" id="user-list">
+            
+            {% for usuario in usuarios %} 
+                <a href="{{ url_for('pagina_chat', destinatario_id=usuario.id) }}" class="user-card-link">
+                    <div class="user-card">
+                        <!-- CORREÇÃO: Alterado de 'static' para 'assets' na imagem padrão -->
+                        <img id="user-foto" src="{{ usuario.profile_image_url or url_for('assets', filename='ArquivosGerais/TelaInicial/default_profile.png') }}" 
+                             alt="Foto de perfil de {{ usuario.nome }}">
+                        
+                        <div class="user-info">
+                            <span class="user-name">{{ usuario.nome }}</span>
+                            <span class="user-posicao">{{ usuario.posicao }}</span>
+                            <span class="user-cidade">{{ usuario.cidade }}</span>
+                            <span class="user-idade">{{ usuario.idade }}</span>      
+                        </div>
+                    </div>
+                </a>
+            {% else %} 
+                <p>Nenhum outro usuário cadastrado no momento.</p> 
+            {% endfor %} 
+            
+        </div>
+    </main>
 
-    <nav class="navigation-links">
-        <a href="{{ url_for('pagina_feed') }}" class="nav-button feed-button">Ver Feed</a>
-        
-        <a href="{{ url_for('pagina_usuario') }}" class="nav-button profile-button">
-            <img src="{{ url_for('static', filename='ArquivosGerais/TelaInicial/BotaoUsuario.ico') }}" alt="Ver Perfil">
-        </a>
-        
-        <a href="{{ url_for('logout') }}" class="nav-button logout-button">Sair</a>
-    </nav>
+    <nav class="navigation-links">
+        <a href="{{ url_for('pagina_feed') }}" class="nav-button feed-button">Ver Feed</a>
+        
+        <a href="{{ url_for('pagina_usuario') }}" class="nav-button profile-button">
+            <!-- CORREÇÃO: Alterado de 'static' para 'assets' -->
+            <img src="{{ url_for('assets', filename='ArquivosGerais/TelaInicial/BotaoUsuario.ico') }}" alt="Ver Perfil">
+        </a>
+        
+        <a href="{{ url_for('logout') }}" class="nav-button logout-button">Sair</a>
+    </nav>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% set category, message = messages[0] %}
-            <div id="toast-notification" class="toast" data-message="{{ message }}" data-category="{{ category }}"></div>
-        {% else %}
-            <div id="toast-notification" class="toast" data-message="" data-category=""></div>
-        {% endif %}
-    {% endwith %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% set category, message = messages[0] %}
+            <div id="toast-notification" class="toast" data-message="{{ message }}" data-category="{{ category }}"></div>
+        {% else %}
+            <div id="toast-notification" class="toast" data-message="" data-category=""></div>
+        {% endif %}
+    {% endwith %}
 
-    <script>
-        function searchUsers() {
-            const filter = document.getElementById("search-input").value.toLowerCase();
-            const userList = document.getElementById("user-list");
-            const userCards = userList.getElementsByClassName("user-card-link");
+    <script>
+        function searchUsers() {
+            const filter = document.getElementById("search-input").value.toLowerCase();
+            const userList = document.getElementById("user-list");
+            const userCards = userList.getElementsByClassName("user-card-link");
 
-            for (let i = 0; i < userCards.length; i++) {
-                const card = userCards[i];
-                // Busca em todas as informações visíveis do card para a função de pesquisa
-                const userInfo = card.textContent || card.innerText;
-                
-                if (userInfo.toLowerCase().includes(filter)) {
-                    card.style.display = "";
-                } else {
-                    card.style.display = "none";
-                }
-            }
-        }
+            for (let i = 0; i < userCards.length; i++) {
+                const card = userCards[i];
+                // Busca em todas as informações visíveis do card para a função de pesquisa
+                const userInfo = card.textContent || card.innerText;
+                
+                if (userInfo.toLowerCase().includes(filter)) {
+                    card.style.display = "";
+                } else {
+                    card.style.display = "none";
+                }
+            }
+        }
 
-        document.addEventListener('DOMContentLoaded', (event) => {
-            const toast = document.getElementById("toast-notification");
-            
-            if (toast && toast.dataset.message) {
-                toast.textContent = toast.dataset.message;
-                
-                toast.style.backgroundColor = toast.dataset.category === 'success' 
-                    ? 'var(--cor-primaria)' 
-                    : '#ff4d4d'; 
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const toast = document.getElementById("toast-notification");
+            
+            if (toast && toast.dataset.message) {
+                toast.textContent = toast.dataset.message;
+                
+                toast.style.backgroundColor = toast.dataset.category === 'success' 
+                    ? 'var(--cor-primaria)' 
+                    : '#ff4d4d'; 
 
-                toast.classList.add("show");
-                
-                setTimeout(() => {
-                    toast.classList.remove("show");
-                }, 4000);
-            }
-        });
-    </script>
+                toast.classList.add("show");
+                
+                setTimeout(() => {
+                    toast.classList.remove("show");
+                }, 4000);
+            }
+        });
+    </script>
 </body>
 </html>
