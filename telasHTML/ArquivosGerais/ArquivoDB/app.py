@@ -256,6 +256,7 @@ def editar_perfil():
     # Lógica para o método GET (exibir o formulário)
     user_data = get_user_by_email(session['user_email'])
     if user_data:
+        # CORREÇÃO: Garantindo que o caminho para o template está correto.
         return render_template("ArquivosGerais/TelaDeUsuario/editar_perfil.html", usuario=user_data)
     else:
         flash('Erro ao carregar dados para edição.', 'danger')
