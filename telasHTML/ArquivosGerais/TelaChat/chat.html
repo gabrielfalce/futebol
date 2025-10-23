@@ -5,14 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat com {{ destinatario.nome }}</title>
-    <link rel="stylesheet" href="{{ url_for('serve_chat_static', filename='chat.css') }}">
-    <link rel="stylesheet" href="chat.css">
+    <!-- CORREÇÃO: Alterado para a rota 'assets' com o caminho correto e removida a linha duplicada -->
+    <link rel="stylesheet" href="{{ url_for('assets', filename='ArquivosGerais/TelaChat/chat.css') }}">
 </head>
 <body>
     <div class="chat-container">
         <header class="chat-header">
             <a href="{{ url_for('pagina_inicial') }}" class="back-button">&larr;</a>
-            <img src="{{ destinatario.profile_image_url or url_for('serve_usuario_static', filename='imagens/user-icon-placeholder.png') }}" alt="Avatar" class="avatar">
+            <!-- CORREÇÃO: Alterado para a rota 'assets' e ignorando o erro 404 conforme solicitado -->
+            <img src="{{ destinatario.profile_image_url or url_for('assets', filename='ArquivosGerais/TelaDeUsuario/imagens/user-icon-placeholder.png') }}" alt="Avatar" class="avatar">
             <div class="user-info">
                 <!-- O nome agora será exibido abaixo do avatar -->
             </div>
@@ -46,7 +47,8 @@
         const SUPABASE_KEY = {{ supabase_key | tojson }};
     </script>
 
-    <script src="{{ url_for('serve_chat_static', filename='chat.js'  ) }}"></script>
+    <!-- CORREÇÃO: Alterado para a rota 'assets' com o caminho correto -->
+    <script src="{{ url_for('assets', filename='ArquivosGerais/TelaChat/chat.js'   ) }}"></script>
 
 </body>
 </html>
