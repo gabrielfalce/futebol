@@ -6,7 +6,7 @@
     <title>Perfil de {{ usuario.nome or 'Usuário' }}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
     
-    <link rel="stylesheet" href="{{ url_for('assets', filename='ArquivosGerais/TelaDeUsuario/stylesTest.css' ) }}">
+    <link rel="stylesheet" href="{{ url_for('assets', filename='ArquivosGerais/TelaDeUsuario/stylesTest.css'  ) }}">
 
     <div class="Wallpaper">
         <img class="imagemWallpaper" src="{{ url_for('assets', filename='ArquivosGerais/TelaDeUsuario/imagens/hM94BRC.jpeg') }}" alt="Wallpaper de fundo">
@@ -23,7 +23,8 @@
                     alt="Imagem de perfil do usuário">
             </div>
             <p class="nomeUsuario">{{ usuario.nome or 'Nome de Usuário' }}</p>
-            <!-- CORREÇÃO: A linha com o link para 'editar_perfil' foi removida para evitar o erro. -->
+            <!-- CORREÇÃO: O botão foi restaurado com um link temporário para não quebrar a aplicação. -->
+            <a href="#" class="edit-profile-button">Editar Perfil</a>
         </div>
 
         <!-- Coluna das Publicações -->
