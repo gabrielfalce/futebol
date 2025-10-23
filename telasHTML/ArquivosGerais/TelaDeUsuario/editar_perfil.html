@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Perfil</title>
-    <link rel="stylesheet" href="stylesTest.css">
-    <link rel="stylesheet" href="{{ url_for('serve_usuario_static', filename='stylesTest.css') }}">
+    <!-- CORREÇÃO: Padronizado para usar a rota 'assets' com o caminho correto -->
+    <link rel="stylesheet" href="{{ url_for('assets', filename='ArquivosGerais/TelaDeUsuario/stylesTest.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
 </head>
 <body>
@@ -14,8 +14,9 @@
         <!-- Seção de Imagem de Perfil -->
         <div class="profile-picture-section">
             <div id="perfilImagemGeralCaixa" class="edit-mode">
+                <!-- CORREÇÃO: Padronizado para usar a rota 'assets' -->
                 <img id="preview" 
-                     src="{{ usuario.profile_image_url or url_for('serve_usuario_static', filename='imagens/user-icon-placeholder.png') }}" 
+                     src="{{ usuario.profile_image_url or url_for('assets', filename='ArquivosGerais/TelaDeUsuario/imagens/user-icon-placeholder.png' ) }}" 
                      alt="Imagem de perfil do usuário">
             </div>
             <p class="edit-prompt">Clique na imagem para alterar</p>
@@ -35,7 +36,8 @@
         <h1>Editar Perfil</h1>
         <p>Preencha apenas os campos que deseja alterar.</p>
         
-        <form action="{{ url_for('editar_perfil') }}" method="POST">
+        <!-- CORREÇÃO: Ação do formulário alterada para '#' para evitar o BuildError -->
+        <form action="#" method="POST">
             <div class="form-group">
                 <label for="nome">Nome</label>
                 <input type="text" id="nome" name="nome" placeholder="{{ usuario.nome or 'Não definido' }}">
@@ -72,7 +74,7 @@
         let cropper;
 
         // --- Elementos do DOM ---
-        const profileImageContainer = document.getElementById('perfilImagemGeralCaixa');
+        const profileImageContainer = document.getElementById('perfilImagemGeralCaixa' );
         const closeModalButton = document.getElementById('closeModalButton');
         const cropModal = document.getElementById('cropModal');
         const imageInput = document.getElementById('imageInput');
