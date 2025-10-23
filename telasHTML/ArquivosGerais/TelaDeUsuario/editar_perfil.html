@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Perfil</title>
-    <!-- CORREÇÃO: Padronizado para usar a rota 'assets' com o caminho correto -->
     <link rel="stylesheet" href="{{ url_for('assets', filename='ArquivosGerais/TelaDeUsuario/stylesTest.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
 </head>
@@ -14,7 +13,6 @@
         <!-- Seção de Imagem de Perfil -->
         <div class="profile-picture-section">
             <div id="perfilImagemGeralCaixa" class="edit-mode">
-                <!-- CORREÇÃO: Padronizado para usar a rota 'assets' -->
                 <img id="preview" 
                      src="{{ usuario.profile_image_url or url_for('assets', filename='ArquivosGerais/TelaDeUsuario/imagens/user-icon-placeholder.png' ) }}" 
                      alt="Imagem de perfil do usuário">
@@ -36,8 +34,8 @@
         <h1>Editar Perfil</h1>
         <p>Preencha apenas os campos que deseja alterar.</p>
         
-        <!-- CORREÇÃO: Ação do formulário alterada para '#' para evitar o BuildError -->
-        <form action="#" method="POST">
+        <!-- CORREÇÃO: Ação do formulário reativada para apontar para a rota 'editar_perfil' -->
+        <form action="{{ url_for('editar_perfil') }}" method="POST">
             <div class="form-group">
                 <label for="nome">Nome</label>
                 <input type="text" id="nome" name="nome" placeholder="{{ usuario.nome or 'Não definido' }}">

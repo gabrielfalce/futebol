@@ -3,7 +3,8 @@ import logging
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
 from dotenv import load_dotenv
 # Assumindo que 'database' é um módulo seu
-from database import inserir_usuario, check_user, get_all_users, get_user_by_email, update_user_profile_image
+# CORREÇÃO: Adicionada a importação da função 'atualizar_usuario'
+from database import inserir_usuario, check_user, get_all_users, get_user_by_email, update_user_profile_image, atualizar_usuario
 import bcrypt
 from datetime import datetime
 from supabase import create_client, Client
@@ -219,6 +220,46 @@ def cadastrar():
     else:
         flash(mensagem, 'danger')
         return redirect(url_for('cadastro'))
+
+@app.route('/editar-perfil', methods=['GET', 'POST'])
+def editar_perfil():
+    if 'user_email' not in session:
+        flash('Você precisa fazer login para acessar esta página.', 'warning')
+        return redirect(url_for('login'))
+
+    # CORREÇÃO: Adicionada a lógica para o método POST
+    if request.method == 'POST':
+        dados_para_atualizar = {
+            'nome': request.form.get('nome'),
+            'cidade': request.form.get('cidade'),
+            'posicao': request.form.get('posicao'),
+            'numero_camisa': request.form.get('numero_camisa'),
+            'numero': request.form.get('numero_telefone') # Note que o nome do campo no HTML é 'numero_telefone'
+        }
+        
+        # Filtra apenas os campos que foram preenchidos
+        dados_preenchidos = {chave: valor for chave, valor in dados_para_atualizar.items() if valor}
+
+        if not dados_preenchidos:
+            flash('Nenhum campo foi preenchido para atualização.', 'info')
+            return redirect(url_for('editar_perfil'))
+
+        sucesso, mensagem = atualizar_usuario(session['user_email'], dados_preenchidos)
+
+        if sucesso:
+            flash('Perfil atualizado com sucesso!', 'success')
+        else:
+            flash(f'Erro ao atualizar o perfil: {mensagem}', 'danger')
+        
+        return redirect(url_for('pagina_usuario'))
+
+    # Lógica para o método GET (exibir o formulário)
+    user_data = get_user_by_email(session['user_email'])
+    if user_data:
+        return render_template("ArquivosGerais/TelaDeUsuario/editar_perfil.html", usuario=user_data)
+    else:
+        flash('Erro ao carregar dados para edição.', 'danger')
+        return redirect(url_for('pagina_usuario'))
 
 @app.route("/logout")
 def logout():
