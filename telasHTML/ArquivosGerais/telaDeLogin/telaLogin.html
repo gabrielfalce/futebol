@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <!-- CORRIGIDO: Usando a nova rota 'assets_gerais' -->
-    <link rel="stylesheet" href="{{ url_for('assets_gerais', filename='telaDeLogin/style.css') }}">
+    <!-- CORRIGIDO: Usando a rota 'assets' e o caminho completo do arquivo a partir de 'telasHTML' -->
+    <link rel="stylesheet" href="{{ url_for('assets', filename='ArquivosGerais/telaDeLogin/style.css') }}">
     
     <style>
         .soccer-ball {
@@ -15,8 +15,8 @@
             height: 20vw;
             max-height: 120px;
             min-height: 60px;
-            /* CORRIGIDO: Usando a nova rota 'assets_gerais' */
-            background: url("{{ url_for('assets_gerais', filename='telaDeLogin/bolaverde_3.png') }}") no-repeat center;
+            /* CORRIGIDO: Usando a rota 'assets' e o caminho completo do arquivo */
+            background: url("{{ url_for('assets', filename='ArquivosGerais/telaDeLogin/bolaverde_3.png') }}") no-repeat center;
             background-size: cover;
             animation: spin 1s linear infinite;
             margin-bottom: 20px;
@@ -30,8 +30,8 @@
 </head>
 <body>
     <div class="soccer-ball"></div>
-    <!-- CORRIGIDO: Usando a nova rota 'assets_gerais'. Assumindo que 'bolaLogo.png' está em 'TelaInicial' -->
-    <img src="{{ url_for('assets_gerais', filename='TelaInicial/bolaLogo.png') }}" alt="Logotipo Geral da Aplicação">
+    <!-- CORRIGIDO: Usando a rota 'assets' e o caminho completo do arquivo. (Ajustei o nome da imagem para 'logoGeral.png' conforme o erro 404 original) -->
+    <img src="{{ url_for('assets', filename='ArquivosGerais/TelaLoading/logoGeral.png') }}" alt="Logotipo Geral da Aplicação">
     
     <h1 class="titulo">Login</h1>
     

@@ -167,3 +167,21 @@ def update_user_profile_image(email: str, image_url: str) -> tuple[bool, str]:
     except Exception as e:
         print(f"Erro inesperado ao atualizar imagem: {str(e)}")
         return False, f'Erro inesperado no servidor: {str(e)}'
+
+def atualizar_usuario(email: str, data: Dict[str, Any]) -> tuple[bool, str]:
+    """Atualiza os dados de um usuário com base nos campos fornecidos."""
+    if supabase is None:
+        return False, "Erro de servidor: Banco de dados indisponível."
+
+    if not data:
+        return False, "Nenhum dado fornecido para atualização."
+
+    try:
+        supabase.table('usuarios').update(data).eq('email', email).execute()
+        return True, "Usuário atualizado com sucesso."
+    except APIError as e:
+        print(f"Erro de API do Supabase ao atualizar usuário: {e.message}")
+        return False, f"Erro no banco de dados: {e.message}"
+    except Exception as e:
+        print(f"Erro inesperado ao atualizar usuário: {str(e)}")
+        return False, f"Erro inesperado no servidor: {str(e)}"

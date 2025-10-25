@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil de {{ usuario.nome or 'Usuário' }}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
-    <link rel="stylesheet" href="stylesTest.css">
+    
     <link rel="stylesheet" href="{{ url_for('serve_usuario_static', filename='stylesTest.css') }}">
 
     <div class="Wallpaper">
-        <img class="imagemWallpaper" src="{{ url_for('serve_usuario_static', filename='imagens/hM94BRC.jpeg') }}" alt="Wallpaper de fundo">
+        <img class="imagemWallpaper" src="{{ url_for('assets', filename='ArquivosGerais/TelaDeUsuario/imagens/hM94BRC.jpeg') }}" alt="Wallpaper de fundo">
     </div>
 </head>
 <body>
@@ -19,10 +19,11 @@
         <div id="profileContainer">
             <div id="perfilImagemGeralCaixa">
                 <img id="preview" 
-                    src="{{ usuario.profile_image_url or url_for('serve_usuario_static', filename='imagens/user-icon-placeholder.png') }}" 
+                    src="{{ usuario.profile_image_url or url_for('assets', filename='ArquivosGerais/TelaDeUsuario/imagens/user-icon-placeholder.png') }}" 
                     alt="Imagem de perfil do usuário">
             </div>
             <p class="nomeUsuario">{{ usuario.nome or 'Nome de Usuário' }}</p>
+            <!-- CORREÇÃO: O link foi reativado para apontar para a rota correta. -->
             <a href="{{ url_for('editar_perfil') }}" class="edit-profile-button">Editar Perfil</a>
         </div>
 
@@ -34,7 +35,7 @@
             <!-- <div id="cropModal" class="modal">
         <div class="modal-content">
             <button id="closeModalButton" class="close-button">Salvar</button>
-            <h2>Cortar Imagem</h2>      
+            <h2>Cortar Imagem</h2>      
             <p>Escolha uma imagem e ajuste o corte.</p>
             <input type="file" id="imageInput" accept="image/*">
             <div class="image-container">
@@ -46,12 +47,12 @@
     <!-- Coluna das Publicações -->
             <div class="BoxePublicacoes">
                 <h1>Publicações do Usuário</h1>
-                <img class="publicacaoImagem" src="{{ url_for('serve_usuario_static', filename='imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
+                <img class="publicacaoImagem" src="{{ url_for('assets', filename='ArquivosGerais/TelaDeUsuario/imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
             </div>
 
             <div class="BoxePublicacoes">
                 <h1>Outra Publicação</h1>
-                <img class="publicacaoImagem" src="{{ url_for('serve_usuario_static', filename='imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
+                <img class="publicacaoImagem" src="{{ url_for('assets', filename='ArquivosGerais/TelaDeUsuario/imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
             </div>
         </div>
     </div>
@@ -60,7 +61,7 @@
         <div class="floating-button-bar"></div>
         <a id="linkTela" href="{{ url_for('tela_de_loading') }}">
             <button id="adicionarUsuarioBtn" class="floating-button">
-                <img src="{{ url_for('serve_usuario_static', filename='imagens/bolaLogo.png') }}" alt="Ir para tela inicial">
+                <img src="{{ url_for('assets', filename='ArquivosGerais/TelaDeUsuario/imagens/bolaLogo.png') }}" alt="Ir para tela inicial">
             </button>
         </a>
     </div>

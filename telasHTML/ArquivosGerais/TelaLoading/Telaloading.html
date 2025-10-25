@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carregando</title>
-    <link rel="stylesheet" href="/TelaLoading/style.css">
+    <link rel="stylesheet" href="{{ url_for('assets', filename='ArquivosGerais/TelaLoading/style.css') }}">
     <style>
         .loader {
             border: 8px solid #f3f3f3;
@@ -22,15 +22,13 @@
     </style>
 </head>
 <body data-tempo-loading="5000">
-    <img src="/TelaLoading/logoGeral.png" alt="Bola Verde">
+    <img src="{{ url_for('assets', filename='ArquivosGerais/TelaLoading/logoGeral.png') }}" alt="Bola Verde">
     <h1 class="titulo">Carregando</h1>
     <div class="loader"></div>
     <div id="toast-notification" class="toast"></div>
 
-    <!-- Script externo corrigido para a rota estática correta -->
-    <script src="/TelaLoading/script.js"></script>
+    <script src="{{ url_for('assets', filename='ArquivosGerais/TelaLoading/script.js') }}"></script>
 
-    <!-- Script inline para mensagens flash -->
     <script>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -42,6 +40,13 @@
                 setTimeout(() => toast.classList.remove("show"), 4000);
             {% endif %}
         {% endwith %}
+        
+        // CORREÇÃO CRÍTICA: Redirecionamento forçado após o tempo definido
+        const delay = parseInt(document.body.getAttribute('data-tempo-loading')) || 3000;
+
+        setTimeout(() => {
+            window.location.href = "{{ url_for('pagina_inicial') }}";
+        }, delay);
     </script>
 </body>
 </html>

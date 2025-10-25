@@ -2,6 +2,8 @@ import os
 import logging
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
 from dotenv import load_dotenv
+# Assumindo que 'database' é um módulo seu
+# CORREÇÃO: Removida a importação de 'atualizar_usuario' do topo para evitar dependência circular.
 from database import inserir_usuario, check_user, get_all_users, get_user_by_email, update_user_profile_image
 import bcrypt
 from datetime import datetime
@@ -19,33 +21,36 @@ url = os.environ.get("SUPABASE_URL")
 key = os.environ.get("SUPABASE_KEY")
 service_key = os.environ.get("SUPABASE_SERVICE_KEY")
 if not url or not key or not service_key:
-    raise ValueError("SUPABASE_URL, SUPABASE_KEY e SUPABASE_SERVICE_KEY devem estar definidos nas variáveis de ambiente.")
-supabase: Client = create_client(url, key)
-logging.info("Sucesso: Cliente Supabase inicializado.")
+    logging.critical("ERRO: SUPABASE_URL, SUPABASE_KEY e SUPABASE_SERVICE_KEY devem estar definidos nas variáveis de ambiente.")
+    supabase = None
+else:
+    try:
+        supabase: Client = create_client(url, key)
+        logging.info("Sucesso: Cliente Supabase inicializado.")
+    except Exception as e:
+        logging.critical(f"Erro ao inicializar o cliente Supabase: {e}")
+        supabase = None
 
 # --- CONFIGURAÇÃO DO FLASK ---
+# Pega o diretório onde o app.py está localizado
 app_dir = os.path.dirname(os.path.abspath(__file__))
 
-# CORREÇÃO 1: Simplificada a inicialização do Flask.
-# As pastas de templates e estáticos serão gerenciadas pelas rotas.
-# O caminho para `template_folder` foi ajustado para apontar para a pasta `telasHTML`.
+# Define o caminho raiz para os templates ('telasHTML')
+# Ajustado para subir dois níveis, conforme sua estrutura implícita
+template_dir = os.path.abspath(os.path.join(app_dir, '..', '..'))
+
 app = Flask(
     __name__,
-    template_folder=os.path.join(app_dir, 'telasHTML')
+    template_folder=template_dir
 )
 app.secret_key = os.environ.get("SUPABASE_SERVICE_KEY")
 if not app.secret_key:
-    raise ValueError("SUPABASE_SERVICE_KEY deve estar definido nas variáveis de ambiente.")
+    raise ValueError("SUPABASE_SERVICE_KEY (usado como app.secret_key) deve estar definido nas variáveis de ambiente.")
 
-
-# --- CORREÇÃO 2: ROTAS PARA SERVIR ARQUIVOS ESTÁTICOS DE PASTAS ESPECÍFICAS ---
-# Estas rotas dizem ao Flask como encontrar os arquivos CSS e de imagem.
-
-# Rota para arquivos na pasta 'ArquivosGerais' (e subpastas)
-@app.route('/assets/gerais/<path:filename>')
-def assets_gerais(filename):
-    directory = os.path.join(app.root_path, 'telasHTML', 'ArquivosGerais')
-    return send_from_directory(directory, filename)
+# --- ROTA DE ASSETS (UNIVERSAL) ---
+@app.route('/assets/<path:filename>')
+def assets(filename):
+    return send_from_directory(template_dir, filename)
 
 # --- FILTRO JINJA ---
 @app.template_filter('format_date')
@@ -58,7 +63,8 @@ def format_date(date_str):
     except (ValueError, TypeError):
         return date_str
 
-# --- ROTAS PRINCIPAIS ---
+# --- ROTAS PRINCIPAIS (COM CORREÇÃO DE FLUXO) ---
+
 @app.route("/")
 def index():
     if 'user_email' in session:
@@ -69,22 +75,26 @@ def index():
 def login():
     if 'user_email' in session:
         return redirect(url_for('pagina_inicial'))
+    
     if request.method == 'POST':
         email = request.form.get('email')
         senha = request.form.get('senha')
+        
         if not email or not senha:
             flash('Email e senha são obrigatórios.', 'danger')
-            return render_template('ArquivosGerais/telaDeLogin/telaLogin.html') # Caminho ajustado
+            return render_template('ArquivosGerais/telaDeLogin/telaLogin.html')
         
-        user_data = check_user(email, senha)
+        user_data = check_user(email, senha) 
+        
         if user_data:
             session['user_email'] = email
             flash('Login bem-sucedido!', 'success')
-            return redirect(url_for('tela_de_loading'))
+            return redirect(url_for('tela_de_loading')) 
         else:
             flash('Email ou senha incorretos. Tente novamente.', 'danger')
-            return render_template('ArquivosGerais/telaDeLogin/telaLogin.html') # Caminho ajustado
-    return render_template('ArquivosGerais/telaDeLogin/telaLogin.html') # Caminho ajustado
+            return render_template('ArquivosGerais/telaDeLogin/telaLogin.html')
+            
+    return render_template('ArquivosGerais/telaDeLogin/telaLogin.html')
 
 @app.route("/inicio")
 def pagina_inicial():
@@ -92,30 +102,37 @@ def pagina_inicial():
         flash('Você precisa fazer login para acessar esta página.', 'warning')
         return redirect(url_for('login'))
     
+    if supabase is None:
+        flash('Erro de conexão com o banco de dados.', 'danger')
+        session.clear()
+        return redirect(url_for('login'))
+        
     try:
-        user = supabase.auth.get_user()
-        if not user or user.user.email != session['user_email']:
-            flash('Sessão inválida, por favor faça login novamente.', 'danger')
-            session.clear()
-            return redirect(url_for('login'))
-
-        user_data = supabase.table('usuarios').select('id').eq('email', session['user_email']).single().execute().data
-        if user_data:
-            session['user_id'] = user_data['id']
+        response = supabase.table('usuarios').select('id, nome, profile_image_url').eq('email', session['user_email']).single().execute()
+        user_data_db = response.data
+        
+        if user_data_db:
+            session['user_id'] = user_data_db['id']
+            lista_de_usuarios = get_all_users() 
+            
+            return render_template(
+                "ArquivosGerais/TelaInicial/TelaInicial.html", 
+                usuarios=lista_de_usuarios
+            )
         else:
-            flash('Sessão inválida, por favor faça login novamente.', 'danger')
+            flash('Dados do usuário não encontrados. Por favor, faça login novamente.', 'danger')
             session.clear()
             return redirect(url_for('login'))
 
-        lista_de_usuarios = get_all_users()
-        return render_template("ArquivosGerais/TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios) # Caminho ajustado
     except APIError as e:
-        logging.error(f"Erro ao buscar ID do usuário na página inicial: {e}")
+        logging.error(f"Erro ao buscar dados do usuário na página inicial (APIError): {e}")
         flash('Ocorreu um erro ao carregar seus dados. Tente novamente.', 'danger')
+        session.clear()
         return redirect(url_for('login'))
     except Exception as e:
         logging.critical(f"Erro inesperado em /inicio: {e}", exc_info=True)
         flash('Erro interno do servidor. Tente novamente.', 'danger')
+        session.clear()
         return redirect(url_for('login'))
 
 @app.route("/usuario")
@@ -123,9 +140,11 @@ def pagina_usuario():
     if 'user_email' not in session:
         flash('Você precisa fazer login para acessar esta página.', 'warning')
         return redirect(url_for('login'))
+        
     user_data = get_user_by_email(session['user_email'])
+    
     if user_data:
-        return render_template("ArquivosGerais/TelaDeUsuario/TelaUser.html", usuario=user_data) # Caminho ajustado
+        return render_template("ArquivosGerais/TelaDeUsuario/TelaUser.html", usuario=user_data)
     else:
         flash('Erro: Dados do usuário não encontrados. Por favor, faça login novamente.', 'danger')
         session.pop('user_email', None)
@@ -136,14 +155,11 @@ def pagina_usuario():
 def tela_de_loading():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    return render_template("ArquivosGerais/TelaLoading/Telaloading.html") # Caminho ajustado
+    return render_template("ArquivosGerais/TelaLoading/Telaloading.html")
 
 @app.route("/cadastro")
 def cadastro():
-    return render_template("Cadastrar_templates/cadastrar.html") # Caminho ajustado
-
-# ... (o restante do seu código permanece igual) ...
-# O código de /cadastrar, /logout, /feed, /upload_image, /chat, etc. não precisa de alteração.
+    return render_template("ArquivosGerais/Cadastrar_templates/cadastrar.html")
 
 @app.route("/cadastrar", methods=['POST'])
 def cadastrar():
@@ -165,20 +181,22 @@ def cadastrar():
         return redirect(url_for('cadastro'))
 
     try:
+        data_obj = None
         for fmt in ('%Y-%m-%d', '%d/%m/%Y'):
             try:
                 data_obj = datetime.strptime(nascimento_str, fmt)
                 break
             except ValueError:
                 continue
-        else:
-            flash("Erro: A data de nascimento deve estar no formato AAAA-MM-DD ou DD/MM/AAAA.", 'danger')
-            return redirect(url_for('cadastro'))
+        
+        if not data_obj:
+            raise ValueError("Formato de data inválido")
 
         data_nascimento_iso = data_obj.strftime('%Y-%m-%d')
-    except Exception as e:
+        
+    except (ValueError, Exception) as e:
         logging.error(f"Erro ao processar data de nascimento: {e}")
-        flash("Erro: Formato de data inválido.", 'danger')
+        flash("Erro: A data de nascimento deve estar em um formato válido (ex: AAAA-MM-DD ou DD/MM/AAAA).", 'danger')
         return redirect(url_for('cadastro'))
 
     senha_hash = bcrypt.hashpw(senha_texto_puro.encode('utf-8'), bcrypt.gensalt())
@@ -192,10 +210,50 @@ def cadastrar():
     if sucesso:
         session['user_email'] = email
         flash(mensagem, 'success')
-        return redirect(url_for('tela_de_loading'))
+        return redirect(url_for('tela_de_loading')) 
     else:
         flash(mensagem, 'danger')
         return redirect(url_for('cadastro'))
+
+@app.route('/editar-perfil', methods=['GET', 'POST'])
+def editar_perfil():
+    if 'user_email' not in session:
+        flash('Você precisa fazer login para acessar esta página.', 'warning')
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        # CORREÇÃO: Importação local para quebrar a dependência circular
+        from database import atualizar_usuario
+        
+        dados_para_atualizar = {
+            'nome': request.form.get('nome'),
+            'cidade': request.form.get('cidade'),
+            'posicao': request.form.get('posicao'),
+            'numero_camisa': request.form.get('numero_camisa'),
+            'numero': request.form.get('numero_telefone')
+        }
+        
+        dados_preenchidos = {chave: valor for chave, valor in dados_para_atualizar.items() if valor}
+
+        if not dados_preenchidos:
+            flash('Nenhum campo foi preenchido para atualização.', 'info')
+            return redirect(url_for('editar_perfil'))
+
+        sucesso, mensagem = atualizar_usuario(session['user_email'], dados_preenchidos)
+
+        if sucesso:
+            flash('Perfil atualizado com sucesso!', 'success')
+        else:
+            flash(f'Erro ao atualizar o perfil: {mensagem}', 'danger')
+        
+        return redirect(url_for('pagina_usuario'))
+
+    user_data = get_user_by_email(session['user_email'])
+    if user_data:
+        return render_template("ArquivosGerais/TelaDeUsuario/editar_perfil.html", usuario=user_data)
+    else:
+        flash('Erro ao carregar dados para edição.', 'danger')
+        return redirect(url_for('pagina_usuario'))
 
 @app.route("/logout")
 def logout():
@@ -208,7 +266,7 @@ def logout():
 def pagina_feed():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    return render_template('ArquivosGerais/TelaFeed/feed.html') # Caminho ajustado
+    return render_template('ArquivosGerais/TelaFeed/feed.html')
 
 @app.route('/upload_image', methods=['POST'])
 def upload_image():
@@ -219,42 +277,50 @@ def upload_image():
     
     file = request.files['file']
     user_email = session['user_email']
+    
+    if not file.filename:
+        return jsonify({'success': False, 'message': 'Nome de arquivo inválido.'}), 400
+
+    if supabase is None or service_key is None:
+        logging.critical("ERRO DE CONFIGURAÇÃO: O cliente Supabase ou Service Key não estão definidos.")
+        return jsonify({'success': False, 'message': 'Erro de configuração do servidor.'}), 500
+
     try:
-        service_key = os.environ.get("SUPABASE_SERVICE_KEY")
-        if not service_key:
-            logging.critical("ERRO DE CONFIGURAÇÃO: A variável SUPABASE_SERVICE_KEY não foi definida.")
-            return jsonify({'success': False, 'message': 'Erro de configuração do servidor.'}), 500
-        
-        supabase_admin = create_client(url, service_key)
+        supabase_admin = create_client(url, service_key) 
         file_content = file.read()
-        file_name = f"public/{user_email.replace('@', '_')}_{int(datetime.now().timestamp())}.jpg"
         
-        upload_response = supabase_admin.storage.from_('profile_images').upload(
+        file_extension = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+        file_name = f"public/{user_email.replace('@', '_').replace('.', '-')}_{int(datetime.now().timestamp())}.{file_extension}"
+        
+        supabase_admin.storage.from_('profile_images').upload(
             path=file_name,
             file=file_content,
             file_options={"content-type": file.content_type}
         )
         
-        if not upload_response:
-            return jsonify({'success': False, 'message': 'Falha ao fazer upload da imagem.'}), 500
-        
         image_url = supabase.storage.from_('profile_images').get_public_url(file_name)
         
-        old_image_url = get_user_by_email(user_email).get('profile_image_url')
-        if old_image_url:
-            old_file_name = old_image_url.split('/')[-1]
-            try:
-                supabase_admin.storage.from_('profile_images').remove([f"public/{old_file_name}"])
-            except Exception as e:
-                logging.warning(f"Não foi possível remover a imagem antiga: {e}")
+        user_data = get_user_by_email(user_email)
+        old_image_url = user_data.get('profile_image_url') if user_data else None
+        
+        if old_image_url and 'supabase.co' in old_image_url:
+            parts = old_image_url.split('/profile_images/')
+            if len(parts) > 1:
+                old_file_path_in_bucket = parts[1]
+                try:
+                    supabase_admin.storage.from_('profile_images').remove([old_file_path_in_bucket])
+                except Exception as e:
+                    logging.warning(f"Não foi possível remover a imagem antiga '{old_file_path_in_bucket}': {e}")
         
         sucesso, mensagem = update_user_profile_image(user_email, image_url)
         if not sucesso:
             return jsonify({'success': False, 'message': mensagem}), 500
+            
         return jsonify({'success': True, 'image_url': image_url})
+        
     except APIError as e:
         logging.error(f"Erro ao fazer upload da imagem para o Supabase: {e}")
-        return jsonify({'success': False, 'message': 'Erro ao fazer upload da imagem.'}), 500
+        return jsonify({'success': False, 'message': 'Erro ao fazer upload da imagem ou de API.'}), 500
     except Exception as e:
         logging.critical(f"Erro inesperado em /upload_image: {e}", exc_info=True)
         return jsonify({'success': False, 'message': 'Erro interno do servidor ao processar a imagem.'}), 500
@@ -265,22 +331,40 @@ def pagina_chat(destinatario_id):
         flash('ID de destinatário inválido.', 'danger')
         return redirect(url_for('pagina_inicial'))
     
-    if 'user_email' not in session:
+    if 'user_email' not in session or not session.get('user_id') or supabase is None:
+        flash('Sessão de usuário incompleta ou erro de banco de dados.', 'warning')
         return redirect(url_for('login'))
     
+    remetente_id = session['user_id']
+    
     try:
-        remetente = supabase.table('usuarios').select('id, nome').eq('email', session['user_email']).single().execute().data
+        remetente_response = supabase.table('usuarios').select('id, nome').eq('id', remetente_id).single().execute()
+        remetente = remetente_response.data
         if not remetente:
-            return redirect(url_for('login'))
+            flash('Erro ao carregar dados do remetente.', 'danger')
+            return redirect(url_for('pagina_inicial'))
         
-        destinatario = supabase.table('usuarios').select('id, nome, profile_image_url').eq('id', destinatario_id).single().execute().data
+        destinatario_response = supabase.table('usuarios').select('id, nome, profile_image_url').eq('id', destinatario_id).single().execute()
+        destinatario = destinatario_response.data
         if not destinatario:
             flash('Usuário para chat não encontrado.', 'danger')
             return redirect(url_for('pagina_inicial'))
         
+        if remetente_id == destinatario_id:
+             flash('Você não pode iniciar um chat consigo mesmo.', 'warning')
+             return redirect(url_for('pagina_inicial'))
+
         supabase_url = os.environ.get("SUPABASE_URL")
         supabase_key = os.environ.get("SUPABASE_KEY")
-        return render_template('ArquivosGerais/TelaChat/chat.html', remetente=remetente, destinatario=destinatario, supabase_url=supabase_url, supabase_key=supabase_key) # Caminho ajustado
+        
+        return render_template(
+            'ArquivosGerais/TelaChat/chat.html', 
+            remetente=remetente, 
+            destinatario=destinatario, 
+            supabase_url=supabase_url, 
+            supabase_key=supabase_key
+        )
+        
     except APIError as e:
         logging.error(f"Erro ao buscar dados do chat: {e}")
         flash('Erro ao carregar dados do chat.', 'danger')
@@ -288,121 +372,91 @@ def pagina_chat(destinatario_id):
 
 @app.route('/api/chat/historico/<int:destinatario_id>')
 def get_historico_chat(destinatario_id):
-    if destinatario_id <= 0:
-        return jsonify({"error": "ID de destinatário inválido"}), 400
-    
-    if 'user_email' not in session:
+    if 'user_email' not in session or not session.get('user_id') or supabase is None:
         return jsonify({"error": "Não autorizado"}), 401
     
-    remetente_id = session.get('user_id')
-    if not remetente_id:
-        try:
-            remetente_data = supabase.table('usuarios').select('id').eq('email', session['user_email']).single().execute().data
-            if not remetente_data:
-                return jsonify({"error": "Remetente não encontrado"}), 404
-            remetente_id = remetente_data['id']
-        except APIError as e:
-            logging.error(f"Erro ao buscar remetente: {e}")
-            return jsonify({"error": "Erro ao buscar dados do remetente."}), 500
+    remetente_id = session['user_id']
     
     try:
-        query1 = supabase.table('mensagens').select('*').eq('remetente_id', remetente_id).eq('destinatario_id', destinatario_id)
-        query2 = supabase.table('mensagens').select('*').eq('remetente_id', destinatario_id).eq('destinatario_id', remetente_id)
-        
-        response1 = query1.execute()
-        response2 = query2.execute()
-        mensagens = (response1.data or []) + (response2.data or [])
-        mensagens.sort(key=lambda m: m['created_at'])
-        
+        response_ab = supabase.table('mensagens')\
+            .select('*')\
+            .or_(
+                f'remetente_id.eq.{remetente_id},destinatario_id.eq.{destinatario_id}',
+                f'remetente_id.eq.{destinatario_id},destinatario_id.eq.{remetente_id}'
+            )\
+            .order('created_at', ascending=True)\
+            .execute()
+            
+        mensagens = response_ab.data
         return jsonify(mensagens)
+        
     except APIError as e:
         logging.error(f"Erro ao buscar histórico de chat: {e}")
         return jsonify({"error": "Erro ao buscar mensagens."}), 500
 
 @app.route('/api/posts')
 def get_posts():
-    if 'user_email' not in session:
+    if 'user_email' not in session or supabase is None:
         return jsonify({"error": "Não autorizado"}), 401
     
     try:
-        page = int(request.args.get('page', 1))
-        limit = int(request.args.get('limit', 10))
-        if page < 1 or limit < 1:
-            return jsonify({"error": "Parâmetros 'page' e 'limit' devem ser números positivos."}), 400
-    except ValueError:
-        return jsonify({"error": "Parâmetros 'page' e 'limit' devem ser números."}), 400
-
-    offset = (page - 1) * limit
-
-    try:
-        response = supabase.table('posts').select('''
-            *,
-            autor:usuarios ( nome, profile_image_url )
-        ''').order('created_at', desc=True).range(offset, offset + limit - 1).execute()
-
-        return jsonify(response.data or [])
+        response = supabase.table('posts').select('*', count='exact').order('created_at', ascending=False).limit(20).execute()
+        posts = response.data
+        return jsonify(posts)
     except APIError as e:
         logging.error(f"Erro ao buscar posts: {e}")
-        return jsonify({"error": "Erro ao buscar posts."}), 500
-    except Exception as e:
-        logging.critical(f"Erro inesperado em /api/posts: {e}", exc_info=True)
-        return jsonify({"error": "Erro interno ao buscar posts."}), 500
+        return jsonify({"error": "Erro ao buscar posts do feed."}), 500
 
 @app.route('/esqueci-senha', methods=['GET', 'POST'])
 def esqueci_senha():
     if request.method == 'POST':
         email = request.form.get('email')
         if not email:
-            flash('Por favor, insira um e-mail.', 'danger')
+            flash("O email é obrigatório.", 'danger')
             return redirect(url_for('esqueci_senha'))
         
+        if supabase is None:
+            flash('Erro de conexão com o banco de dados.', 'danger')
+            return redirect(url_for('esqueci_senha'))
+
         try:
-            supabase.auth.reset_password_for_email(email)
-            flash('Se o e-mail estiver cadastrado, um link para redefinição de senha foi enviado.', 'success')
-        except APIError as e:
-            logging.error(f"Tentativa de reset de senha para {email} falhou: {e}")
-            flash('Se o e-mail estiver cadastrado, um link para redefinição de senha foi enviado.', 'info')
+            supabase.auth.reset_password_for_email(email, url_for('redefinir_senha', _external=True))
+            flash('Se o email estiver registrado, um link de redefinição de senha foi enviado.', 'success')
         except Exception as e:
-            logging.critical(f"Erro inesperado em /esqueci-senha: {e}", exc_info=True)
-            flash('Erro interno do servidor. Tente novamente.', 'danger')
-        
+             logging.error(f"Erro ao solicitar redefinição de senha para {email}: {e}")
+             flash('Ocorreu um erro ao tentar enviar o email. Tente novamente.', 'danger')
+             
         return redirect(url_for('login'))
     
-    return render_template('RecuperarSenha/esqueci_senha.html')
+    return render_template('ArquivosGerais/RecuperarSenha/esqueci_senha.html')
 
 @app.route('/redefinir-senha', methods=['GET', 'POST'])
 def redefinir_senha():
     if request.method == 'GET':
-        token = request.args.get('access_token')
-        if not token:
-            flash('Link de redefinição inválido ou expirado.', 'danger')
-            return redirect(url_for('esqueci_senha'))
-        return render_template('RecuperarSenha/redefinir_senha.html')
+        return render_template('ArquivosGerais/RecuperarSenha/redefinir_senha.html')
 
     if request.method == 'POST':
         nova_senha = request.form.get('nova_senha')
-        if not nova_senha or len(nova_senha) < 6:
-            flash('A senha precisa ter no mínimo 6 caracteres.', 'danger')
-            return render_template('RecuperarSenha/redefinir_senha.html')
+        
+        if not nova_senha or len(nova_senha) < 8:
+            flash("A nova senha deve ter no mínimo 8 caracteres.", 'danger')
+            return render_template('ArquivosGerais/RecuperarSenha/redefinir_senha.html')
+        
+        if supabase is None:
+            flash('Erro de conexão com o banco de dados.', 'danger')
+            return redirect(url_for('login'))
 
         try:
-            response = supabase.auth.update_user({'password': nova_senha})
-            if response and response.user:
-                session.pop('user_email', None)
-                session.pop('user_id', None)
-                flash('Senha redefinida com sucesso! Por favor, faça login com a nova senha.', 'success')
-                return redirect(url_for('login'))
-            else:
-                flash('Link de redefinição inválido ou expirado.', 'danger')
-                return redirect(url_for('esqueci_senha'))
-        except APIError as e:
-            logging.error(f"Erro ao redefinir senha: {e}")
-            flash('Erro ao redefinir a senha. Tente novamente ou solicite um novo link.', 'danger')
-            return redirect(url_for('esqueci_senha'))
+            supabase.auth.update_user(password=nova_senha)
+            flash('Sua senha foi redefinida com sucesso. Faça login.', 'success')
+            return redirect(url_for('login'))
         except Exception as e:
-            logging.critical(f"Erro inesperado em /redefinir-senha: {e}", exc_info=True)
-            flash('Erro interno do servidor. Tente novamente mais tarde.', 'danger')
-            return redirect(url_for('esqueci_senha'))
+            logging.error(f"Erro ao redefinir senha: {e}")
+            flash('Erro ao redefinir a senha. O link pode ter expirado ou estar inválido.', 'danger')
+            return render_template('ArquivosGerais/RecuperarSenha/redefinir_senha.html')
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+    if not supabase:
+        logging.critical("Aplicação não pode ser iniciada: Falha na inicialização do Supabase.")
+    else:
+        app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))

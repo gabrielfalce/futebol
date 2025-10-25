@@ -4,19 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tela Inicial</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="{{ url_for('serve_inicial_static', filename='style.css') }}">
+    
+    <link rel="stylesheet" href="{{ url_for('assets', filename='ArquivosGerais/TelaInicial/style.css') }}">
 </head>
 <body>
     <header class="page-header">
-        <div class="logo-container">   
+        <div class="logo-container"> 
+            <!-- <img src="{{ url_for('assets', filename='ArquivosGerais/TelaInicial/TresPontos.png') }}" alt="Menu" class="menu-icon"> -->
         </div>
     </header>
 
     <main>
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Buscar usuários..." onkeyup="searchUsers()">
-            <img src="{{ url_for('serve_inicial_static', filename='lupa.png') }}" alt="Ícone de busca" class="search-icon">
+            <img src="{{ url_for('assets', filename='ArquivosGerais/TelaInicial/lupa.png') }}" alt="Ícone de busca" class="search-icon">
         </div>
 
         <div class="user-list" id="user-list">
@@ -24,14 +25,15 @@
             {% for usuario in usuarios %} 
                 <a href="{{ url_for('pagina_chat', destinatario_id=usuario.id) }}" class="user-card-link">
                     <div class="user-card">
-                        <img id="user-foto" src="{{ usuario.profile_image_url or url_for('serve_inicial_static', filename='default_profile.png') }}" 
+                        <!-- CORREÇÃO: Alterado de 'default_profile.png' para 'iconeUser.png' -->
+                        <img id="user-foto" src="{{ usuario.profile_image_url or url_for('assets', filename='ArquivosGerais/TelaInicial/iconeUser.png') }}" 
                              alt="Foto de perfil de {{ usuario.nome }}">
                         
                         <div class="user-info">
                             <span class="user-name">{{ usuario.nome }}</span>
                             <span class="user-posicao">{{ usuario.posicao }}</span>
                             <span class="user-cidade">{{ usuario.cidade }}</span>
-                            <span class="user-idade">{{ usuario.idade }}</span> 	 
+                            <span class="user-idade">{{ usuario.idade }}</span>      
                         </div>
                     </div>
                 </a>
@@ -46,7 +48,7 @@
         <a href="{{ url_for('pagina_feed') }}" class="nav-button feed-button">Ver Feed</a>
         
         <a href="{{ url_for('pagina_usuario') }}" class="nav-button profile-button">
-            <img src="{{ url_for('serve_inicial_static', filename='BotaoUsuario.ico') }}" alt="Ver Perfil">
+            <img src="{{ url_for('assets', filename='ArquivosGerais/TelaInicial/BotaoUsuario.ico') }}" alt="Ver Perfil">
         </a>
         
         <a href="{{ url_for('logout') }}" class="nav-button logout-button">Sair</a>
@@ -69,7 +71,6 @@
 
             for (let i = 0; i < userCards.length; i++) {
                 const card = userCards[i];
-                // Busca em todas as informações visíveis do card para a função de pesquisa
                 const userInfo = card.textContent || card.innerText;
                 
                 if (userInfo.toLowerCase().includes(filter)) {
