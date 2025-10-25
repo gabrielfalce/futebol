@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil de {{ usuario.nome or 'Usuário' }}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
-    
+    <link rel="stylesheet" href="stylesTest.css">
     <link rel="stylesheet" href="{{ url_for('serve_usuario_static', filename='stylesTest.css') }}">
 
     <div class="Wallpaper">
@@ -26,8 +26,10 @@
             <a href="{{ url_for('editar_perfil') }}" class="edit-profile-button">Editar Perfil</a>
         </div>
 
-        <!-- Coluna das Publicações -->
-        <div class="posts-container">
+        <!-- não ligar essa porcaria aqui em baixo novamente, nem se for para teste. -->
+<button>ir para o diaxo do chat</button>
+        
+        <!-- <div class="posts-container"> -->
             <!-- O modal foi movido para a página de edição, onde é realmente usado -->
             <!-- <div id="cropModal" class="modal">
         <div class="modal-content">
@@ -40,7 +42,8 @@
             </div>
         </div>
     </div> -->
-
+ 
+    <!-- Coluna das Publicações -->
             <div class="BoxePublicacoes">
                 <h1>Publicações do Usuário</h1>
                 <img class="publicacaoImagem" src="{{ url_for('serve_usuario_static', filename='imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
