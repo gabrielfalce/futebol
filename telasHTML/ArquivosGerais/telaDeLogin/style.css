@@ -55,7 +55,8 @@ button[type="submit"] {
 
 button:hover,
 .buttonLogin:hover {
-    background-color: #909090;
+    background-color: #2BBF90;
+    color: black;
 }
 
 img {
@@ -63,10 +64,28 @@ img {
     margin: 0 auto;
     max-width: 100px;
 }
+.ou{
+    text-align: center;
+    margin: 20px 0;
+    color: #ffffff;
+}
+.criarNovaConta{
+    position: absolute; /* Remove o elemento do fluxo normal */
+    bottom: 0px; /* Posiciona a 0px da parte inferior */
+    left: 50%; /* Alinha o início do elemento no centro da tela */
+    transform: translateX(-50%); /* Move o elemento 50% de sua própria largura para a esquerda, centralizando-o */
+    font-size: 13px;
+    text-decoration: none;
+    color: #ffffff;
+    background-color: #2BBF90; /* Usando a cor primária do projeto */
+    padding: 12px 25px; /* Padding para dar um bom espaçamento interno */
+    border-radius: 50px; /* Borda arredondada para um visual de "pílula" */
+    white-space: nowrap; /* Impede que o texto quebre em duas linhas */
+}
 
 .esqueceuSenha {
     text-align: center;
-    font-size: 14px;
+    font-size: 12px;
     text-decoration: none;
     margin-top: 10px;
     color: #ffffff;

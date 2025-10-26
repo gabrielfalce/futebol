@@ -6,9 +6,9 @@
     <title>Login</title>
     <!-- CORRIGIDO: Usando a rota 'assets' e o caminho completo do arquivo a partir de 'telasHTML' -->
     <link rel="stylesheet" href="{{ url_for('assets', filename='ArquivosGerais/telaDeLogin/style.css') }}">
-    
+    <link rel="stylesheet" href="style.css">
     <style>
-        .soccer-ball {
+        /* .soccer-ball {
             width: 20vw;
             max-width: 120px;
             min-width: 60px;
@@ -20,7 +20,7 @@
             background-size: cover;
             animation: spin 1s linear infinite;
             margin-bottom: 20px;
-        }
+        } */
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -51,8 +51,9 @@
         <input placeholder="Email" type="email" name="email" required>
         <input placeholder="Senha" type="password" name="senha" required>
         <a class="esqueceuSenha" href="{{ url_for('esqueci_senha') }}">Esqueceu a senha?</a>
-        <button type="submit">Login</button>
-        <a href="{{ url_for('cadastro') }}">Criar nova conta</a>
+        <button class="login" type="submit">Login</button>
+        <p class="ou">ou</p>
+        <a class="criarNovaConta" href="{{ url_for('cadastro') }}">Criar nova conta</a>
     </form>
 
     <script>
