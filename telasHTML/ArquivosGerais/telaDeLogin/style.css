@@ -55,7 +55,7 @@ input[type="password"]:focus,
 input[type="email"]:focus {
     outline: none;
     border: 2px solid #2BBF90;
-    box-shadow: 0 0 500px #2BBF90;
+    box-shadow: 0 0 50 0px #2BBF90;
 }
 
 .logo:hover {

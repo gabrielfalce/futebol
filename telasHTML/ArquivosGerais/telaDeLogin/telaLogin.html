@@ -31,7 +31,7 @@
 <body>
     <div class="soccer-ball"></div>
     <!-- CORRIGIDO: Usando a rota 'assets' e o caminho completo do arquivo. (Ajustei o nome da imagem para 'logoGeral.png' conforme o erro 404 original) -->
-    <img class="logo" src="logo.png" alt="Logotipo Geral da Aplicação">
+    <img class="logo" src="{{ url_for('assets', filename='ArquivosGerais/TelaLoading/logoGeral.png') }}" alt="Logotipo Geral da Aplicação">
     <!-- <img src="logo.png" alt=""> -->
     <h1 class="titulo">Login</h1>
     
