@@ -9,6 +9,10 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    overflow-y: hidden; /* Impede a barra de rolagem horizontal */
+}
+input::placeholder {
+    color: black;
 }
 
 h1 {
@@ -35,28 +39,55 @@ input[type="password"],
 input[type="email"] {
     width: 80%;
     padding: 8px;
+    background-color: #909090;
     margin-bottom: 10px;
+    color: black;
     border-radius: 4px;
     margin-left: 15px;
-    border: 1px solid #ffffff;
+    border: 1px solid #909090;
+}
+/* Adiciona o efeito de borda e sombra quando o mouse está sobre o campo ou quando ele está selecionado (em foco) */
+input[type="text"]:hover,
+input[type="password"]:hover,
+input[type="email"]:hover,
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus {
+    outline: none;
+    border: 2px solid #2BBF90;
+    box-shadow: 0 0 500px #2BBF90;
 }
 
+.logo:hover {
+    transform: scale(1.05);
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 0 500px #2BBF90 ;
+    border-radius: 100000px;
+
+}
 .buttonLogin,
 button[type="submit"] {
     width: 40%;
     padding: 10px;
-    background-color: #7a807c;
-    color: white;
+    background-color: #909090;
+    color: black;
     border: none;
     border-radius: 80px;
     cursor: pointer;
     margin: 10px auto;
+    font-size: large;
+}
+button:focus {
+    outline: none;
 }
 
 button:hover,
 .buttonLogin:hover {
     background-color: #2BBF90;
-    color: black;
+    color: whitesmoke;
+    transform: scale(1.05);
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 0 10px #2BBF90;
 }
 
 img {
@@ -65,22 +96,28 @@ img {
     max-width: 100px;
 }
 .ou{
-    text-align: center;
+    /* Retornando ao fluxo normal do documento */
     margin: 20px 0;
-    color: #ffffff;
+    color: #0e0b0b;
+    font-size: large;
 }
 .criarNovaConta{
-    position: absolute; /* Remove o elemento do fluxo normal */
-    bottom: 0px; /* Posiciona a 0px da parte inferior */
-    left: 50%; /* Alinha o início do elemento no centro da tela */
-    transform: translateX(-50%); /* Move o elemento 50% de sua própria largura para a esquerda, centralizando-o */
+    /* Retornando ao fluxo normal do documento */
+    display: inline-block; /* Permite aplicar margens e padding */
     font-size: 13px;
     text-decoration: none;
     color: #ffffff;
-    background-color: #2BBF90; /* Usando a cor primária do projeto */
+    background-color: #909090;
     padding: 12px 25px; /* Padding para dar um bom espaçamento interno */
     border-radius: 50px; /* Borda arredondada para um visual de "pílula" */
     white-space: nowrap; /* Impede que o texto quebre em duas linhas */
+}
+.criarNovaConta:hover {
+    background-color: #7a807c; /* Cor de fundo ao passar o mouse */
+    color: black; /* Cor do texto ao passar o mouse */
+    transform: scale(1.055);
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 0 20px #2BBF90 inset;
 }
 
 .esqueceuSenha {
@@ -90,6 +127,10 @@ img {
     margin-top: 10px;
     color: #ffffff;
     display: block;
+}
+.esqueceuSenha:hover {
+    color: #2bbf9083;
+    transform: scale(1.05);
 }
 
 /* Estilos da bola animada */
