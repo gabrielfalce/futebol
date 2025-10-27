@@ -1,4 +1,4 @@
-<!-- Localização: telasHTML/TelaInicial.html -->
+<!-- Localização: templates/index.html (originalmente telasHTML/TelaInicial.html) -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -15,14 +15,59 @@
             <img src="{{ url_for('static', filename='TresPontos.png') }}" alt="Menu">
         </button> 
         <div class="search-container">
-            <input placeholder="Pesquisar" class="search-input" type="text">
-            <img src="{{ url_for('static', filename='lupa.png') }}" alt="Ícone de pesquisa"> 
+            <!-- NOVO: Formulário de busca por ID -->
+            <form method="POST" action="/search_user_by_id" style="display: flex; align-items: center; margin-right: 15px;">
+                <input placeholder="Buscar por ID" class="search-input" type="text" name="user_id" style="width: 100px;">
+                <button type="submit" style="background: none; border: none; padding: 0; cursor: pointer;">
+                    <img src="{{ url_for('static', filename='lupa.png') }}" alt="Ícone de pesquisa por ID" style="width: 20px; height: 20px; vertical-align: middle;"> 
+                </button>
+            </form>
+            
+            <!-- Formulário de busca por nome/email (mantido) -->
+            <form method="POST" action="/search_user" style="display: flex; align-items: center;">
+                <input placeholder="Pesquisar por Nome/Email" class="search-input" type="text" name="query_term">
+                <button type="submit" style="background: none; border: none; padding: 0; cursor: pointer;">
+                    <img src="{{ url_for('static', filename='lupa.png') }}" alt="Ícone de pesquisa"> 
+                </button>
+            </form>
         </div>
     </header>
 
     <main class="content">
+        {% if error %}
+            <p style="color: red;">Erro: {{ error }}</p>
+        {% endif %}
+        {% if message %}
+            <p style="color: green;">{{ message }}</p>
+        {% endif %}
+
         <div id="usuarios-container">
-            {% if usuarios %}
+            {% if searched_users_by_id %}
+                <h2>Resultado da Busca por ID</h2>
+                {% for usuario in searched_users_by_id %}
+                    <div class="usuario-card">
+                        <img class="usuario-foto" src="{{ url_for('static', filename='iconeUser.png') }}" alt="Foto do usuário">
+                        <div class="usuario-info">
+                            <h3 class="usuario-nome">{{ usuario.nome }} (ID: {{ usuario.id }})</h3>
+                            <p class="usuario-cidade">Cidade: {{ usuario.cidade }}</p>
+                            <p class="usuario-email">Email: {{ usuario.email }}</p>
+                            <!-- Adicione mais campos conforme necessário -->
+                        </div>
+                    </div>
+                {% endfor %}
+            {% elif searched_users %}
+                <h2>Resultado da Busca por Nome/Email</h2>
+                {% for usuario in searched_users %}
+                    <div class="usuario-card">
+                        <img class="usuario-foto" src="{{ url_for('static', filename='iconeUser.png') }}" alt="Foto do usuário">
+                        <div class="usuario-info">
+                            <h3 class="usuario-nome">{{ usuario.nome }}</h3>
+                            <p class="usuario-cidade">{{ usuario.cidade }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% elif usuarios %}
+                <h2>Todos os Usuários</h2>
                 {% for usuario in usuarios %}
                     <div class="usuario-card">
                         <img class="usuario-foto" src="{{ url_for('static', filename='iconeUser.png') }}" alt="Foto do usuário">
