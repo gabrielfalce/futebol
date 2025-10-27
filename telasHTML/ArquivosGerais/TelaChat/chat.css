@@ -68,6 +68,11 @@ body {
     z-index: 2; /* Garante que o botão fique na frente da imagem */
     padding: 5px;
 }
+.back-button:hover {
+    transform: scale(1.5);
+    transition: all 0.5s ease-in-out;
+}
+
 
 /* Centraliza a imagem de perfil */
 .avatar { /* Changed from #fotoUser to .avatar to match HTML */
@@ -80,7 +85,6 @@ body {
     border-radius: 50%;
     object-fit: cover;
     margin-top: 10px; /* Adiciona uma pequena margem superior */
-    border: 2px solid var(--cor-primaria);
     z-index: 1;
 }
 
@@ -142,7 +146,7 @@ body {
     padding: 10px 15px;
     border-top: 1px solid var(--cor-borda-sutil);
     flex-shrink: 0; /* Impede que o footer encolha */
-}
+}   
 
 .message-form {
     display: flex;
@@ -155,13 +159,26 @@ body {
     padding: 12px 15px;
     border: none;
     border-radius: 25px;
-    background-color: var(--cor-bolha-recebida);
-    color: var(--cor-texto);
+    background-color: whitesmoke;
+    color: #000;
     font-size: 1rem;
 }
-
+#message-input::placeholder {
+   color: #000;
+}
+#message-input:hover {
+    outline: 1px solid var(--cor-primaria);
+    color: black;
+    transform: scale(1.02);
+    transition: all 0.65s ease-in-out;
+    box-shadow: #2BBF90 0px 0px 50px;
+}
 #message-input:focus {
     outline: 1px solid var(--cor-primaria);
+    color: black;
+    transform: scale(1.02);
+    transition: all 0.2s ease-in-out;
+    box-shadow: #2BBF90 0px 0px 20px;
 }
 
 .message-form button {
@@ -180,6 +197,8 @@ body {
 
 .message-form button:hover {
     transform: scale(1.1);
+    transition: all 0.6s ease-in-out;
+    box-shadow: #2BBF90 0px 0px 50px;
 }
 
 .message-form button svg {
