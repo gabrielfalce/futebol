@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request, redirect, url_for
 from supabase import create_client, Client
 import os
@@ -7,8 +6,8 @@ import random
 app = Flask(__name__)
 
 # Configurações do Supabase (preencha com suas credenciais)
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://lgwhpoanpyqzarxghzbe.supabase.co")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxnd2hwb2FucHlxemFyeGdoemJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3OTU5MzQsImV4cCI6MjA3NjM3MTkzNH0.M7E6_e6Qa8MybKj3EDN-VpiSuetJINC9IX6D3KJIctw")
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://ulbaklykimxpsdrtkqet.supabase.co")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVsYmFrbHlraW14cHNkcnRrcWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMjc0MjcsImV4cCI6MjA3MzkwMzQyN30.A3_WLF3cNstQtXcOr2Q3OJCvTYqBQe7wmmXHc_WCqAk")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.route("/")
@@ -53,6 +52,44 @@ def search_user():
             return render_template("index.html", searched_users=[], query_term=query_term, error=f"Erro ao buscar usuários: {e}")
     return redirect(url_for("index"))
 
+# NOVA FUNCIONALIDADE: Busca usuário por ID
+@app.route("/search_user_by_id", methods=["POST"])
+def search_user_by_id():
+    user_id = request.form.get("user_id")
+    if user_id:
+        try:
+            # Tenta converter o ID para inteiro, pois IDs em bancos de dados costumam ser numéricos
+            # Se o ID for uma string (UUID, por exemplo), remova a conversão para int()
+            try:
+                user_id_int = int(user_id)
+            except ValueError:
+                # Se não for um inteiro, assume que é uma string (como UUID)
+                user_id_int = user_id 
+                
+            # Busca o usuário pelo ID. Usamos '.single()' para esperar um único resultado
+            # ou erro se mais de um for encontrado (o que não deve ocorrer com ID)
+            response = supabase.from_('users').select('*').eq('id', user_id_int).single().execute()
+            
+            # O '.data' do single() retorna o objeto diretamente, não uma lista.
+            found_user = response.data
+            
+            # Colocamos o usuário encontrado em uma lista para manter a consistência com
+            # outras rotas de busca no template (se necessário)
+            searched_users_by_id = [found_user] if found_user else []
+
+            return render_template("index.html", 
+                                   searched_users_by_id=searched_users_by_id, 
+                                   user_id=user_id,
+                                   message=f"Usuário encontrado com ID: {user_id}" if found_user else f"Nenhum usuário encontrado com ID: {user_id}")
+        except Exception as e:
+            # Trata o erro de "No rows found" do .single() ou qualquer outro erro
+            error_message = f"Erro ao buscar usuário por ID: {e}"
+            if "No rows found" in str(e):
+                 error_message = f"Nenhum usuário encontrado com ID: {user_id}"
+                 return render_template("index.html", searched_users_by_id=[], user_id=user_id, error=error_message)
+            return render_template("index.html", searched_users_by_id=[], user_id=user_id, error=error_message)
+    return redirect(url_for("index"))
+
 # Função de recomendação (exemplo: recomenda usuarios na mesma cidade)
 @app.route("/recommend_users", methods=["POST"])
 def recommend_users():
@@ -77,4 +114,3 @@ def recommend_users():
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')
-
