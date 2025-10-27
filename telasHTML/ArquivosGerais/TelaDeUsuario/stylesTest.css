@@ -24,8 +24,7 @@ body {
     margin: 0;
     padding: 0;
     color: var(--cor-texto);
-    overflow: scroll;
-    overflow-x: hidden; /* Impede a rolagem horizontal */
+    overflow-x: hidden; /* Impede a rolagem horizontal, vertical é automática */
 }
 
 
@@ -36,7 +35,7 @@ body {
     position: absolute;
     top: 0;
     left: 0;
-    height: 250px; /* Altura fixa para o wallpaper */
+    height: 30vh; /* Altura responsiva (30% da altura da viewport) */
     z-index: -1; /* Coloca a imagem atrás de outros conteúdos */
     overflow: hidden; /* Garante que a imagem não ultrapasse a altura */
 }
@@ -55,7 +54,7 @@ body {
 .main-content-wrapper {
     position: relative;
     z-index: 1;
-    margin-top: 180px; /* Empurra o conteúdo para baixo do wallpaper, ajustado em media query */
+    margin-top: 25vh; /* Empurra o conteúdo para baixo do wallpaper (altura do wallpaper - um pouco) */
     padding: 0 20px;
     max-width: 1200px;
     margin-left: auto;
@@ -154,9 +153,6 @@ input[type="file"]::-webkit-file-upload-button:hover {
     max-height: 300px;
     /* Ajustado para preview razoável; override em media query se necessário */
     margin: 18px auto;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    background: #ffffff;
 }
 
 /* =======================
@@ -166,6 +162,7 @@ input[type="file"]::-webkit-file-upload-button:hover {
     max-width: 100%;
     height: 100%;
     object-fit: cover; /* Garante que a imagem preencha o círculo */
+    border-radius: 50%; /* Garante que a imagem em si seja redonda */
     margin: 0; /* Remove margens para controle total */
 }
 
@@ -195,12 +192,25 @@ input[type="file"]::-webkit-file-upload-button:hover {
 
 /* =======================
    BOTÃO FLUTUANTE (HOME)
+   BOTÕES FLUTUANTES (HOME E CRIAR PUBLICAÇÃO)
    ======================= */
-.floating-button-container {
+/* O seletor .floating-button-container foi removido pois não é mais usado. */
+/* O código abaixo estava aninhado incorretamente e foi corrigido. */
+ 
+/* Wrapper para agrupar todos os botões flutuantes */
+.floating-buttons-group {
     position: fixed;
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
+    display: flex;
+    gap: 15px; /* Espaço entre os botões */
+    align-items: flex-end; /* Alinha os botões pela base, útil se tiverem alturas diferentes */
+    z-index: 99;
+}
+
+/* Wrapper para cada botão individual (incluindo a barra, se houver) */
+.floating-button-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -208,6 +218,7 @@ input[type="file"]::-webkit-file-upload-button:hover {
 }
 
 /* barra acima do botao home */
+/* Barra acima do botão home (mantida apenas para o botão home) */
 .floating-button-bar {
     width: 150px;
     height: 4px;
@@ -217,6 +228,7 @@ input[type="file"]::-webkit-file-upload-button:hover {
 }
 
 /* ------ */
+/* Estilo base para todos os botões flutuantes */
 .floating-button {
     width: 60px;
     height: 60px;
@@ -233,7 +245,23 @@ input[type="file"]::-webkit-file-upload-button:hover {
 
 .floating-button:hover {
     transform: scale(1.1);
-    box-shadow: 0 6px 12px rgba(167, 2, 2, 0.734);
+    box-shadow: 0 6px 12px rgba(43, 191, 144, 0.7); /* Usando cor primária */
+}
+
+/* Estilo para ícones SVG dentro dos botões flutuantes */
+.floating-button svg {
+    width: 60%; /* Ajusta o tamanho do ícone SVG */
+    height: 60%;
+    fill: var(--cor-texto); /* Define a cor do ícone SVG */
+}
+
+/* Estilo específico para o botão de criar/editar publicação */
+.create-post-button {
+    background-color: var(--cor-secundaria); /* Exemplo: usa a cor secundária para diferenciar */
+}
+
+.create-post-button:hover {
+    box-shadow: 0 6px 12px rgba(18, 140, 126, 0.7); /* Sombra com base na cor secundária */
 }
 
 .floating-button img {
@@ -264,8 +292,16 @@ input[type="file"]::-webkit-file-upload-button:hover {
 
 #profileContainer {
     position: relative;
+    display: flex; /* Mantém como flex container */
+    flex-direction: row; /* Alinha itens lado a lado por padrão */
+    justify-content: space-between; /* Empurra os itens para as extremidades */
+    align-items: center; /* Centraliza verticalmente */
+    gap: 15px;
+}
+
+/* Grupo de informações do perfil (ícone e nome) */
+.profile-info-group {
     display: flex;
-    flex-direction: column;
     align-items: center;
     gap: 15px;
 }
@@ -297,24 +333,25 @@ input[type="file"]::-webkit-file-upload-button:hover {
     background: var(--cor-fundo);
     border: 2px solid var(--cor-borda);
     border-radius: 12px;
-    padding: 10px;
-    box-shadow: 0 4px 2px rgb(72, 187, 5);
+    padding: 15px; /* Aumentado para melhor espaçamento */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra mais neutra e consistente */
     margin-left: 10px;
     margin-right: 10px;
     }
 
 
 .BoxePublicacoes H1{
-    color: var(--cor-texto);    
-    font-size: 15px;
+    color: var(--cor-texto);
+    font-size: 1.2rem; /* Aumentado para melhor legibilidade */
 
 }
 
 .publicacaoImagem {
-    width: 80%;
+    width: 100%; /* Imagem ocupa toda a largura do card */
     height: auto;
     border-radius: 8px;
-    margin: 10px auto; /* Centraliza a imagem dentro da caixa */
+    margin: 15px 0 0; /* Margem superior, sem margem lateral pois já ocupa 100% */
+    background: none; /* Remove fundo branco desnecessário */
 }
 
 /* Container para as publicações */
@@ -323,6 +360,23 @@ input[type="file"]::-webkit-file-upload-button:hover {
     flex-direction: column;
     gap: 20px;
 }
+
+/* Linha divisória para seções */
+.section-divider {
+    border: none;
+    height: 1px;
+    background-color: var(--cor-borda);
+    margin: 20px 0;
+}
+
+/* Título para a seção de publicações */
+.section-title {
+    font-size: 1.5rem;
+    color: var(--cor-texto-card);
+    margin-bottom: 20px;
+    padding-left: 10px; /* Alinha com o padding dos cards */
+}
+
 
 /* =======================
    ESTILOS PARA editar_perfil.html
@@ -452,9 +506,10 @@ input[type="file"]::-webkit-file-upload-button:hover {
     }
 
     #profileContainer { /* Coluna do perfil fixa */
-        flex: 0 0 250px; /* Base de 250px, não cresce, não encolhe */
-        position: sticky; /* Fica fixo ao rolar a página */
-        top: 20px;
+        /* Removemos as regras de coluna fixa para que o container ocupe a largura */
+        /* A organização em colunas será feita pelo .main-content-wrapper */
+        flex-direction: column; /* Voltamos para coluna no desktop */
+        align-items: flex-start; /* Alinhamos à esquerda */
     }
 
     .posts-container {
@@ -464,21 +519,37 @@ input[type="file"]::-webkit-file-upload-button:hover {
 
 /* Telas de Celular */
 @media (max-width: 768px) {
-    .main-content-wrapper { /* Layout de uma coluna para a página de perfil */
-        margin-top: 150px; /* Reduz a margem do topo */
-        padding: 0 15px;
+    .main-content-wrapper {
+        margin-top: 20vh; /* Mantém a consistência com o valor base */
+        padding: 0 5px; /* Ajusta o padding lateral para 5px */
         display: flex;
         flex-direction: column;
         gap: 40px; /* Aumenta o espaço entre o perfil e as publicações */
     }
+    
+    #profileContainer {
+        /* As regras base já definem o layout de linha com space-between */
+    }
+
+    .profile-info-group {
+        display: flex;
+        flex-direction: column; /* Coloca o nome abaixo do ícone */
+        align-items: flex-start; /* Alinha o ícone e o nome à esquerda */
+        gap: 10px; /* Ajusta o espaço entre o ícone e o nome */
+    }
+
+    .edit-profile-button { 
+        margin-right: 10px; /* Mantém a margem direita */
+    }
 
     #perfilImagemGeralCaixa {
-        width: 120px;
-        height: 120px;
+        width: 100px; /* Reduz um pouco o tamanho do ícone */
+        height: 100px;
     }
 
     .nomeUsuario {
-        font-size: 1.3rem;
+        font-size: 1.2rem; /* Ajusta o tamanho da fonte */
+        white-space: normal; /* Permite que o nome quebre a linha se for muito longo */
     }
 
     .modal-content {
