@@ -63,6 +63,27 @@
         </div>
     </div>
 
+    <!-- Modal para Criar/Editar Publicação -->
+    <div id="postModal" class="modal">
+        <div class="modal-content">
+            <button id="closePostModalBtn" class="close-button">&times;</button>
+            <h2>Nova Publicação</h2>
+            <p>Compartilhe algo novo com seus seguidores.</p>
+            
+            <form id="postForm">
+                <div class="form-group">
+                    <label for="postContent">Legenda</label>
+                    <textarea id="postContent" name="postContent" rows="4" placeholder="O que você está pensando?"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="postImage">Imagem (Opcional)</label>
+                    <input type="file" id="postImage" name="postImage" accept="image/*">
+                </div>
+                <button type="submit" class="submit-button">Publicar</button>
+            </form>
+        </div>
+    </div>
+
     <script src="{{ url_for('assets', filename='ArquivosGerais/TelaDeUsuario/script.js') }}"></script>
 </body>
 </html>
