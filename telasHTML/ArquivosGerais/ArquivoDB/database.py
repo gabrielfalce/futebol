@@ -1,187 +1,93 @@
+# /home/ubuntu/futebol-main/futebol-main/telasHTML/STATIC/database.py
 import os
 from supabase import create_client, Client
-from typing import Optional, List, Dict, Any
-from postgrest.exceptions import APIError
-from dotenv import load_dotenv 
 import bcrypt
-from datetime import datetime
+from dotenv import load_dotenv
 
-# Carrega variáveis de ambiente de um arquivo .env, se existir (para desenvolvimento local)
+# Carrega as variáveis do ficheiro .env para o ambiente
 load_dotenv() 
 
-# Pega as credenciais do Supabase a partir das variáveis de ambiente (funciona no Render)
-url = os.environ.get("SUPABASE_URL")
-key = os.environ.get("SUPABASE_KEY")
+# Lê as credenciais a partir das variáveis de ambiente
+url: str = os.environ.get("SUPABASE_URL")
+key: str = os.environ.get("SUPABASE_KEY")
 
-supabase: Optional[Client] = None
-
-# Inicializa o cliente Supabase de forma segura
+# Verifica se as variáveis foram carregadas corretamente
 if not url or not key:
-    print("Erro: Variáveis de ambiente SUPABASE_URL e SUPABASE_KEY não configuradas.")
-else:
-    try:
-        supabase = create_client(url, key)
-        print("Sucesso: Cliente Supabase inicializado.")
-    except Exception as e:
-        print(f"Erro ao inicializar cliente Supabase: {e}")
+    # Use as variáveis de ambiente corretas para o Render (se forem diferentes)
+    url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
+    key = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+    if not url or not key:
+        print("Aviso: As variáveis de ambiente SUPABASE_URL/KEY não foram encontradas via .env ou env padrão.")
 
-# -------------------------------------------------------------
-# FUNÇÕES DE USUÁRIO
-# -------------------------------------------------------------
+# Configuração do cliente Supabase
+supabase: Client = create_client(url, key)
 
-def inserir_usuario(nome: str, email: str, senha_hash: bytes, cidade: str, posicao: str, nascimento: str, numero: str, numero_camisa: str) -> tuple[bool, str]:
-    """Insere um novo usuário. A data de nascimento DEVE estar no formato ISO (AAAA-MM-DD)."""
-    if supabase is None:
-        return False, "Erro de servidor: Banco de dados indisponível."
-    
+def register_user(nome, email, senha, cidade, numero, posicao, data_nasc):
+    """Regista um novo utilizador no banco de dados com senha encriptada."""
     try:
-        datetime.strptime(nascimento, '%Y-%m-%d')
-    except ValueError:
-        return False, "Erro: A data de nascimento fornecida não está no formato correto (AAAA-MM-DD)."
-    
-    try:
-        if supabase.table('usuarios').select('email').eq('email', email).execute().data:
-            return False, "Erro: Este e-mail já está cadastrado."
-    except Exception as e:
-        print(f"Erro ao checar e-mail duplicado: {e}")
-        return False, "Erro ao verificar e-mail. Tente novamente."
+        user_exists = supabase.table('usuarios').select('id').eq('email', email).execute()
+        if user_exists.data:
+            return False, "Este email já está registado."
 
-    data = {
-        "nome": nome, 
-        "email": email, 
-        "senha_hash": senha_hash.decode('utf-8'),
-        "cidade": cidade, 
-        "posicao": posicao, 
-        "nascimento": nascimento,
-        "numero": numero,
-        "numero_camisa": numero_camisa 
-    }
-    
-    try:
-        supabase.table("usuarios").insert(data).execute()
-        return True, "Cadastro realizado com sucesso! Faça login."
-    except APIError as e:
-        error_message = f"Erro de banco de dados: {e.message}"
-        print(f"--- ERRO DE API SUPABASE ---: {error_message}")
-        return False, error_message
-
-
-def check_user(email: str, senha_texto_puro: str) -> Optional[Dict[str, Any]]:
-    """Verifica as credenciais de um usuário e retorna seus dados se válidos."""
-    if supabase is None:
-        return None
-    
-    try:
-        response = supabase.table("usuarios").select("senha_hash, nome, email").eq("email", email).limit(1).execute()
+        # Encripta a senha antes de guardar
+        hashed_password = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt())
         
-        if not response.data:
-            return None
+        data, count = supabase.table('usuarios').insert({
+            'nome': nome,
+            'email': email,
+            'senha': hashed_password.decode('utf-8'),
+            'cidade': cidade,
+            'numero': numero,
+            'posicao': posicao,
+            'nascimento': data_nasc # <<< CORREÇÃO: Coluna Supabase é 'nascimento'
+        }).execute()
+        
+        return True, "Utilizador registado com sucesso!"
+        
+    except Exception as e:
+        print(f"Erro ao registar utilizador: {e}")
+        return False, f"Ocorreu um erro inesperado: {e}"
 
-        user_data = response.data[0]
-        stored_hash = user_data.get('senha_hash', '').encode('utf-8')
+def check_user(email, password):
+    """Verifica se um utilizador existe e se a senha está correta."""
+    try:
+        user_data = supabase.table('usuarios').select('senha').eq('email', email).execute()
+        
+        if not user_data.data:
+            return False
 
-        if bcrypt.checkpw(senha_texto_puro.encode('utf-8'), stored_hash):
-            return user_data
+        # Verifica a senha encriptada
+        hashed_password = user_data.data[0]['senha'].encode('utf-8')
+        
+        if bcrypt.checkpw(password.encode('utf-8'), hashed_password):
+            return True
         else:
-            return None
-
+            return False
+            
     except Exception as e:
-        print(f"Erro durante a checagem de login: {e}")
-        return None
+        print(f"Erro ao verificar utilizador: {e}")
+        return False
 
-def get_all_users() -> List[Dict[str, Any]]:
-    """
-    Busca todos os usuários, calcula a idade e retorna a lista.
-    CORREÇÃO: Usa o nome de coluna confirmado: 'profile_image_url'.
-    """
-    if supabase is None:
-        return []
+
+# --- FUNÇÕES PARA LISTAGEM E BUSCA ---
+
+def get_all_users():
+    """Recupera todos os usuários do banco de dados, excluindo a senha."""
     try:
-        # CORRIGIDO: Seleciona 'profile_image_url' (nome confirmado da coluna)
-        response = supabase.table("usuarios").select("id, nome, cidade, posicao, nascimento, profile_image_url").execute()
-        
-        # Lógica para calcular a idade
-        users_with_age = []
-        today = datetime.now()
-        
-        for user in response.data:
-            # Não é mais necessário renomear a coluna, pois ela já foi buscada com o nome correto.
-            
-            # Cálculo da idade
-            if user.get('nascimento'):
-                try:
-                    birth_date = datetime.strptime(user['nascimento'], '%Y-%m-%d')
-                    age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
-                    user['idade'] = age
-                except ValueError:
-                    user['idade'] = "N/A"
-            else:
-                user['idade'] = "N/A"
-            
-            users_with_age.append(user)
-            
-        return users_with_age if users_with_age else []
+        response = supabase.table('usuarios').select('nome, cidade, email').order('nome', desc=False).execute()
+        return response.data
     except Exception as e:
-        print(f"--- ERRO DURANTE A BUSCA DE USUÁRIOS ---: {e}")
+        print(f"Erro ao obter todos os usuários: {e}")
         return []
 
-
-def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
-    """
-    Busca os dados de um usuário pelo email.
-    CORREÇÃO: Usa o nome de coluna confirmado: 'profile_image_url'.
-    """
-    if supabase is None:
-        return None
+def search_users(query):
+    """Busca usuários pelo nome ou cidade."""
     try:
-        # CORRIGIDO: Seleciona 'profile_image_url' (nome confirmado da coluna)
-        response = supabase.table("usuarios").select("nome, email, cidade, posicao, nascimento, numero, numero_camisa, profile_image_url").eq("email", email).limit(1).execute()
-        
-        if response.data:
-            user_data = response.data[0]
-            # Nenhuma renomeação é necessária.
-            return user_data
-        
-        return None
+        response = supabase.table('usuarios').select('nome, cidade, email').or_(
+            f'nome.ilike.%{query}%', 
+            f'cidade.ilike.%{query}%'
+        ).execute()
+        return response.data
     except Exception as e:
-        print(f"--- ERRO DURANTE A BUSCA DE USUÁRIO POR EMAIL ---: {e}")
-        return None
-
-def update_user_profile_image(email: str, image_url: str) -> tuple[bool, str]:
-    """
-    Atualiza a URL da imagem de perfil de um usuário no banco de dados.
-    NOTA: Aqui assumimos que o nome da coluna para ESCREVER a URL é 'profile_image_url', 
-    embora o código original usasse 'profile_image'. Se o nome correto for 'profile_image', mude de volta.
-    """
-    if supabase is None:
-        return False, "Erro de servidor: Banco de dados indisponível."
-
-    try:
-        # Assume que o nome da coluna para a URL é 'profile_image_url'
-        supabase.table('usuarios').update({'profile_image_url': image_url}).eq('email', email).execute()
-        return True, 'Imagem de perfil atualizada com sucesso.'
-
-    except APIError as e:
-        print(f"Erro de API do Supabase ao atualizar imagem: {e.message}")
-        return False, f'Erro no banco de dados: {e.message}'
-    except Exception as e:
-        print(f"Erro inesperado ao atualizar imagem: {str(e)}")
-        return False, f'Erro inesperado no servidor: {str(e)}'
-
-def atualizar_usuario(email: str, data: Dict[str, Any]) -> tuple[bool, str]:
-    """Atualiza os dados de um usuário com base nos campos fornecidos."""
-    if supabase is None:
-        return False, "Erro de servidor: Banco de dados indisponível."
-
-    if not data:
-        return False, "Nenhum dado fornecido para atualização."
-
-    try:
-        supabase.table('usuarios').update(data).eq('email', email).execute()
-        return True, "Usuário atualizado com sucesso."
-    except APIError as e:
-        print(f"Erro de API do Supabase ao atualizar usuário: {e.message}")
-        return False, f"Erro no banco de dados: {e.message}"
-    except Exception as e:
-        print(f"Erro inesperado ao atualizar usuário: {str(e)}")
-        return False, f"Erro inesperado no servidor: {str(e)}"
+        print(f"Erro ao buscar usuários: {e}")
+        return []
