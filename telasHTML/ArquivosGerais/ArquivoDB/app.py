@@ -2,8 +2,7 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 import random
-# LINHA 4 CORRIGIDA: Agora importa 'register_user'
-from database import register_user, check_user, get_all_users, get_user_by_email 
+from database import register_user, check_user, get_all_users, get_user_by_email # <--- Importação correta
 import bcrypt
 from datetime import datetime
 from jinja2.exceptions import TemplateNotFound
@@ -67,7 +66,7 @@ def pagina_usuario():
         flash('Você precisa fazer login para aceder a esta página.', 'warning')
         return redirect(url_for('login'))
         
-    user_data = get_user_by_email(session['user_email'])
+    user_data = get_user_by_email(session['user_email']) # <--- Chamada correta
     if user_data:
         return render_template("TelaDeUsuario/TelaUser.html", usuario=user_data)
     else:
@@ -106,8 +105,7 @@ def cadastrar():
     # Hash da senha usando bcrypt
     senha_hash = bcrypt.hashpw(senha_texto_puro.encode('utf-8'), bcrypt.gensalt())
 
-    # LINHA 105 CORRIGIDA: Agora chama 'register_user'
-    sucesso, mensagem = register_user( 
+    sucesso, mensagem = register_user(
         nome=nome, email=email, senha_hash=senha_hash, cidade=cidade, 
         posicao=posicao, nascimento=data_nascimento_iso, numero=numero
     )

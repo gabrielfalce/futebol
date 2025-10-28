@@ -80,6 +80,17 @@ def get_all_users():
         print(f"Erro ao obter todos os usuários: {e}")
         return []
 
+def get_user_by_email(email):
+    """Recupera os dados de um usuário pelo email."""
+    try:
+        response = supabase.table('usuarios').select('*').eq('email', email).execute()
+        if response.data:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"Erro ao obter usuário por email: {e}")
+        return None
+
 def search_users(query):
     """Busca usuários pelo nome ou cidade."""
     try:
