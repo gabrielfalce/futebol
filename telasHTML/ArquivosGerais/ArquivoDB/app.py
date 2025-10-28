@@ -1,8 +1,9 @@
 # /home/ubuntu/futebol-main/futebol-main/telasHTML/STATIC/app.py
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
-import random # <--- NOVO: Importação do módulo random
-from database import inserir_usuario, check_user, get_all_users, get_user_by_email
+import random
+# LINHA 4 CORRIGIDA: Agora importa 'register_user'
+from database import register_user, check_user, get_all_users, get_user_by_email 
 import bcrypt
 from datetime import datetime
 from jinja2.exceptions import TemplateNotFound
@@ -54,9 +55,9 @@ def pagina_inicial():
         return redirect(url_for('login'))
         
     # Lógica para obter 10 usuários aleatórios:
-    lista_completa_de_usuarios = get_all_users() # 1. Pega todos os usuários
-    random.shuffle(lista_completa_de_usuarios)   # 2. Embaralha a lista
-    lista_de_usuarios = lista_completa_de_usuarios[:10] # 3. Limita aos 10 primeiros
+    lista_completa_de_usuarios = get_all_users()
+    random.shuffle(lista_completa_de_usuarios)
+    lista_de_usuarios = lista_completa_de_usuarios[:10]
     
     return render_template("TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
 
@@ -105,7 +106,8 @@ def cadastrar():
     # Hash da senha usando bcrypt
     senha_hash = bcrypt.hashpw(senha_texto_puro.encode('utf-8'), bcrypt.gensalt())
 
-    sucesso, mensagem = inserir_usuario(
+    # LINHA 105 CORRIGIDA: Agora chama 'register_user'
+    sucesso, mensagem = register_user( 
         nome=nome, email=email, senha_hash=senha_hash, cidade=cidade, 
         posicao=posicao, nascimento=data_nascimento_iso, numero=numero
     )
