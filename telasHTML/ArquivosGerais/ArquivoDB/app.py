@@ -19,7 +19,7 @@ app = Flask(
     __name__,
     template_folder=BASE_DIR,  # Define 'ArquivosGerais' como a pasta de templates
     static_folder=BASE_DIR,    # Define a mesma 'ArquivosGerais' como a pasta de arquivos estáticos
-    static_url_path='/static'  # A URL para os assets será, por exemplo, /static/TelaDeLogin/style.css
+    static_url_path='/static'  # A URL para os assets será, por exemplo, /static/telaDeLogin/style.css
 )
 
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "minha_ultima_chave_secreta_agora_vai")
@@ -50,8 +50,8 @@ def login():
             return redirect(url_for('tela_de_loading'))
         else:
             flash('Email ou senha incorretos. Tente novamente.', 'danger')
-    # O Flask vai procurar 'TelaDeLogin/telaLogin.html' dentro da pasta 'ArquivosGerais'
-    return render_template('TelaDeLogin/telaLogin.html')
+    # CORRIGIDO: caminho atualizado para a estrutura real
+    return render_template('telaDeLogin/telaLogin.html')
 
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
@@ -95,27 +95,31 @@ def cadastro():
         else:
             flash(mensagem, 'danger')
             return redirect(url_for('cadastro'))
-    return render_template("Cadastrar_templates/cadastrar.html")
+    # CORRIGIDO: caminho atualizado para a estrutura real
+    return render_template("cadastrar_templates/cadastrar.html")
 
 @app.route("/inicio")
 def pagina_inicial():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     lista_de_usuarios = get_all_users()
-    return render_template("TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
+    # CORRIGIDO: caminho atualizado para a estrutura real
+    return render_template("telaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
 
 @app.route("/usuario")
 def pagina_usuario():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     user_data = get_user_by_email(session['user_email'])
-    return render_template("TelaDeUsuario/TelaUser.html", usuario=user_data)
+    # CORRIGIDO: caminho atualizado para a estrutura real
+    return render_template("telaDeUsuario/TelaUser.html", usuario=user_data)
 
 @app.route("/loading")
 def tela_de_loading():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    return render_template('TelaLoading/Telaloading.html')
+    # CORRIGIDO: caminho atualizado para a estrutura real
+    return render_template('telaLoading/Telaloading.html')
 
 @app.route("/logout")
 def logout():
@@ -126,20 +130,28 @@ def logout():
 @app.route("/esqueci_senha", methods=['GET', 'POST'])
 def esqueci_senha():
     # Adicione a lógica de POST aqui se necessário
-    return render_template("RecuperarSenha/esqueci_senha.html")
+    # CORRIGIDO: caminho atualizado para a estrutura real
+    return render_template("recuperarSenha/esqueci_senha.html")
 
 @app.route("/chat/<int:destinatario_id>")
 def pagina_chat(destinatario_id):
     if 'user_email' not in session:
         return redirect(url_for('login'))
     # Adicione a lógica para buscar dados do usuário aqui
-    return render_template("TelaChat/chat.html", destinatario_id=destinatario_id)
+    # CORRIGIDO: caminho atualizado para a estrutura real
+    return render_template("telaChat/chat.html", destinatario_id=destinatario_id)
 
 @app.route("/feed")
 def pagina_feed():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    return render_template("TelaFeed/feed.html")
+    # CORRIGIDO: caminho atualizado para a estrutura real
+    return render_template("telaFeed/feed.html")
+
+# Rota para servir arquivos estáticos (caso necessário)
+@app.route('/assets/<path:filename>')
+def serve_static(filename):
+    return send_from_directory(os.path.join(BASE_DIR, 'assets'), filename)
 
 # Rota para editar perfil (exemplo)
 @app.route("/editar_perfil")
