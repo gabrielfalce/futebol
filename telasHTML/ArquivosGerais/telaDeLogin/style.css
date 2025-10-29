@@ -15,6 +15,7 @@ input::placeholder {
     color: black;
 }
 .toast{
+    display: none;
 position: absolute;
 border-radius: 10px;
 padding: 12px 20px;
