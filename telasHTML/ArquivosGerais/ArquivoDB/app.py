@@ -17,7 +17,7 @@ load_dotenv()
 
 # === CONFIGURAÇÃO DE DIRETÓRIOS (CORRIGIDA) ===
 # Se o app.py estiver em /src/telasHTML/ArquivosGerais/ArquivoDB/app.py, 
-# precisamos subir 3 níveis para chegar ao diretório raiz /src.
+# subimos 3 níveis (.., .., ..) para alcançar o diretório raiz /src.
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..', '..', '..')) 
 
@@ -28,15 +28,29 @@ app = Flask(
 )
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "chave_padrao_para_dev")
 
-# === ROTA GENÉRICA PARA SERVIR QUALQUER ARQUIVO ESTÁTICO ===
-# Permite acessar arquivos usando o caminho completo a partir do BASE_DIR 
-# Ex: url_for('serve_static_files', filename='telasHTML/ArquivosGerais/...')
-@app.route('/<path:filename>')
-def serve_static_files(filename):
-    file_path = os.path.join(BASE_DIR, filename)
-    if os.path.isfile(file_path):
-        return send_from_directory(BASE_DIR, filename)
-    return "Arquivo não encontrado", 404
+# === ROTAS DEDICADAS PARA ARQUIVOS ESTÁTICOS ===
+# ATENÇÃO: Você deve replicar este padrão para todas as suas pastas de ativos (CSS, JS, Imagens)
+
+# Rota para os arquivos estáticos da tela de Login
+# URL: /login-assets/style.css
+# Pasta no servidor: BASE_DIR/telasHTML/ArquivosGerais/telaDeLogin/
+@app.route('/login-assets/<path:filename>')
+def login_assets(filename):
+    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'telaDeLogin')
+    return send_from_directory(dir_path, filename)
+
+# Rota para os arquivos de UPLOAD de usuários (pasta uploads/ profile_pics)
+# URL: /uploads/profile_pics/image.png
+# Pasta no servidor: BASE_DIR/uploads/
+@app.route('/uploads/<path:path_and_filename>')
+def uploaded_files(path_and_filename):
+    # path_and_filename pode ser 'profile_pics/image.png'
+    dir_path = os.path.join(BASE_DIR, 'uploads')
+    return send_from_directory(dir_path, path_and_filename)
+
+
+# ROTA serve_static_files REMOVIDA conforme solicitado
+# === FIM DAS ROTAS ESTÁTICAS DEDICADAS ===
 
 
 # === ROTAS DA APLICAÇÃO ===
@@ -205,8 +219,8 @@ def upload_image():
         file_path = os.path.join(upload_dir, filename)
         file.save(file_path)
 
-        # O caminho relativo salvo no DB para ser acessível via serve_static_files
-        relative_path = os.path.join('uploads', 'profile_pics', filename).replace("\\", "/")
+        # O caminho salvo no DB deve ser 'profile_pics/filename.ext'
+        relative_path = os.path.join('profile_pics', filename).replace("\\", "/")
         
         sucesso = update_user_profile_image(session['user_email'], relative_path)
         if sucesso:
@@ -259,5 +273,4 @@ def pagina_feed():
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8080))
-    # Para o Render, use host='0.0.0.0'
     app.run(host='0.0.0.0', port=port, debug=True)
