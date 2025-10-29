@@ -9,48 +9,32 @@ from jinja2.exceptions import TemplateNotFound
 # Carrega as variáveis de ambiente do arquivo .env
 load_dotenv()
 
-# --- CONFIGURAÇÃO DE CAMINHOS PARA RENDER COM ROOT DIRECTORY ---
-# Esta lógica foi feita especificamente para a sua configuração no Render,
-# onde o "Root Directory" é 'telasHTML/ArquivosGerais/ArquivoDB'.
-try:
-    # O __file__ se refere a este arquivo (app.py), que está dentro de 'ArquivoDB'
-    APP_DIR = os.path.dirname(os.path.abspath(__file__))
-    
-    # Para encontrar a pasta 'telasHTML', precisamos "subir" dois níveis de diretório:
-    # 1. De 'ArquivoDB' para 'ArquivosGerais'
-    # 2. De 'ArquivosGerais' para 'telasHTML'
-    TEMPLATE_DIR = os.path.abspath(os.path.join(APP_DIR, '..', '..'))
-
-    # Uma verificação para garantir que o caminho encontrado está correto
-    if not os.path.isdir(TEMPLATE_DIR) or 'telasHTML' not in os.path.basename(TEMPLATE_DIR):
-         raise FileNotFoundError("Lógica de subida de diretório falhou em encontrar 'telasHTML'.")
-
-except Exception as e:
-    print(f"Erro crítico ao configurar os caminhos: {e}")
-    # Em um ambiente de produção, é crucial parar a execução se os caminhos estiverem errados.
-    raise
+# --- CONFIGURAÇÃO FINAL E SIMPLIFICADA PARA O RENDER ---
+# O "Root Directory" no Render é '.../ArquivoDB'.
+# A partir daqui, a pasta que contém TODOS os nossos templates é a 'ArquivosGerais', que está um nível acima.
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
+TEMPLATE_DIR = os.path.abspath(os.path.join(APP_DIR, '..')) # Sobe de 'ArquivoDB' para 'ArquivosGerais'
 
 app = Flask(
     __name__,
     template_folder=TEMPLATE_DIR,
-    static_folder=None  # Desativamos o 'static' padrão, pois usaremos nossa própria rota.
+    static_folder=None # Desativado para usarmos nossa rota personalizada
 )
 
 # Configura a chave secreta a partir de variáveis de ambiente para segurança
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "uma_chave_padrao_para_desenvolvimento_local")
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "chave_secreta_final_para_debug")
+print(f"Pasta de templates definida como: {TEMPLATE_DIR}")
 
-
-# --- ROTA DE ARQUIVOS ESTÁTICOS (UNIVERSAL) ---
-# Serve qualquer arquivo (CSS, JS, imagem) de qualquer subpasta dentro de 'telasHTML'
+# --- ROTA DE ASSETS ---
+# Esta rota servirá arquivos a partir da pasta 'telasHTML' inteira, que está um nível acima da pasta de templates.
 @app.route('/assets/<path:filename>')
 def assets(filename):
-    # Por segurança, verificamos se o caminho não tenta "subir" diretórios com '..'
-    if '..' in filename or filename.startswith('/'):
-        return "Caminho inválido", 400
-    return send_from_directory(TEMPLATE_DIR, filename)
-
+    ASSETS_BASE_DIR = os.path.abspath(os.path.join(TEMPLATE_DIR, '..')) # Sobe de 'ArquivosGerais' para 'telasHTML'
+    # O caminho completo do arquivo será, por exemplo, '.../telasHTML/ArquivosGerais/TelaInicial/style.css'
+    return send_from_directory(ASSETS_BASE_DIR, os.path.join('ArquivosGerais', filename))
 
 # --- ROTAS DA APLICAÇÃO ---
+# Como a pasta base de templates agora é 'ArquivosGerais', não precisamos mais desse prefixo nos caminhos.
 
 @app.route("/")
 def index():
@@ -78,7 +62,8 @@ def login():
         else:
             flash('Email ou senha incorretos. Tente novamente.', 'danger')
 
-    return render_template('ArquivosGerais/TelaDeLogin/telaLogin.html')
+    # CAMINHO CORRIGIDO: Relativo a 'ArquivosGerais'
+    return render_template('TelaDeLogin/telaLogin.html')
 
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
@@ -116,7 +101,8 @@ def cadastro():
             flash(mensagem, 'danger')
             return redirect(url_for('cadastro'))
 
-    return render_template("ArquivosGerais/Cadastrar_templates/cadastrar.html")
+    # CAMINHO CORRIGIDO
+    return render_template("Cadastrar_templates/cadastrar.html")
 
 @app.route("/inicio")
 def pagina_inicial():
@@ -125,10 +111,11 @@ def pagina_inicial():
         return redirect(url_for('login'))
     try:
         lista_de_usuarios = get_all_users()
-        return render_template("ArquivosGerais/TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
+        # CAMINHO CORRIGIDO
+        return render_template("TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
     except Exception as e:
         flash(f'Ocorreu um erro ao carregar os usuários: {e}', 'danger')
-        return render_template("ArquivosGerais/TelaInicial/TelaInicial.html", usuarios=[])
+        return render_template("TelaInicial/TelaInicial.html", usuarios=[])
 
 @app.route("/usuario")
 def pagina_usuario():
@@ -137,7 +124,8 @@ def pagina_usuario():
         return redirect(url_for('login'))
     user_data = get_user_by_email(session['user_email'])
     if user_data:
-        return render_template("ArquivosGerais/TelaDeUsuario/TelaUser.html", usuario=user_data)
+        # CAMINHO CORRIGIDO
+        return render_template("TelaDeUsuario/TelaUser.html", usuario=user_data)
     else:
         flash('Erro: Dados do usuário não encontrados. Por favor, faça login novamente.', 'danger')
         session.clear()
@@ -147,7 +135,8 @@ def pagina_usuario():
 def tela_de_loading():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    return render_template('ArquivosGerais/TelaLoading/Telaloading.html')
+    # CAMINHO CORRIGIDO
+    return render_template('TelaLoading/Telaloading.html')
 
 @app.route("/logout")
 def logout():
@@ -157,19 +146,22 @@ def logout():
 
 @app.route("/esqueci_senha")
 def esqueci_senha():
-    return render_template("ArquivosGerais/RecuperarSenha/esqueci_senha.html")
+    # CAMINHO CORRIGIDO
+    return render_template("RecuperarSenha/esqueci_senha.html")
 
 @app.route("/chat/<int:destinatario_id>")
 def pagina_chat(destinatario_id):
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    return render_template("ArquivosGerais/TelaChat/chat.html", destinatario_id=destinatario_id)
+    # CAMINHO CORRIGIDO
+    return render_template("TelaChat/chat.html", destinatario_id=destinatario_id)
 
 @app.route("/feed")
 def pagina_feed():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    return render_template("ArquivosGerais/TelaFeed/feed.html")
+    # CAMINHO CORRIGIDO
+    return render_template("TelaFeed/feed.html")
 
 # --- Ponto de Execução da Aplicação ---
 if __name__ == '__main__':
