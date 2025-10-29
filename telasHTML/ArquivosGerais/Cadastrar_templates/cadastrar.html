@@ -6,11 +6,11 @@
     <title>Cadastro</title>
     
     <!-- CORREÇÃO: URL direta para o CSS -->
-    <link rel="stylesheet" href="/Cadastrar_templates/estilo.css">
+    <link rel="stylesheet" href="{{ url_for('serve_static_files', filename='Cadastrar_templates/estilo.css') }}">
 </head>
 <body>
     <!-- CORREÇÃO: Use o logo que existe na pasta telaDeLogin -->
-    <img src="/telaDeLogin/logo.png" alt="Logotipo">
+    <img src="{{ url_for('serve_static_files', filename='telaDeLogin/logo.png') }}" alt="Logotipo">
     
     <h1 class="titulo">Cadastro</h1>
     

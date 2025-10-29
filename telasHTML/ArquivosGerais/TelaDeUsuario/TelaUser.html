@@ -6,12 +6,20 @@
     <title>Perfil de {{ usuario.nome or 'Usuário' }}</title>
     
     <!-- Carregando o CSS com o caminho correto via url_for -->
+<<<<<<< HEAD
     <link rel="stylesheet" href="{{ url_for('static', filename='telasHTML/ArquivosGerais/TelaDeUsuario/stylesTest.css') }}">
+=======
+    <link rel="stylesheet" href="{{ url_for('serve_static_files', filename='TelaDeUsuario/stylesTest.css') }}">
+>>>>>>> d0ba9896ef947d2605b876b3332d67a7442bb795
     
     <div class="Wallpaper">
         <!-- Imagem de fundo/capa. Usa a do usuário ou uma padrão -->
         <img class="imagemWallpaper" 
+<<<<<<< HEAD
              src="{{ url_for('static', filename=usuario.foto_capa if usuario.foto_capa else 'telasHTML/ArquivosGerais/TelaDeUsuario/imagens/hM94BRC.jpeg') }}" 
+=======
+             src="{{ url_for('serve_static_files', filename=usuario.foto_capa if usuario.foto_capa else 'TelaDeUsuario/imagens/hM94BRC.jpeg') }}" 
+>>>>>>> d0ba9896ef947d2605b876b3332d67a7442bb795
              alt="Wallpaper de fundo">
     </div>
 </head>
@@ -23,7 +31,11 @@
                 <div id="perfilImagemGeralCaixa">
                     <!-- Imagem de perfil. Usa a do usuário ou uma padrão -->
                     <img id="preview" 
+<<<<<<< HEAD
                          src="{{ url_for('static', filename=usuario.foto_perfil if usuario.foto_perfil else 'telasHTML/ArquivosGerais/TelaDeUsuario/imagens/user-icon-placeholder.png') }}" 
+=======
+                         src="{{ url_for('serve_static_files', filename=usuario.foto_perfil if usuario.foto_perfil else 'TelaDeUsuario/imagens/user-icon-placeholder.png') }}" 
+>>>>>>> d0ba9896ef947d2605b876b3332d67a7442bb795
                          alt="Imagem de perfil do usuário">
                 </div>
                 <p class="nomeUsuario">{{ usuario.nome or 'Nome de Usuário' }}</p>
@@ -41,19 +53,32 @@
                 <div class="post-header">
                     <span>Minha Primeira Foto</span>
                     <!-- IMAGEM 1: TresPontos.png usada como ícone de opções -->
+<<<<<<< HEAD
                     <img src="{{ url_for('static', filename='telasHTML/ArquivosGerais/TelaDeUsuario/imagens/TresPontos.png') }}" alt="Opções" class="post-options-icon">
                 </div>
                 <!-- IMAGEM 2: WallpaperTest.jpg usada como imagem principal da publicação -->
                 <img class="publicacaoImagem" src="{{ url_for('static', filename='telasHTML/ArquivosGerais/TelaDeUsuario/imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
+=======
+                    <img src="{{ url_for('serve_static_files', filename='TelaDeUsuario/imagens/TresPontos.png') }}" alt="Opções" class="post-options-icon">
+                </div>
+                <!-- IMAGEM 2: WallpaperTest.jpg usada como imagem principal da publicação -->
+                <img class="publicacaoImagem" src="{{ url_for('serve_static_files', filename='TelaDeUsuario/imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
+>>>>>>> d0ba9896ef947d2605b876b3332d67a7442bb795
             </div>
 
             <!-- Outro exemplo de publicação -->
             <div class="BoxePublicacoes">
                 <div class="post-header">
                     <span>Lembrança do Jogo</span>
+<<<<<<< HEAD
                     <img src="{{ url_for('static', filename='telasHTML/ArquivosGerais/TelaDeUsuario/imagens/TresPontos.png') }}" alt="Opções" class="post-options-icon">
                 </div>
                 <img class="publicacaoImagem" src="{{ url_for('static', filename='telasHTML/ArquivosGerais/TelaDeUsuario/imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
+=======
+                    <img src="{{ url_for('serve_static_files', filename='TelaDeUsuario/imagens/TresPontos.png') }}" alt="Opções" class="post-options-icon">
+                </div>
+                <img class="publicacaoImagem" src="{{ url_for('serve_static_files', filename='TelaDeUsuario/imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
+>>>>>>> d0ba9896ef947d2605b876b3332d67a7442bb795
             </div>
         </div>
     </div>
@@ -65,7 +90,11 @@
             <a href="{{ url_for('pagina_inicial') }}">
                 <button class="floating-button">
                     <!-- IMAGEM 3: bolaLogo.png usada como ícone do botão -->
+<<<<<<< HEAD
                     <img src="{{ url_for('static', filename='telasHTML/ArquivosGerais/TelaDeUsuario/imagens/bolaLogo.png') }}" alt="Ir para tela inicial">
+=======
+                    <img src="{{ url_for('serve_static_files', filename='TelaDeUsuario/imagens/bolaLogo.png') }}" alt="Ir para tela inicial">
+>>>>>>> d0ba9896ef947d2605b876b3332d67a7442bb795
                 </button>
             </a>
         </div>
@@ -83,6 +112,10 @@
     </div>
 
     <!-- Carregando o JavaScript com o caminho correto via url_for -->
+<<<<<<< HEAD
     <script src="{{ url_for('static', filename='telasHTML/ArquivosGerais/TelaDeUsuario/script.js') }}"></script>
+=======
+    <script src="{{ url_for('serve_static_files', filename='TelaDeUsuario/script.js') }}"></script>
+>>>>>>> d0ba9896ef947d2605b876b3332d67a7442bb795
 </body>
 </html>

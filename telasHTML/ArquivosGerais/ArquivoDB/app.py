@@ -108,6 +108,13 @@ def cadastro():
     
     return render_template("Cadastrar_templates/cadastrar.html")
 
+<<<<<<< HEAD
+=======
+# Rota adicional para renderizar a página de cadastro (GET)
+@app.route('/cadastro_page')
+def cadastro_page():
+    return render_template("Cadastrar_templates/cadastrar.html")
+>>>>>>> d0ba9896ef947d2605b876b3332d67a7442bb795
 
 @app.route("/inicio")
 def pagina_inicial():
