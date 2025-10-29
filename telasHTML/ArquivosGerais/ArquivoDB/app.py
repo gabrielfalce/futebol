@@ -1,7 +1,7 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
 from dotenv import load_dotenv
-from database import register_user, check_user, get_all_users, get_user_by_email, update_user_profile_image
+from database import register_user, check_user, get_all_users, get_user_by_email, update_user_profile_image, update_user_profile
 import bcrypt
 from datetime import datetime
 
@@ -57,15 +57,11 @@ def cadastro():
         posicao = request.form.get("posicao")
         nascimento_str = request.form.get("nascimento")
         numero = request.form.get("numero")
-        numero_camisa = request.form.get("numero_camisa") 
         
-        sucesso, mensagem = register_user(
-            nome=nome, email=email, senha_hash=senha_hash.decode('utf-8'), cidade=cidade,
-            posicao=posicao, data_nasc=data_nascimento_iso, numero=numero
-        )
         if not all([nome, email, senha_texto_puro, cidade, posicao, nascimento_str, numero]):
             flash("Erro no cadastro: Todos os campos são obrigatórios.", 'danger')
             return redirect(url_for('cadastro'))
+        
         try:
             data_obj = None
             for fmt in ('%Y-%m-%d', '%d/%m/%Y'):
@@ -84,9 +80,15 @@ def cadastro():
         
         senha_hash = bcrypt.hashpw(senha_texto_puro.encode('utf-8'), bcrypt.gensalt())
         sucesso, mensagem = register_user(
-            nome=nome, email=email, senha_hash=senha_hash.decode('utf-8'), cidade=cidade,
-            posicao=posicao, data_nasc=data_nascimento_iso, numero=numero
+            nome=nome, 
+            email=email, 
+            senha_hash=senha_hash.decode('utf-8'), 
+            cidade=cidade,
+            posicao=posicao, 
+            data_nasc=data_nascimento_iso, 
+            numero=numero
         )
+        
         if sucesso:
             session['user_email'] = email
             flash(mensagem, 'success')
@@ -94,6 +96,7 @@ def cadastro():
         else:
             flash(mensagem, 'danger')
             return redirect(url_for('cadastro'))
+    
     return render_template("Cadastrar_templates/cadastrar.html")
 
 @app.route("/inicio")
@@ -109,6 +112,49 @@ def pagina_usuario():
         return redirect(url_for('login'))
     user_data = get_user_by_email(session['user_email'])
     return render_template("TelaDeUsuario/TelaUser.html", usuario=user_data)
+
+@app.route("/editar_perfil", methods=['GET', 'POST'])
+def editar_perfil():
+    if 'user_email' not in session:
+        return redirect(url_for('login'))
+    
+    user_data = get_user_by_email(session['user_email'])
+    
+    if request.method == 'POST':
+        # Processar os dados do formulário
+        nome = request.form.get('nome')
+        cidade = request.form.get('cidade')
+        posicao = request.form.get('posicao')
+        numero_camisa = request.form.get('numero_camisa')
+        numero_telefone = request.form.get('numero_telefone')
+        
+        # Atualizar apenas os campos que foram preenchidos
+        update_data = {}
+        if nome:
+            update_data['nome'] = nome
+        if cidade:
+            update_data['cidade'] = cidade
+        if posicao:
+            update_data['posicao'] = posicao
+        if numero_camisa:
+            update_data['numero_camisa'] = numero_camisa
+        if numero_telefone:
+            update_data['numero'] = numero_telefone
+        
+        # Chamar uma função para atualizar o usuário no banco de dados
+        if update_data:
+            sucesso = update_user_profile(session['user_email'], **update_data)
+            if sucesso:
+                flash('Perfil atualizado com sucesso!', 'success')
+            else:
+                flash('Erro ao atualizar perfil.', 'danger')
+        else:
+            flash('Nenhuma alteração foi feita.', 'info')
+        
+        return redirect(url_for('pagina_usuario'))
+    
+    # Se for GET, renderiza o template de edição
+    return render_template("TelaDeUsuario/editar_perfil.html", usuario=user_data)
 
 @app.route("/loading")
 def tela_de_loading():

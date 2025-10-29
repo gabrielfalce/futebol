@@ -120,27 +120,16 @@ def get_user_by_id(user_id):
         print(f"ERRO em get_user_by_id: {e}")
         return None
 
-def update_user_profile(email, nome=None, cidade=None, posicao=None, numero_camisa=None):
+def update_user_profile(email, **update_data):
     """
     Atualiza o perfil do usuário
     """
     try:
-        update_data = {}
-        if nome:
-            update_data['nome'] = nome
-        if cidade:
-            update_data['cidade'] = cidade
-        if posicao:
-            update_data['posicao'] = posicao
-        if numero_camisa:
-            update_data['numero_camisa'] = numero_camisa
-            
         response = supabase.table('usuarios').update(update_data).eq('email', email).execute()
         return True
     except Exception as e:
         print(f"ERRO em update_user_profile: {e}")
         return False
-
 def delete_user(email):
     """
     Deleta um usuário pelo email
