@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil de {{ usuario.nome or 'Usuário' }}</title>
     
-    <!-- CORREÇÃO: Removido 'ArquivosGerais/' do filename -->
-    <link rel="stylesheet" href="{{ url_for('assets', filename='TelaDeUsuario/stylesTest.css') }}">
-    <link rel="stylesheet" href="stylesTest.css">
+    <!-- CORREÇÃO: URL direta para o CSS -->
+    <link rel="stylesheet" href="/TelaDeUsuario/stylesTest.css">
     <div class="Wallpaper">
-        <!-- CORREÇÃO: Removido 'ArquivosGerais/' do filename. Também removido o src duplicado. -->
-        <img class="imagemWallpaper" src="{{ url_for('assets', filename='TelaDeUsuario/imagens/hM94BRC.jpeg') }}" alt="Wallpaper de fundo">
+        <!-- CORREÇÃO: URL direta para a imagem -->
+        <img class="imagemWallpaper" src="/TelaDeUsuario/imagens/hM94BRC.jpeg" alt="Wallpaper de fundo">
     </div>
 </head>
 <body>
@@ -20,9 +19,9 @@
         <div id="profileContainer">
             <div class="profile-info-group">
                 <div id="perfilImagemGeralCaixa">
-                    <!-- CORREÇÃO: Removido 'ArquivosGerais/' do filename da imagem padrão -->
+                    <!-- CORREÇÃO: URL direta para a imagem padrão -->
                     <img id="preview" 
-                        src="{{ usuario.profile_image_url or url_for('assets', filename='TelaDeUsuario/imagens/user-icon-placeholder.png') }}" 
+                        src="{{ usuario.profile_image_url or '/TelaDeUsuario/imagens/user-icon-placeholder.png' }}" 
                         alt="Imagem de perfil do usuário">
                 </div>
                 <p class="nomeUsuario">{{ usuario.nome or 'Nome de Usuário' }}</p>
@@ -36,14 +35,14 @@
             <hr class="section-divider">
             <h1 id="tituloPublicacao" class="section-title">Publicações</h1>
             <div class="BoxePublicacoes">
-                <!-- CORREÇÃO: Removido 'ArquivosGerais/' do filename -->
-                <img class="publicacaoImagem" src="{{ url_for('assets', filename='TelaDeUsuario/imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
+                <!-- CORREÇÃO: URL direta para a imagem -->
+                <img class="publicacaoImagem" src="/TelaDeUsuario/imagens/WallpaperTest.jpg" alt="Imagem de publicação">
             </div>
 
             <div class="BoxePublicacoes">
                 <h1>Outra Publicação</h1>
-                <!-- CORREÇÃO: Removido 'ArquivosGerais/' do filename -->
-                <img class="publicacaoImagem" src="{{ url_for('assets', filename='TelaDeUsuario/imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
+                <!-- CORREÇÃO: URL direta para a imagem -->
+                <img class="publicacaoImagem" src="/TelaDeUsuario/imagens/WallpaperTest.jpg" alt="Imagem de publicação">
             </div>
         </div>
     </div>
@@ -54,8 +53,8 @@
             <div class="floating-button-bar"></div>
             <a href="{{ url_for('pagina_inicial') }}">
                 <button class="floating-button">
-                    <!-- CORREÇÃO: Removido 'ArquivosGerais/' do filename -->
-                    <img src="{{ url_for('assets', filename='TelaDeUsuario/imagens/bolaLogo.png') }}" alt="Ir para tela inicial">
+                    <!-- CORREÇÃO: URL direta para a imagem -->
+                    <img src="/TelaDeUsuario/imagens/bolaLogo.png" alt="Ir para tela inicial">
                 </button>
             </a>
         </div>
@@ -72,7 +71,7 @@
         <!-- ... (conteúdo do modal ) ... -->
     </div>
 
-    <!-- CORREÇÃO: Removido 'ArquivosGerais/' do filename -->
-    <script src="{{ url_for('assets', filename='TelaDeUsuario/script.js') }}"></script>
+    <!-- CORREÇÃO: URL direta para o script -->
+    <script src="/TelaDeUsuario/script.js"></script>
 </body>
 </html>
