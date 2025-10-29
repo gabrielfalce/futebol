@@ -1,0 +1,265 @@
+/* =======================
+   VARIÁVEIS GLOBAIS
+   ======================= */
+:root {
+    --cor-primaria: #2BBF90;
+    --cor-secundaria: #128c7e;
+    --cor-fundo: #1E1E1E;
+    --cor-texto: #fff;
+    --cor-borda: rgba(0, 0, 0, 0.1);
+    --cor-card: #2C2C2C;
+    --cor-texto-card: #E0E0E0;
+}
+
+/* =======================
+   ESTILOS BASE
+   ======================= */
+body {
+    font-family: Arial, sans-serif;
+    background-color: var(--cor-fundo);
+    margin: 0;
+    padding: 0;
+        padding: 2rem 1rem; /* Adiciona espaçamento vertical e horizontal */
+    color: var(--cor-texto);
+    overflow-x: hidden;
+    min-height: 100vh; /* Garante que o corpo ocupe pelo menos a altura da tela */
+}
+
+/* =======================
+   MODAL DE CORTE DE IMAGEM
+   ======================= */
+.modal {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(8, 4, 4, 0.7);
+}
+
+.modal-content {
+    background: var(--cor-fundo);
+    padding: 20px;
+    border-radius: 8px;
+    position: relative; /* Alterado de absolute para relative */
+    width: 90%;
+    max-width: 400px; /* Mantido o tamanho reduzido */
+    text-align: center;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--cor-primaria);
+    transition: color 0.2s, background 0.2s;
+    padding: 4px 8px;
+    border-radius: 40px;
+    background-color: #00000081;
+}
+
+.close-button:hover {
+    color: var(--cor-primaria);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+input[type="file"] {
+    margin: 16px 0;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+input[type="file"]::-webkit-file-upload-button {
+    background: var(--cor-primaria);
+    color: var(--cor-texto);
+    border: none;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+input[type="file"]::-webkit-file-upload-button:hover {
+    background: var(--cor-secundaria);
+}
+
+#image {
+    display: none;
+    max-width: 100%;
+}
+
+/* =======================
+   ESTILOS PARA editar_perfil.html
+   ======================= */
+
+/* CONTAINER PRINCIPAL */
+.container {
+    background-color: var(--cor-card);
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    width: 100%;
+    max-width: 90%; /* Ajustado para mobile-first */
+    text-align: center;
+    margin: 0 auto; /* Centraliza o container */
+}
+
+.container h1 {
+    color: var(--cor-primaria);
+    margin-bottom: 10px;
+    font-size: 1.6rem; /* Ajustado para mobile */
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.container p {
+    color: var(--cor-texto-card);
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+/* FORMULÁRIO */
+.container form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.container .form-group {
+    text-align: left;
+}
+
+.container .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: var(--cor-texto-card);
+}
+
+.container input[type="text"],
+.container input[type="tel"] {
+    width: 100%;
+    padding: 12px 2px;
+    border: 1px solid #444;
+    border-radius: 8px;
+    background-color: #3a3a3a;
+    color: var(--cor-texto);
+    font-size: 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.container input[type="text"]:focus,
+.container input[type="tel"]:focus {
+    outline: none;
+    border-color: var(--cor-primaria);
+    box-shadow: 0 0 0 3px rgba(43, 191, 144, 0.3);
+}
+
+/* LINKS E BOTÕES */
+.container .back-link {
+    display: inline-block;
+    margin-top: 25px;
+    color: var(--cor-primaria);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.container .back-link:hover {
+    color: #50d9ad;
+    text-decoration: underline;
+}
+
+.container .submit-button {
+    background-color: var(--cor-primaria);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+    margin-top: 10px;
+}
+
+.container .submit-button:hover {
+    transform: scale(1.03);
+    background-color: #25a880;
+}
+
+/* SEÇÃO DE IMAGEM DE PERFIL */
+.profile-picture-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#perfilImagemGeralCaixa {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 140px;
+    height: 140px;
+    background: #ccc;
+    border-radius: 50%;
+    margin: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    border: 4px solid var(--cor-fundo);
+}
+
+#preview {
+    max-width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    margin: 0;
+}
+
+.edit-mode {
+    cursor: pointer;
+}
+
+.edit-prompt {
+    font-size: 0.9rem;
+    color: var(--cor-texto-card);
+    margin-top: 10px;
+}
+
+/* =======================
+   MEDIA QUERIES (RESPONSIVIDADE)
+   ======================= */
+
+/* Estilos para Tablets e Desktops */
+@media (min-width: 768px) {
+    .container {
+        max-width: 700px; /* Aumenta a largura máxima em telas maiores */
+        padding: 40px 50px;
+    }
+
+    .container h1 {
+        font-size: 2rem; /* Aumenta o título no desktop */
+    }
+
+    .container form {
+        /* Layout de duas colunas para o formulário em telas maiores */
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px 25px; /* Espaçamento vertical e horizontal */
+    }
+
+    .container .submit-button {
+        /* Faz o botão de salvar ocupar as duas colunas */
+        grid-column: 1 / -1;
+    }
+}

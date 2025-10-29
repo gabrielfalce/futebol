@@ -40,5 +40,5 @@ def serve_static(filename):
 # CONFIGURAÇÃO RENDER OU LOCAL
 
 if __name__ == "__main__":
-    # O host='0.0.0.0' é necessário no Render
+    # O host='0.0.0.0' é necessário no Render de qualquer forma nessa poha
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
