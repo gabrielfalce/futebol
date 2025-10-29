@@ -1,26 +1,28 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory, jsonify
 from dotenv import load_dotenv
 from database import register_user, check_user, get_all_users, get_user_by_email, update_user_profile_image, update_user_profile
 import bcrypt
 from datetime import datetime
+from werkzeug.utils import secure_filename
 
 load_dotenv()
 
-# --- CONFIGURAÇÃO PADRÃO E ROBUSTA DO FLASK ---
+# --- CONFIGURAÇÃO AJUSTADA PARA A SUA ESTRUTURA DE ARQUIVOS ---
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
-BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..'))
+# BASE_DIR agora aponta para a pasta que contém todas as outras (TelaDeUsuario, TelaInicial, etc.)
+BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..')) 
 
 app = Flask(
     __name__,
-    template_folder=BASE_DIR,
-    static_folder=BASE_DIR,
-    static_url_path=''
+    template_folder=BASE_DIR, # Continua apontando para a raiz para encontrar os HTMLs
+    static_url_path='/assets' # Define um prefixo ÚNICO para arquivos estáticos
 )
+app.static_folder = BASE_DIR # Diz ao Flask que a pasta estática também é a raiz
 
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "minha_ultima_chave_secreta_agora_vai")
 
-# --- ROTAS DA APLICAÇÃO ---
+# --- ROTAS DA APLICAÇÃO (CÓDIGO ORIGINAL MANTIDO) ---
 
 @app.route("/")
 def index():
@@ -121,27 +123,15 @@ def editar_perfil():
     user_data = get_user_by_email(session['user_email'])
     
     if request.method == 'POST':
-        # Processar os dados do formulário
-        nome = request.form.get('nome')
-        cidade = request.form.get('cidade')
-        posicao = request.form.get('posicao')
-        numero_camisa = request.form.get('numero_camisa')
-        numero_telefone = request.form.get('numero_telefone')
+        update_data = {
+            'nome': request.form.get('nome'),
+            'cidade': request.form.get('cidade'),
+            'posicao': request.form.get('posicao'),
+            'numero_camisa': request.form.get('numero_camisa'),
+            'numero': request.form.get('numero_telefone')
+        }
+        update_data = {k: v for k, v in update_data.items() if v}
         
-        # Atualizar apenas os campos que foram preenchidos
-        update_data = {}
-        if nome:
-            update_data['nome'] = nome
-        if cidade:
-            update_data['cidade'] = cidade
-        if posicao:
-            update_data['posicao'] = posicao
-        if numero_camisa:
-            update_data['numero_camisa'] = numero_camisa
-        if numero_telefone:
-            update_data['numero'] = numero_telefone
-        
-        # Chamar uma função para atualizar o usuário no banco de dados
         if update_data:
             sucesso = update_user_profile(session['user_email'], **update_data)
             if sucesso:
@@ -153,14 +143,64 @@ def editar_perfil():
         
         return redirect(url_for('pagina_usuario'))
     
-    # Se for GET, renderiza o template de edição
     return render_template("TelaDeUsuario/editar_perfil.html", usuario=user_data)
+
+# --- INÍCIO DO CÓDIGO ADICIONADO PARA CORRIGIR O ERRO ---
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    """Verifica se a extensão do arquivo é permitida."""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/upload_image', methods=['POST'])
+def upload_image():
+    """Rota para lidar com o upload da imagem de perfil."""
+    if 'user_email' not in session:
+        return jsonify({'error': 'Não autorizado'}), 401
+
+    if 'profile_image' not in request.files:
+        flash('Nenhum arquivo de imagem foi enviado.', 'danger')
+        return redirect(url_for('editar_perfil'))
+
+    file = request.files['profile_image']
+
+    if file.filename == '':
+        flash('Nenhum arquivo selecionado.', 'warning')
+        return redirect(url_for('editar_perfil'))
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        
+        # Salva a imagem na pasta de onde o app está rodando (ex: 'src/uploads/profile_pics')
+        upload_folder = os.path.join(APP_DIR, 'uploads', 'profile_pics')
+        os.makedirs(upload_folder, exist_ok=True)
+        
+        file_path = os.path.join(upload_folder, filename)
+        file.save(file_path)
+
+        # O caminho salvo no banco será relativo à pasta 'src', ex: 'uploads/profile_pics/foto.jpg'
+        relative_path = os.path.join('uploads', 'profile_pics', filename).replace("\\", "/")
+        
+        sucesso = update_user_profile_image(session['user_email'], relative_path)
+        if sucesso:
+            flash('Imagem de perfil atualizada com sucesso!', 'success')
+        else:
+            flash('Erro ao salvar o caminho da imagem no banco de dados.', 'danger')
+        
+        return redirect(url_for('pagina_usuario'))
+    else:
+        flash('Formato de arquivo inválido! Use PNG, JPG, JPEG ou GIF.', 'danger')
+        return redirect(url_for('editar_perfil'))
+
+# --- FIM DO CÓDIGO ADICIONADO ---
 
 @app.route("/loading")
 def tela_de_loading():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    return render_template('TelaLoading/Telaloading.html')
+    # O template correto parece ser com 'l' minúsculo, como no seu primeiro código
+    return render_template('TelaLoading/Telaloading.html') 
 
 @app.route("/logout")
 def logout():
@@ -182,11 +222,11 @@ def pagina_chat(destinatario_id):
 def pagina_feed():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    # Verifique se este template existe, se não, comente esta rota
     return render_template("TelaFeed/feed.html")
 
-# Rota para servir arquivos estáticos
-@app.route('/<path:filename>')
+# Rota para servir arquivos estáticos (MANTIDA E AJUSTADA)
+# Agora ela responde em /assets/caminho/para/o/arquivo.css
+@app.route('/assets/<path:filename>')
 def serve_static_files(filename):
     return send_from_directory(BASE_DIR, filename)
 
