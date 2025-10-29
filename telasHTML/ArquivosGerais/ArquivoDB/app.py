@@ -57,6 +57,12 @@ def cadastro():
         posicao = request.form.get("posicao")
         nascimento_str = request.form.get("nascimento")
         numero = request.form.get("numero")
+        numero_camisa = request.form.get("numero_camisa") 
+        
+        sucesso, mensagem = register_user(
+            nome=nome, email=email, senha_hash=senha_hash.decode('utf-8'), cidade=cidade,
+            posicao=posicao, data_nasc=data_nascimento_iso, numero=numero
+        )
         if not all([nome, email, senha_texto_puro, cidade, posicao, nascimento_str, numero]):
             flash("Erro no cadastro: Todos os campos são obrigatórios.", 'danger')
             return redirect(url_for('cadastro'))
