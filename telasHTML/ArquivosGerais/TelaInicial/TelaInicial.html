@@ -3,98 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tela Inicial</title>
+    <title>Perfil de {{ usuario.nome }}</title>
     
-    <!-- CORREÇÃO: URL direta para o CSS -->
-    <link rel="stylesheet" href="style.css">
+    <!-- Caminho corrigido para o CSS via url_for -->
+    <link rel="stylesheet" href="{{ url_for(\'serve_static_files\', filename=\'TelaInicial/style.css\') }}">  
+    <!-- Estilos para o toast de notificação -->
+    <style>
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 5px;
+            padding: 16px;
+            position: fixed;
+            z-index: 101;
+            left: 50%;
+            bottom: 30px;
+            font-size: 17px;
+        }
+        .toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 3.5s;
+        }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+    </style>
 </head>
 <body>
-    <header class="page-header">
-        <div class="logo-container"> 
-        </div>
-    </header>
+    <!-- Imagem de fundo carregada dinamicamente -->
+    <div class="background-image" style="background-image: url('{{ url_for('serve_static_files', filename=usuario.foto_capa if usuario.foto_capa else 'TelaDeUsuario/imagens/WallpaperTest.jpg') }}');">
+    </div>
 
-    <main>
-        <div class="search-container">
-            <input type="text" id="search-input" placeholder="Buscar usuários..." onkeyup="searchUsers()">
-            <!-- CORREÇÃO: URL direta para a imagem -->
-            <img src="/TelaInicial/lupa.png" alt="Ícone de busca" class="search-icon">
-        </div>
-
-        <div class="user-list" id="user-list">
+    <div class="profile-container">
+        <header class="profile-header">
+            <!-- Imagem de perfil carregada dinamicamente -->
+            <img src="{{ url_for('serve_static_files', filename=usuario.foto_perfil if usuario.foto_perfil else 'TelaDeUsuario/imagens/user-icon-placeholder.png') }}" alt="Foto de Perfil de {{ usuario.nome }}" class="profile-picture">
             
-            {% for usuario in usuarios %} 
-                <a href="{{ url_for('pagina_chat', destinatario_id=usuario.id) }}" class="user-card-link">
-                    <div class="user-card">
-                        <!-- CORREÇÃO: URL direta para a imagem padrão -->
-                        <img id="user-foto" src="{{ usuario.profile_image_url or '/TelaInicial/iconeUser.png' }}" 
-                             alt="Foto de perfil de {{ usuario.nome }}">
-                        
-                        <div class="user-info">
-                            <span class="user-name">{{ usuario.nome }}</span>
-                            <span class="user-posicao">{{ usuario.posicao }}</span>
-                            <span class="user-cidade">{{ usuario.cidade }}</span>
-                            <span class="user-idade">{{ usuario.idade }}</span>      
-                        </div>
-                    </div>
-                </a>
-            {% else %} 
-                <p>Nenhum outro usuário cadastrado no momento.</p> 
-            {% endfor %} 
+            <div class="profile-info">
+                <h1>{{ usuario.nome or 'Nome do Usuário' }}</h1>
+                <p>{{ usuario.posicao or 'Posição não definida' }}</p>
+            </div>
             
-        </div>
-    </main>
+            <!-- Logo no cabeçalho -->
+            <img src="{{ url_for(\'serve_static_files\', filename=\'TelaInicial/bolaLogo.png\') }}" alt="Logo" class="header-logo">
+        </header>
 
-    <nav class="navigation-links">
-        <a href="{{ url_for('telasHTML\ArquivosGerais\TelaInicial\TelaInicial.html') }}" class="nav-button feed-button">Ver Feed</a>
-        
-        <a href="{{ url_for('pagina_usuario') }}" class="nav-button profile-button">
-            <!-- CORREÇÃO: URL direta para a imagem -->
-            <img src="/TelaInicial/BotaoUsuario.ico" alt="Ver Perfil">
-        </a>
-        
-        <a href="{{ url_for('logout') }}" class="nav-button logout-button">Sair</a>
-    </nav>
+        <!-- 
+          INÍCIO DA SEÇÃO CORRIGIDA 
+          O código da barra de navegação foi removido pois não pertence a esta seção.
+          Mantivemos a grade de informações do usuário.
+        -->
+        <main class="profile-content">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="label">Idade</span>
+                    <span class="value">{{ usuario.idade or 'N/A' }} anos</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Cidade</span>
+                    <span class="value">{{ usuario.cidade or 'Não informada' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Número da Camisa</span>
+                    <span class="value">#{{ usuario.numero_camisa or 'N/A' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Contato (WhatsApp)</span>
+                    <span class="value">{{ usuario.numero or 'Não informado' }}</span>
+                </div>
+            </div>
+            <!-- FIM DA SEÇÃO CORRIGIDA -->
 
-    <!-- Toast para mensagens flash -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% set category, message = messages[0] %}
-            <div id="toast-notification" class="toast" data-message="{{ message }}" data-category="{{ category }}"></div>
-        {% endif %}
-    {% endwith %}
+            <div class="profile-actions">
+                <a href="{{ url_for('editar_perfil') }}" class="btn-edit">Editar Perfil</a>
+                <a href="{{ url_for('pagina_inicial') }}" class="btn-back">Voltar para Início</a>
+            </div>
+        </main>
+    </div>
+
+    <!-- Div para exibir mensagens flash (toast) -->
+    <div id="toast-notification" class="toast"></div>
+
+    <!-- Carregando o script JS via url_for -->
+    <script src="{{ url_for('serve_static_files', filename='TelaInicial/script.js') }}"></script>
 
     <script>
-        function searchUsers() {
-            const input = document.getElementById('search-input');
-            const filter = input.value.toLowerCase();
-            const userCards = document.getElementsByClassName('user-card-link');
-            
-            for (let i = 0; i < userCards.length; i++) {
-                const userName = userCards[i].getElementsByClassName('user-name')[0].textContent.toLowerCase();
-                if (userName.includes(filter)) {
-                    userCards[i].style.display = '';
-                } else {
-                    userCards[i].style.display = 'none';
-                }
-            }
-        }
-
-        // Toast notification
-        document.addEventListener('DOMContentLoaded', (event) => {
-            const toast = document.getElementById("toast-notification");
-            
-            if (toast && toast.dataset.message) {
-                const message = toast.dataset.message;
-                const category = toast.dataset.category;
-                
-                toast.textContent = message;
-                toast.style.backgroundColor = category === 'success' ? 'green' : '#f44336';
-                
-                toast.style.display = 'block';
-                setTimeout(() => toast.style.display = 'none', 4000);
-            }
-        });
+        // Script para exibir mensagens flash (toast) de forma segura
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                (function() {
+                    const message = {{ messages[0][1] | tojson }};
+                    const category = {{ messages[0][0] | tojson }};
+                    
+                    const toast = document.getElementById("toast-notification");
+                    toast.textContent = message;
+                    
+                    if (category === 'success') {
+                        toast.style.backgroundColor = 'green';
+                    } else if (category === 'danger') {
+                        toast.style.backgroundColor = '#f44336';
+                    } else {
+                        toast.style.backgroundColor = '#333';
+                    }
+                    
+                    toast.classList.add("show");
+                })();
+            {% endif %}
+        {% endwith %}
     </script>
 </body>
 </html>

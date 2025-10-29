@@ -5,28 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil de {{ usuario.nome or 'Usuário' }}</title>
     
-    <!-- CORREÇÃO: URL direta para o CSS -->
-    <link rel="stylesheet" href="/TelaDeUsuario/stylesTest.css">
+    <!-- Carregando o CSS com o caminho correto via url_for -->
+    <link rel="stylesheet" href="{{ url_for('serve_static_files', filename='TelaDeUsuario/stylesTest.css') }}">
+    
     <div class="Wallpaper">
-        <!-- CORREÇÃO: URL direta para a imagem -->
-        <img class="imagemWallpaper" src="/TelaDeUsuario/imagens/hM94BRC.jpeg" alt="Wallpaper de fundo">
+        <!-- Imagem de fundo/capa. Usa a do usuário ou uma padrão -->
+        <img class="imagemWallpaper" 
+             src="{{ url_for('serve_static_files', filename=usuario.foto_capa if usuario.foto_capa else 'TelaDeUsuario/imagens/hM94BRC.jpeg') }}" 
+             alt="Wallpaper de fundo">
     </div>
 </head>
 <body>
-    <!-- Wrapper principal para o conteúdo da página -->
     <div class="main-content-wrapper">
         <!-- Coluna do Perfil -->
         <div id="profileContainer">
             <div class="profile-info-group">
                 <div id="perfilImagemGeralCaixa">
-                    <!-- CORREÇÃO: URL direta para a imagem padrão -->
+                    <!-- Imagem de perfil. Usa a do usuário ou uma padrão -->
                     <img id="preview" 
-                        src="{{ usuario.profile_image_url or '/TelaDeUsuario/imagens/user-icon-placeholder.png' }}" 
-                        alt="Imagem de perfil do usuário">
+                         src="{{ url_for('serve_static_files', filename=usuario.foto_perfil if usuario.foto_perfil else 'TelaDeUsuario/imagens/user-icon-placeholder.png') }}" 
+                         alt="Imagem de perfil do usuário">
                 </div>
                 <p class="nomeUsuario">{{ usuario.nome or 'Nome de Usuário' }}</p>
             </div>
-            <!-- A rota 'editar_perfil' precisa existir no seu app.py para isso funcionar -->
             <a href="{{ url_for('editar_perfil') }}" class="edit-profile-button">Editar Perfil</a>
         </div>
         
@@ -34,27 +35,37 @@
         <div class="posts-container">
             <hr class="section-divider">
             <h1 id="tituloPublicacao" class="section-title">Publicações</h1>
+            
+            <!-- Exemplo de publicação estática -->
             <div class="BoxePublicacoes">
-                <!-- CORREÇÃO: URL direta para a imagem -->
-                <img class="publicacaoImagem" src="/TelaDeUsuario/imagens/WallpaperTest.jpg" alt="Imagem de publicação">
+                <div class="post-header">
+                    <span>Minha Primeira Foto</span>
+                    <!-- IMAGEM 1: TresPontos.png usada como ícone de opções -->
+                    <img src="{{ url_for('serve_static_files', filename='TelaDeUsuario/imagens/TresPontos.png') }}" alt="Opções" class="post-options-icon">
+                </div>
+                <!-- IMAGEM 2: WallpaperTest.jpg usada como imagem principal da publicação -->
+                <img class="publicacaoImagem" src="{{ url_for('serve_static_files', filename='TelaDeUsuario/imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
             </div>
 
+            <!-- Outro exemplo de publicação -->
             <div class="BoxePublicacoes">
-                <h1>Outra Publicação</h1>
-                <!-- CORREÇÃO: URL direta para a imagem -->
-                <img class="publicacaoImagem" src="/TelaDeUsuario/imagens/WallpaperTest.jpg" alt="Imagem de publicação">
+                <div class="post-header">
+                    <span>Lembrança do Jogo</span>
+                    <img src="{{ url_for('serve_static_files', filename='TelaDeUsuario/imagens/TresPontos.png') }}" alt="Opções" class="post-options-icon">
+                </div>
+                <img class="publicacaoImagem" src="{{ url_for('serve_static_files', filename='TelaDeUsuario/imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
             </div>
         </div>
     </div>
 
-    <!-- Wrapper para agrupar todos os botões flutuantes -->
+    <!-- Botões Flutuantes -->
     <div class="floating-buttons-group">
         <div class="floating-button-wrapper">
             <div class="floating-button-bar"></div>
             <a href="{{ url_for('pagina_inicial') }}">
                 <button class="floating-button">
-                    <!-- CORREÇÃO: URL direta para a imagem -->
-                    <img src="/TelaDeUsuario/imagens/bolaLogo.png" alt="Ir para tela inicial">
+                    <!-- IMAGEM 3: bolaLogo.png usada como ícone do botão -->
+                    <img src="{{ url_for('serve_static_files', filename='TelaDeUsuario/imagens/bolaLogo.png') }}" alt="Ir para tela inicial">
                 </button>
             </a>
         </div>
@@ -66,12 +77,12 @@
         </div>
     </div>
 
-    <!-- Modal para Criar/Editar Publicação -->
+    <!-- Modal (não alterado ) -->
     <div id="postModal" class="modal">
-        <!-- ... (conteúdo do modal ) ... -->
+        <!-- ... -->
     </div>
 
-    <!-- CORREÇÃO: URL direta para o script -->
-    <script src="/TelaDeUsuario/script.js"></script>
+    <!-- Carregando o JavaScript com o caminho correto via url_for -->
+    <script src="{{ url_for('serve_static_files', filename='TelaDeUsuario/script.js') }}"></script>
 </body>
 </html>

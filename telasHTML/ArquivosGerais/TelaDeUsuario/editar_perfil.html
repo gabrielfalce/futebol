@@ -8,7 +8,7 @@
       CORREÇÃO: Usando url_for para carregar o CSS. 
       O Flask irá gerar o caminho correto, como /assets/TelaDeUsuario/stylesTest.css 
     -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='TelaDeUsuario/stylesTest.css') }}">
+    <link rel="stylesheet" href="{{ url_for('serve_static_files', filename='TelaDeUsuario/editarStyle.css') }}">
     
     <!-- Estilos para o toast de notificação (pode ser movido para o CSS principal) -->
     <style>
@@ -53,7 +53,7 @@
 <body>
     <header>
         <!-- CORREÇÃO: Caminho da imagem de logo com url_for -->
-        <img src="{{ url_for('static', filename='TelaDeUsuario/imagens/bolaLogo.png') }}" alt="Logo" class="logo">
+        <img src="{{ url_for('serve_static_files', filename='TelaDeUsuario/imagens/bolaLogo.png') }}" alt="Logo" class="logo">
         <h1>Editar Perfil</h1>
         <!-- Link para voltar para a página de usuário -->
         <a href="{{ url_for('pagina_usuario') }}" class="back-button">Voltar</a>
@@ -68,7 +68,7 @@
               Usa a imagem do banco de dados ou uma imagem padrão se não houver.
             -->
             <img id="profile-image-preview" 
-                 src="{{ url_for('static', filename=usuario.foto_perfil if usuario.foto_perfil else 'TelaDeUsuario/imagens/user-icon-placeholder.png') }}" 
+                 src="{{ url_for('serve_static_files', filename=usuario.foto_perfil if usuario.foto_perfil else 'TelaDeUsuario/imagens/user-icon-placeholder.png') }}" 
                  alt="Foto de Perfil" 
                  class="profile-pic-large">
             

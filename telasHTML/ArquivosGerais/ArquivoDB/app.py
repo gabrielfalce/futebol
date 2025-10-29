@@ -101,6 +101,11 @@ def cadastro():
     
     return render_template("Cadastrar_templates/cadastrar.html")
 
+# Rota adicional para renderizar a página de cadastro (GET)
+@app.route('/cadastro_page')
+def cadastro_page():
+    return render_template("Cadastrar_templates/cadastrar.html")
+
 @app.route("/inicio")
 def pagina_inicial():
     if 'user_email' not in session:
