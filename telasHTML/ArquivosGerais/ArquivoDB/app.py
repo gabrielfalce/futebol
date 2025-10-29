@@ -23,15 +23,14 @@ app = Flask(
 
 # Configura a chave secreta a partir de variáveis de ambiente para segurança
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "chave_secreta_final_para_debug")
-print(f"Pasta de templates definida como: {TEMPLATE_DIR}")
 
 # --- ROTA DE ASSETS ---
-# Esta rota servirá arquivos a partir da pasta 'telasHTML' inteira, que está um nível acima da pasta de templates.
+# Esta rota servirá arquivos a partir da pasta 'ArquivosGerais'.
+# Exemplo no HTML: <link rel="stylesheet" href="{{ url_for('assets', filename='TelaInicial/style.css') }}">
 @app.route('/assets/<path:filename>')
 def assets(filename):
-    ASSETS_BASE_DIR = os.path.abspath(os.path.join(TEMPLATE_DIR, '..')) # Sobe de 'ArquivosGerais' para 'telasHTML'
-    # O caminho completo do arquivo será, por exemplo, '.../telasHTML/ArquivosGerais/TelaInicial/style.css'
-    return send_from_directory(ASSETS_BASE_DIR, os.path.join('ArquivosGerais', filename))
+    # O send_from_directory vai procurar o 'filename' a partir da base TEMPLATE_DIR ('ArquivosGerais')
+    return send_from_directory(TEMPLATE_DIR, filename)
 
 # --- ROTAS DA APLICAÇÃO ---
 # Como a pasta base de templates agora é 'ArquivosGerais', não precisamos mais desse prefixo nos caminhos.
