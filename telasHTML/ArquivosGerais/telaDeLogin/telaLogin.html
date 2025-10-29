@@ -5,23 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     
-    <!-- CORREÇÃO: URL direta para o CSS -->
-<<<<<<<<< Temporary merge branch 1
+    
     <link rel="stylesheet" href="{{ url_for('static', filename='telaDeLogin/style.css') }}">
-=========
-    <link rel="stylesheet" href="/telaDeLogin/style.css">
->>>>>>>>> Temporary merge branch 2
 </head>
 <body>
     <div class="soccer-ball"></div>
     
-<<<<<<<<< Temporary merge branch 1
+
     <!-- CORREÇÃO: URL direta para a imagem -->
-    <img class="logo" src="{{url_for('static', filename='telaLoading/logo.png')}}" alt="Logotipo Geral da Aplicação">
-=========
-    <!-- CORREÇÃO: Use o logo que existe na pasta telaDeLogin -->
-    <img class="logo" src="/telaDeLogin/logo.png" alt="Logotipo Geral da Aplicação">
->>>>>>>>> Temporary merge branch 2
+    <img class="logo" src="{{url_for('static', filename='telaDeLogin/logo.png')}}" alt="Logotipo Geral da Aplicação">
+
     
     <h1 class="titulo">Login</h1>
     
