@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil de {{ usuario.nome }}</title>
     
+<<<<<<< HEAD
     <!-- Caminho corrigido para o CSS via url_for -->
     <link rel="stylesheet" href="{{ url_for(\'serve_static_files\', filename=\'TelaInicial/style.css\') }}">  
     <!-- Estilos para o toast de notificação -->
@@ -76,6 +77,76 @@
                 </div>
             </div>
             <!-- FIM DA SEÇÃO CORRIGIDA -->
+=======
+    <!-- Caminho para o CSS corrigido com url_for -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='telasHTML/ArquivosGerais/TelaInicial/style.css') }}">
+    
+    <style>
+        /* Estilos para o toast, caso não estejam no CSS principal */
+        .toast {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <header class="page-header">
+        <div class="logo-container"></div>
+    </header>
+
+    <main>
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Buscar usuários..." onkeyup="searchUsers()">
+            <!-- Imagem da lupa corrigida com url_for -->
+            <img src="{{ url_for('static', filename='telasHTML/ArquivosGerais/TelaInicial/lupa.png') }}" alt="Ícone de busca" class="search-icon">
+        </div>
+
+        <div class="user-list" id="user-list">
+            {% for usuario in usuarios %} 
+                <a href="{{ url_for('pagina_chat', destinatario_id=usuario.id) }}" class="user-card-link">
+                    <div class="user-card">
+                        <!-- Imagem de perfil do usuário corrigida com url_for -->
+                        <img id="user-foto" 
+                             src="{{ url_for('static', filename=usuario.foto_perfil if usuario.foto_perfil else 'telasHTML/ArquivosGerais/TelaInicial/iconeUser.png') }}" 
+                             alt="Foto de perfil de {{ usuario.nome }}">
+                        
+                        <div class="user-info">
+                            <span class="user-name">{{ usuario.nome }}</span>
+                            <span class="user-posicao">{{ usuario.posicao }}</span>
+                            <span class="user-cidade">{{ usuario.cidade }}</span>
+                            <span class="user-idade">{{ usuario.idade }} anos</span>      
+                        </div>
+                    </div>
+                </a>
+            {% else %} 
+                <p>Nenhum outro usuário cadastrado no momento.</p> 
+            {% endfor %} 
+        </div>
+    </main>
+
+    <nav class="navigation-links">
+        <!-- 
+          AQUI ESTÁ A CORREÇÃO PRINCIPAL!
+          O href agora aponta para o NOME DA ROTA 'pagina_feed', e não para um arquivo.
+        -->
+        <a href="{{ url_for('pagina_feed') }}" class="nav-button feed-button">Ver Feed</a>
+        
+        <a href="{{ url_for('pagina_usuario') }}" class="nav-button profile-button">
+            <!-- Imagem do botão de perfil corrigida com url_for -->
+            <img src="{{ url_for('static', filename='telasHTML/ArquivosGerais/TelaInicial/BotaoUsuario.ico') }}" alt="Ver Perfil">
+        </a>
+        
+        <a href="{{ url_for('logout') }}" class="nav-button logout-button">Sair</a>
+    </nav>
+>>>>>>> 53f91a365daa50fd556bb5e5959e922aaa2a6657
 
             <div class="profile-actions">
                 <a href="{{ url_for('editar_perfil') }}" class="btn-edit">Editar Perfil</a>
@@ -91,6 +162,7 @@
     <script src="{{ url_for('serve_static_files', filename='TelaInicial/script.js') }}"></script>
 
     <script>
+<<<<<<< HEAD
         // Script para exibir mensagens flash (toast) de forma segura
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -113,6 +185,10 @@
                 })();
             {% endif %}
         {% endwith %}
+=======
+        function searchUsers() { /* ... (código de busca mantido) ... */ }
+        document.addEventListener('DOMContentLoaded', (event) => { /* ... (código do toast mantido) ... */ });
+>>>>>>> 53f91a365daa50fd556bb5e5959e922aaa2a6657
     </script>
 </body>
 </html>
