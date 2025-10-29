@@ -8,24 +8,19 @@ from datetime import datetime
 load_dotenv()
 
 # --- CONFIGURAÇÃO PADRÃO E ROBUSTA DO FLASK ---
-# O app.py está em '.../ArquivoDB'.
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# A pasta que contém TUDO (templates e assets) é a 'ArquivosGerais'.
-# Ela está um nível acima do app.py.
 BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..'))
 
 app = Flask(
     __name__,
-    template_folder=BASE_DIR,  # Define 'ArquivosGerais' como a pasta de templates
-    static_folder=BASE_DIR,    # Define a mesma 'ArquivosGerais' como a pasta de arquivos estáticos
-    static_url_path='/static'  # A URL para os assets será, por exemplo, /static/telaDeLogin/style.css
+    template_folder=BASE_DIR,
+    static_folder=BASE_DIR,
+    static_url_path=''
 )
 
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "minha_ultima_chave_secreta_agora_vai")
 
 # --- ROTAS DA APLICAÇÃO ---
-# Os caminhos dentro de render_template() são relativos à pasta 'ArquivosGerais'.
 
 @app.route("/")
 def index():
@@ -50,7 +45,6 @@ def login():
             return redirect(url_for('tela_de_loading'))
         else:
             flash('Email ou senha incorretos. Tente novamente.', 'danger')
-    # CORRIGIDO: caminho atualizado para a estrutura real
     return render_template('telaDeLogin/telaLogin.html')
 
 @app.route('/cadastro', methods=['GET', 'POST'])
@@ -67,7 +61,6 @@ def cadastro():
             flash("Erro no cadastro: Todos os campos são obrigatórios.", 'danger')
             return redirect(url_for('cadastro'))
         try:
-            # Tenta múltiplos formatos de data
             data_obj = None
             for fmt in ('%Y-%m-%d', '%d/%m/%Y'):
                 try:
@@ -95,7 +88,6 @@ def cadastro():
         else:
             flash(mensagem, 'danger')
             return redirect(url_for('cadastro'))
-    # CORRIGIDO: caminho atualizado para a estrutura real
     return render_template("cadastrar_templates/cadastrar.html")
 
 @app.route("/inicio")
@@ -103,7 +95,6 @@ def pagina_inicial():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     lista_de_usuarios = get_all_users()
-    # CORRIGIDO: caminho atualizado para a estrutura real
     return render_template("telaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
 
 @app.route("/usuario")
@@ -111,14 +102,12 @@ def pagina_usuario():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     user_data = get_user_by_email(session['user_email'])
-    # CORRIGIDO: caminho atualizado para a estrutura real
     return render_template("telaDeUsuario/TelaUser.html", usuario=user_data)
 
 @app.route("/loading")
 def tela_de_loading():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    # CORRIGIDO: caminho atualizado para a estrutura real
     return render_template('telaLoading/Telaloading.html')
 
 @app.route("/logout")
@@ -129,37 +118,24 @@ def logout():
 
 @app.route("/esqueci_senha", methods=['GET', 'POST'])
 def esqueci_senha():
-    # Adicione a lógica de POST aqui se necessário
-    # CORRIGIDO: caminho atualizado para a estrutura real
     return render_template("recuperarSenha/esqueci_senha.html")
 
 @app.route("/chat/<int:destinatario_id>")
 def pagina_chat(destinatario_id):
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    # Adicione a lógica para buscar dados do usuário aqui
-    # CORRIGIDO: caminho atualizado para a estrutura real
     return render_template("telaChat/chat.html", destinatario_id=destinatario_id)
 
 @app.route("/feed")
 def pagina_feed():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    # CORRIGIDO: caminho atualizado para a estrutura real
     return render_template("telaFeed/feed.html")
 
-# Rota para servir arquivos estáticos (caso necessário)
-@app.route('/assets/<path:filename>')
-def serve_static(filename):
-    return send_from_directory(os.path.join(BASE_DIR, 'assets'), filename)
-
-# Rota para editar perfil (exemplo)
-@app.route("/editar_perfil")
-def editar_perfil():
-    if 'user_email' not in session:
-        return redirect(url_for('login'))
-    # Aqui você renderizaria um template de edição
-    return "Página de Edição de Perfil (a ser criada)"
+# Rota para servir arquivos estáticos
+@app.route('/<path:filename>')
+def serve_static_files(filename):
+    return send_from_directory(BASE_DIR, filename)
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8080))
