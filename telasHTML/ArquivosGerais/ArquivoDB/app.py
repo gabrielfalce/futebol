@@ -15,12 +15,14 @@ from werkzeug.utils import secure_filename
 
 load_dotenv()
 
-# === CONFIGURAÇÃO DE DIRETÓRIOS ===
+# === CONFIGURAÇÃO DE DIRETÓRIOS (CORRIGIDA) ===
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
-BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..'))  # "futebol-2"
+# CORREÇÃO: Sobe 3 níveis (.., .., ..) para alcançar o diretório raiz do projeto
+# Isso resolve o TemplateNotFound, pois BASE_DIR agora é o diretório que contém a pasta 'telasHTML'
+BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..', '..', '..')) 
 
 # Nota: template_folder é setado para BASE_DIR, então todos os caminhos em render_template
-# devem ser relativos a BASE_DIR (ex: telasHTML/...)
+# (ex: 'telasHTML/ArquivosGerais/...') devem ser relativos a BASE_DIR
 app = Flask(
     __name__,
     template_folder=BASE_DIR
@@ -38,7 +40,7 @@ def serve_static_files(filename):
     return "Arquivo não encontrado", 404
 
 
-# === ROTAS DA APLICAÇÃO ===
+# === ROTAS DA APLICAÇÃO (sem alterações, pois os caminhos já estavam corretos para este BASE_DIR) ===
 @app.route("/")
 def index():
     if 'user_email' in session:
@@ -118,14 +120,11 @@ def cadastro():
             flash(mensagem, 'danger')
             return redirect(url_for('cadastro'))
     
-    # Esta rota é a rota POST para processar o formulário.
-    # O GET para renderizar o formulário deve ser feito pela rota '/cadastro_page'.
     return render_template("Cadastrar_templates/cadastrar.html")
 
 
 @app.route('/cadastro_page')
 def cadastro_page():
-    # Rota GET para renderizar a página de cadastro.
     return render_template("Cadastrar_templates/cadastrar.html")
 
 
@@ -133,9 +132,7 @@ def cadastro_page():
 def pagina_inicial():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    # A função get_all_users() agora calcula a idade
     lista_de_usuarios = get_all_users()
-    # CORREÇÃO: Usando caminho completo para o template
     return render_template("telasHTML/ArquivosGerais/TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
 
 
@@ -143,7 +140,6 @@ def pagina_inicial():
 def pagina_usuario():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    # A função get_user_by_email() agora calcula a idade
     user_data = get_user_by_email(session['user_email'])
     return render_template("TelaDeUsuario/TelaUser.html", usuario=user_data)
 
@@ -153,7 +149,6 @@ def editar_perfil():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     
-    # A função get_user_by_email() agora calcula a idade
     user_data = get_user_by_email(session['user_email'])
     
     if request.method == 'POST':
@@ -231,7 +226,6 @@ def upload_image():
 def tela_de_loading():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    # CORREÇÃO CRÍTICA: Usando caminho completo para o template
     return render_template('telasHTML/ArquivosGerais/TelaLoading/Telaloading.html') 
 
 
