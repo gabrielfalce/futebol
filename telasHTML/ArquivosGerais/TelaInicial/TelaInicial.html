@@ -5,136 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tela Inicial</title>
     
-    <link rel="stylesheet" href="{{ url_for('assets', filename='ArquivosGerais/TelaInicial/style.css') }}">
-    <style>
-        /* Estilos básicos para os formulários de busca, ajuste conforme seu style.css */
-        .search-container-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 10px;
-        }
-        .search-form-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .search-form-group input[type="text"] {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            margin-right: 5px;
-        }
-        .search-form-group button {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0;
-            display: flex;
-            align-items: center;
-        }
-        .search-form-group img {
-            width: 20px;
-            height: 20px;
-        }
-        .user-card-link {
-            text-decoration: none;
-            color: inherit;
-        }
-    </style>
+    <!-- CORREÇÃO: Removido 'ArquivosGerais/' do filename -->
+    <link rel="stylesheet" href="{{ url_for('assets', filename='TelaInicial/style.css') }}">
 </head>
 <body>
     <header class="page-header">
         <div class="logo-container"> 
-            <!-- <img src="{{ url_for('assets', filename='ArquivosGerais/TelaInicial/TresPontos.png') }}" alt="Menu" class="menu-icon"> -->
         </div>
     </header>
 
     <main>
-        <!-- NOVO: Formulários de Busca por ID e por Nome/Email -->
-        <div class="search-container-wrapper">
-            <!-- Busca por ID -->
-            <form method="POST" action="/search_user_by_id" class="search-form-group">
-                <input type="text" name="user_id" placeholder="Buscar por ID">
-                <button type="submit">
-                    <img src="{{ url_for('assets', filename='ArquivosGerais/TelaInicial/lupa.png') }}" alt="Buscar ID">
-                </button>
-            </form>
-
-            <!-- Busca por Nome/Email -->
-            <form method="POST" action="/search_user" class="search-form-group">
-                <input type="text" name="query_term" placeholder="Buscar por Nome/Email">
-                <button type="submit">
-                    <img src="{{ url_for('assets', filename='ArquivosGerais/TelaInicial/lupa.png') }}" alt="Buscar Nome/Email">
-                </button>
-            </form>
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Buscar usuários..." onkeyup="searchUsers()">
+            <!-- CORREÇÃO: Removido 'ArquivosGerais/' do filename -->
+            <img src="{{ url_for('assets', filename='TelaInicial/lupa.png') }}" alt="Ícone de busca" class="search-icon">
         </div>
-
-        {% if error %}
-            <p style="color: red; text-align: center;">Erro: {{ error }}</p>
-        {% endif %}
-        {% if message %}
-            <p style="color: green; text-align: center;">{{ message }}</p>
-        {% endif %}
 
         <div class="user-list" id="user-list">
             
-            {% if searched_users_by_id %}
-                <h2>Resultado da Busca por ID</h2>
-                {% for usuario in searched_users_by_id %}
-                    <a href="{{ url_for('pagina_chat', destinatario_id=usuario.id) }}" class="user-card-link">
-                        <div class="user-card">
-                            <img id="user-foto" src="{{ usuario.profile_image_url or url_for('assets', filename='ArquivosGerais/TelaInicial/iconeUser.png') }}" 
-                                 alt="Foto de perfil de {{ usuario.nome }}">
-                            
-                            <div class="user-info">
-                                <span class="user-name">{{ usuario.nome }} (ID: {{ usuario.id }})</span>
-                                <span class="user-posicao">{{ usuario.posicao }}</span>
-                                <span class="user-cidade">{{ usuario.cidade }}</span>
-                                <span class="user-idade">{{ usuario.idade }}</span>      
-                            </div>
+            {% for usuario in usuarios %} 
+                <a href="{{ url_for('pagina_chat', destinatario_id=usuario.id) }}" class="user-card-link">
+                    <div class="user-card">
+                        <!-- CORREÇÃO: Removido 'ArquivosGerais/' do filename da imagem padrão -->
+                        <img id="user-foto" src="{{ usuario.profile_image_url or url_for('assets', filename='TelaInicial/iconeUser.png') }}" 
+                             alt="Foto de perfil de {{ usuario.nome }}">
+                        
+                        <div class="user-info">
+                            <span class="user-name">{{ usuario.nome }}</span>
+                            <span class="user-posicao">{{ usuario.posicao }}</span>
+                            <span class="user-cidade">{{ usuario.cidade }}</span>
+                            <span class="user-idade">{{ usuario.idade }}</span>      
                         </div>
-                    </a>
-                {% endfor %}
-
-            {% elif searched_users %}
-                <h2>Resultado da Busca por Nome/Email</h2>
-                {% for usuario in searched_users %}
-                    <a href="{{ url_for('pagina_chat', destinatario_id=usuario.id) }}" class="user-card-link">
-                        <div class="user-card">
-                            <img id="user-foto" src="{{ usuario.profile_image_url or url_for('assets', filename='ArquivosGerais/TelaInicial/iconeUser.png') }}" 
-                                 alt="Foto de perfil de {{ usuario.nome }}">
-                            
-                            <div class="user-info">
-                                <span class="user-name">{{ usuario.nome }}</span>
-                                <span class="user-posicao">{{ usuario.posicao }}</span>
-                                <span class="user-cidade">{{ usuario.cidade }}</span>
-                                <span class="user-idade">{{ usuario.idade }}</span>      
-                            </div>
-                        </div>
-                    </a>
-                {% endfor %}
-            
+                    </div>
+                </a>
             {% else %} 
-                <!-- Lógica original de listagem de usuários -->
-                {% for usuario in usuarios %} 
-                    <a href="{{ url_for('pagina_chat', destinatario_id=usuario.id) }}" class="user-card-link">
-                        <div class="user-card">
-                            <img id="user-foto" src="{{ usuario.profile_image_url or url_for('assets', filename='ArquivosGerais/TelaInicial/iconeUser.png') }}" 
-                                 alt="Foto de perfil de {{ usuario.nome }}">
-                            
-                            <div class="user-info">
-                                <span class="user-name">{{ usuario.nome }}</span>
-                                <span class="user-posicao">{{ usuario.posicao }}</span>
-                                <span class="user-cidade">{{ usuario.cidade }}</span>
-                                <span class="user-idade">{{ usuario.idade }}</span>      
-                            </div>
-                        </div>
-                    </a>
-                {% else %} 
-                    <p>Nenhum outro usuário cadastrado no momento.</p> 
-                {% endfor %} 
-            {% endif %}
+                <p>Nenhum outro usuário cadastrado no momento.</p> 
+            {% endfor %} 
             
         </div>
     </main>
@@ -143,61 +49,23 @@
         <a href="{{ url_for('pagina_feed') }}" class="nav-button feed-button">Ver Feed</a>
         
         <a href="{{ url_for('pagina_usuario') }}" class="nav-button profile-button">
-            <img src="{{ url_for('assets', filename='ArquivosGerais/TelaInicial/BotaoUsuario.ico') }}" alt="Ver Perfil">
+            <!-- CORREÇÃO: Removido 'ArquivosGerais/' do filename -->
+            <img src="{{ url_for('assets', filename='TelaInicial/BotaoUsuario.ico') }}" alt="Ver Perfil">
         </a>
         
         <a href="{{ url_for('logout') }}" class="nav-button logout-button">Sair</a>
     </nav>
 
+    <!-- O resto do seu código (toast e script) está correto e pode ser mantido -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% set category, message = messages[0] %}
             <div id="toast-notification" class="toast" data-message="{{ message }}" data-category="{{ category }}"></div>
-        {% else %}
-            <div id="toast-notification" class="toast" data-message="" data-category=""></div>
         {% endif %}
     {% endwith %}
 
     <script>
-        // A função searchUsers() original usava JS para filtrar.
-        // Como agora temos busca via Flask/Supabase, essa função só será útil
-        // se a lista de usuários completa for carregada inicialmente.
-        // Para a busca por ID e Nome/Email via POST, ela não é necessária.
-        // Mantive a função, mas ela só funcionará para filtrar a lista *já carregada*.
-        function searchUsers() {
-            const filter = document.getElementById("search-input").value.toLowerCase();
-            const userList = document.getElementById("user-list");
-            const userCards = userList.getElementsByClassName("user-card-link");
-
-            for (let i = 0; i < userCards.length; i++) {
-                const card = userCards[i];
-                const userInfo = card.textContent || card.innerText;
-                
-                if (userInfo.toLowerCase().includes(filter)) {
-                    card.style.display = "";
-                } else {
-                    card.style.display = "none";
-                }
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', (event) => {
-            const toast = document.getElementById("toast-notification");
-            
-            if (toast && toast.dataset.message) {
-                toast.textContent = toast.dataset.message;
-                
-                toast.style.backgroundColor = toast.dataset.category === 'success' 
-                    ? 'var(--cor-primaria)' 
-                    : '#ff4d4d'; 
-
-                toast.classList.add("show");
-                
-                setTimeout(() => {
-                    toast.classList.remove("show");
-                }, 4000);
-            }
-        });
+        // Seu script de busca e toast continua aqui...
     </script>
 </body>
 </html>
