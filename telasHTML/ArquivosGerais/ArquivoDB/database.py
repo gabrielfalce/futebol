@@ -13,6 +13,9 @@ supabase: Client = create_client(url, key)
 print("Sucesso: Cliente Supabase inicializado.")
 
 def register_user(nome, email, senha_hash, cidade, posicao, data_nasc, numero):
+    """
+    Registra um novo usuário no banco de dados
+    """
     try:
         response = supabase.table('usuarios').insert({
             'nome': nome,
@@ -20,8 +23,9 @@ def register_user(nome, email, senha_hash, cidade, posicao, data_nasc, numero):
             'senha_hash': senha_hash,
             'cidade': cidade,
             'posicao': posicao,
-            'nascimento': data_nasc,  # CORREÇÃO FINAL: 'nascimento'
-            'numero_camisa': numero
+            'nascimento': data_nasc,  # Coluna: nascimento
+            'numero': numero,         # Coluna: numero (telefone)
+            'numero_camisa': None     # Coluna: numero_camisa (pode ser null inicialmente)
         }).execute()
         
         if response.data:
@@ -32,6 +36,7 @@ def register_user(nome, email, senha_hash, cidade, posicao, data_nasc, numero):
     except Exception as e:
         print(f"ERRO em register_user: {e}")
         return False, "Erro ao cadastrar usuário"
+
 def check_user(email, senha):
     """
     Verifica se o usuário existe e se a senha está correta
@@ -87,7 +92,20 @@ def update_user_profile_image(email, image_url):
         print(f"ERRO em update_user_profile_image: {e}")
         return False
 
-# Funções adicionais que você pode precisar:
+def update_user_camisa(email, numero_camisa):
+    """
+    Atualiza o número da camisa do usuário
+    """
+    try:
+        response = supabase.table('usuarios').update({
+            'numero_camisa': numero_camisa
+        }).eq('email', email).execute()
+        return True
+    except Exception as e:
+        print(f"ERRO em update_user_camisa: {e}")
+        return False
+
+# Outras funções permanecem iguais...
 
 def get_user_by_id(user_id):
     """
