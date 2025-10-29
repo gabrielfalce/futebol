@@ -16,31 +16,30 @@ from werkzeug.utils import secure_filename
 load_dotenv()
 
 # === CONFIGURAÇÃO DE DIRETÓRIOS (CORRIGIDA) ===
+# Se o app.py estiver em /src/telasHTML/ArquivosGerais/ArquivoDB/app.py, 
+# precisamos subir 3 níveis para chegar ao diretório raiz /src.
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
-# CORREÇÃO: Sobe 3 níveis (.., .., ..) para alcançar o diretório raiz do projeto
-# Isso resolve o TemplateNotFound, pois BASE_DIR agora é o diretório que contém a pasta 'telasHTML'
 BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..', '..', '..')) 
 
-# Nota: template_folder é setado para BASE_DIR, então todos os caminhos em render_template
-# (ex: 'telasHTML/ArquivosGerais/...') devem ser relativos a BASE_DIR
 app = Flask(
     __name__,
+    # Flask procurará templates a partir da raiz do projeto (BASE_DIR)
     template_folder=BASE_DIR
 )
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "chave_padrao_para_dev")
 
 # === ROTA GENÉRICA PARA SERVIR QUALQUER ARQUIVO ESTÁTICO ===
-# Nome da função/endpoint: serve_static_files
+# Permite acessar arquivos usando o caminho completo a partir do BASE_DIR 
+# Ex: url_for('serve_static_files', filename='telasHTML/ArquivosGerais/...')
 @app.route('/<path:filename>')
 def serve_static_files(filename):
     file_path = os.path.join(BASE_DIR, filename)
     if os.path.isfile(file_path):
-        # Serve o arquivo a partir da raiz do projeto (BASE_DIR)
         return send_from_directory(BASE_DIR, filename)
     return "Arquivo não encontrado", 404
 
 
-# === ROTAS DA APLICAÇÃO (sem alterações, pois os caminhos já estavam corretos para este BASE_DIR) ===
+# === ROTAS DA APLICAÇÃO ===
 @app.route("/")
 def index():
     if 'user_email' in session:
@@ -66,7 +65,7 @@ def login():
         else:
             flash('Email ou senha incorretos. Tente novamente.', 'danger')
             
-    # CORREÇÃO: Usando caminho completo para o template
+    # Caminho corrigido para o template
     return render_template('telasHTML/ArquivosGerais/telaDeLogin/telaLogin.html')
 
 
@@ -120,12 +119,8 @@ def cadastro():
             flash(mensagem, 'danger')
             return redirect(url_for('cadastro'))
     
-    return render_template("Cadastrar_templates/cadastrar.html")
-
-
-@app.route('/cadastro_page')
-def cadastro_page():
-    return render_template("Cadastrar_templates/cadastrar.html")
+    # Caminho corrigido para o template de cadastro
+    return render_template("telasHTML/Cadastrar_templates/cadastrar.html")
 
 
 @app.route("/inicio")
@@ -133,6 +128,7 @@ def pagina_inicial():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     lista_de_usuarios = get_all_users()
+    # Caminho corrigido para o template
     return render_template("telasHTML/ArquivosGerais/TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
 
 
@@ -141,7 +137,8 @@ def pagina_usuario():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     user_data = get_user_by_email(session['user_email'])
-    return render_template("TelaDeUsuario/TelaUser.html", usuario=user_data)
+    # Caminho corrigido para o template
+    return render_template("telasHTML/TelaDeUsuario/TelaUser.html", usuario=user_data)
 
 
 @app.route("/editar_perfil", methods=['GET', 'POST'])
@@ -172,7 +169,8 @@ def editar_perfil():
         
         return redirect(url_for('pagina_usuario'))
     
-    return render_template("TelaDeUsuario/editar_perfil.html", usuario=user_data)
+    # Caminho corrigido para o template
+    return render_template("telasHTML/TelaDeUsuario/editar_perfil.html", usuario=user_data)
 
 
 # === UPLOAD DE IMAGENS ===
@@ -199,15 +197,15 @@ def upload_image():
 
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        # O UPLOAD_FOLDER deve ser acessível publicamente via a rota serve_static_files
-        upload_folder = os.path.join(APP_DIR, 'uploads', 'profile_pics') 
-        os.makedirs(upload_folder, exist_ok=True)
         
-        file_path = os.path.join(upload_folder, filename)
+        # O UPLOAD_FOLDER agora é relativo ao BASE_DIR
+        upload_dir = os.path.join(BASE_DIR, 'uploads', 'profile_pics')
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        file_path = os.path.join(upload_dir, filename)
         file.save(file_path)
 
-        # O caminho relativo salvo no DB deve ser acessível via a rota serve_static_files
-        # Ex: http://<app>/uploads/profile_pics/nome.png
+        # O caminho relativo salvo no DB para ser acessível via serve_static_files
         relative_path = os.path.join('uploads', 'profile_pics', filename).replace("\\", "/")
         
         sucesso = update_user_profile_image(session['user_email'], relative_path)
@@ -226,6 +224,7 @@ def upload_image():
 def tela_de_loading():
     if 'user_email' not in session:
         return redirect(url_for('login'))
+    # Caminho corrigido para o template
     return render_template('telasHTML/ArquivosGerais/TelaLoading/Telaloading.html') 
 
 
@@ -238,23 +237,27 @@ def logout():
 
 @app.route("/esqueci_senha", methods=['GET', 'POST'])
 def esqueci_senha():
-    return render_template("RecuperarSenha/esqueci_senha.html")
+    # Caminho ajustado para consistência
+    return render_template("telasHTML/RecuperarSenha/esqueci_senha.html")
 
 
 @app.route("/chat/<int:destinatario_id>")
 def pagina_chat(destinatario_id):
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    return render_template("TelaChat/chat.html", destinatario_id=destinatario_id)
+    # Caminho ajustado para consistência
+    return render_template("telasHTML/TelaChat/chat.html", destinatario_id=destinatario_id)
 
 
 @app.route("/feed")
 def pagina_feed():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    return render_template("TelaFeed/feed.html")
+    # Caminho ajustado para consistência
+    return render_template("telasHTML/TelaFeed/feed.html")
 
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8080))
+    # Para o Render, use host='0.0.0.0'
     app.run(host='0.0.0.0', port=port, debug=True)
