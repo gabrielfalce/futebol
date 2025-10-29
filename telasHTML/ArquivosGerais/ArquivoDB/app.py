@@ -88,7 +88,7 @@ def cadastro():
         else:
             flash(mensagem, 'danger')
             return redirect(url_for('cadastro'))
-    return render_template("cadastrar_templates/cadastrar.html")
+    return render_template("Cadastrar_templates/cadastrar.html")
 
 @app.route("/inicio")
 def pagina_inicial():
