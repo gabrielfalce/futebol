@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tela Inicial</title>
-    
-    <!-- Caminho para o CSS corrigido com url_for -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='telasHTML/ArquivosGerais/TelaInicial/style.css') }}">
-    
+
+    <!-- Caminho para o CSS via Flask -->
+    <link rel="stylesheet" href="{{ url_for('serve_static_files', filename='telasHTML/ArquivosGerais/TelaInicial/style.css') }}">
+
     <style>
-        /* Estilos para o toast, caso não estejam no CSS principal */
         .toast {
             display: none;
             position: fixed;
@@ -32,49 +31,39 @@
     <main>
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Buscar usuários..." onkeyup="searchUsers()">
-            <!-- Imagem da lupa corrigida com url_for -->
-            <img src="{{ url_for('static', filename='telasHTML/ArquivosGerais/TelaInicial/lupa.png') }}" alt="Ícone de busca" class="search-icon">
+            <img src="{{ url_for('serve_static_files', filename='telasHTML/ArquivosGerais/TelaInicial/lupa.png') }}" alt="Ícone de busca" class="search-icon">
         </div>
 
         <div class="user-list" id="user-list">
-            {% for usuario in usuarios %} 
-                <a href="{{ url_for('pagina_chat', destinatario_id=usuario.id) }}" class="user-card-link">
+            {% for usuario in usuarios %}
+                <a href="{{ url_for('pagina_usuario') }}" class="user-card-link">
                     <div class="user-card">
-                        <!-- Imagem de perfil do usuário corrigida com url_for -->
                         <img id="user-foto" 
-                             src="{{ url_for('static', filename=usuario.foto_perfil if usuario.foto_perfil else 'telasHTML/ArquivosGerais/TelaInicial/iconeUser.png') }}" 
+                             src="{{ url_for('serve_static_files', filename=usuario.foto_perfil if usuario.foto_perfil else 'telasHTML/ArquivosGerais/TelaInicial/iconeUser.png') }}" 
                              alt="Foto de perfil de {{ usuario.nome }}">
                         
                         <div class="user-info">
                             <span class="user-name">{{ usuario.nome }}</span>
                             <span class="user-posicao">{{ usuario.posicao }}</span>
                             <span class="user-cidade">{{ usuario.cidade }}</span>
-                            <span class="user-idade">{{ usuario.idade }} anos</span>      
+                            <span class="user-idade">{{ usuario.idade }} anos</span>
                         </div>
                     </div>
                 </a>
-            {% else %} 
-                <p>Nenhum outro usuário cadastrado no momento.</p> 
-            {% endfor %} 
+            {% else %}
+                <p>Nenhum outro usuário cadastrado no momento.</p>
+            {% endfor %}
         </div>
     </main>
 
     <nav class="navigation-links">
-        <!-- 
-          AQUI ESTÁ A CORREÇÃO PRINCIPAL!
-          O href agora aponta para o NOME DA ROTA 'pagina_feed', e não para um arquivo.
-        -->
         <a href="{{ url_for('pagina_feed') }}" class="nav-button feed-button">Ver Feed</a>
-        
         <a href="{{ url_for('pagina_usuario') }}" class="nav-button profile-button">
-            <!-- Imagem do botão de perfil corrigida com url_for -->
-            <img src="{{ url_for('static', filename='telasHTML/ArquivosGerais/TelaInicial/BotaoUsuario.ico') }}" alt="Ver Perfil">
+            <img src="{{ url_for('serve_static_files', filename='telasHTML/ArquivosGerais/TelaInicial/BotaoUsuario.ico') }}" alt="Ver Perfil">
         </a>
-        
         <a href="{{ url_for('logout') }}" class="nav-button logout-button">Sair</a>
     </nav>
 
-    <!-- Toast para mensagens flash -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% set category, message = messages[0] %}
@@ -83,8 +72,23 @@
     {% endwith %}
 
     <script>
-        function searchUsers() { /* ... (código de busca mantido) ... */ }
-        document.addEventListener('DOMContentLoaded', (event) => { /* ... (código do toast mantido) ... */ });
+        function searchUsers() {
+            const input = document.getElementById('search-input').value.toLowerCase();
+            const users = document.querySelectorAll('.user-card');
+            users.forEach(user => {
+                const name = user.querySelector('.user-name').textContent.toLowerCase();
+                user.style.display = name.includes(input) ? 'block' : 'none';
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const toast = document.getElementById('toast-notification');
+            if (toast) {
+                toast.textContent = toast.dataset.message;
+                toast.style.display = 'block';
+                setTimeout(() => toast.style.display = 'none', 3000);
+            }
+        });
     </script>
 </body>
 </html>

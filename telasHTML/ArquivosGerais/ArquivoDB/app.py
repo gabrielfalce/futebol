@@ -8,27 +8,33 @@ from werkzeug.utils import secure_filename
 
 load_dotenv()
 
-# --- CONFIGURAÇÃO AJUSTADA PARA A SUA ESTRUTURA DE ARQUIVOS ---
+# === CONFIGURAÇÃO DE DIRETÓRIOS ===
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
-# BASE_DIR agora aponta para a pasta que contém todas as outras (TelaDeUsuario, TelaInicial, etc.)
-BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..')) 
+BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..'))  # "futebol-2"
 
 app = Flask(
     __name__,
-    template_folder=BASE_DIR, # Continua apontando para a raiz para encontrar os HTMLs
-    static_url_path='/assets' # Define um prefixo ÚNICO para arquivos estáticos
+    template_folder=BASE_DIR  # Flask vai procurar HTMLs dentro de telasHTML e suas subpastas
 )
-app.static_folder = BASE_DIR # Diz ao Flask que a pasta estática também é a raiz
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "chave_padrao_para_dev")
 
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "minha_ultima_chave_secreta_agora_vai")
+# === ROTA GENÉRICA PARA SERVIR QUALQUER ARQUIVO ===
+# Assim você pode acessar diretamente qualquer CSS, JS ou imagem dentro de telasHTML/...
+@app.route('/<path:filename>')
+def serve_static_files(filename):
+    file_path = os.path.join(BASE_DIR, filename)
+    if os.path.isfile(file_path):
+        return send_from_directory(BASE_DIR, filename)
+    return "Arquivo não encontrado", 404
 
-# --- ROTAS DA APLICAÇÃO (CÓDIGO ORIGINAL MANTIDO) ---
 
+# === ROTAS DA APLICAÇÃO ===
 @app.route("/")
 def index():
     if 'user_email' in session:
         return redirect(url_for('pagina_inicial'))
     return redirect(url_for('login'))
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -48,6 +54,7 @@ def login():
         else:
             flash('Email ou senha incorretos. Tente novamente.', 'danger')
     return render_template('telaDeLogin/telaLogin.html')
+
 
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
@@ -101,12 +108,14 @@ def cadastro():
     
     return render_template("Cadastrar_templates/cadastrar.html")
 
+
 @app.route("/inicio")
 def pagina_inicial():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     lista_de_usuarios = get_all_users()
-    return render_template("TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
+    return render_template("telasHTML/ArquivosGerais/TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
+
 
 @app.route("/usuario")
 def pagina_usuario():
@@ -114,6 +123,7 @@ def pagina_usuario():
         return redirect(url_for('login'))
     user_data = get_user_by_email(session['user_email'])
     return render_template("TelaDeUsuario/TelaUser.html", usuario=user_data)
+
 
 @app.route("/editar_perfil", methods=['GET', 'POST'])
 def editar_perfil():
@@ -145,17 +155,16 @@ def editar_perfil():
     
     return render_template("TelaDeUsuario/editar_perfil.html", usuario=user_data)
 
-# --- INÍCIO DO CÓDIGO ADICIONADO PARA CORRIGIR O ERRO ---
 
+# === UPLOAD DE IMAGENS ===
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 def allowed_file(filename):
-    """Verifica se a extensão do arquivo é permitida."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 @app.route('/upload_image', methods=['POST'])
 def upload_image():
-    """Rota para lidar com o upload da imagem de perfil."""
     if 'user_email' not in session:
         return jsonify({'error': 'Não autorizado'}), 401
 
@@ -171,15 +180,12 @@ def upload_image():
 
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        
-        # Salva a imagem na pasta de onde o app está rodando (ex: 'src/uploads/profile_pics')
         upload_folder = os.path.join(APP_DIR, 'uploads', 'profile_pics')
         os.makedirs(upload_folder, exist_ok=True)
         
         file_path = os.path.join(upload_folder, filename)
         file.save(file_path)
 
-        # O caminho salvo no banco será relativo à pasta 'src', ex: 'uploads/profile_pics/foto.jpg'
         relative_path = os.path.join('uploads', 'profile_pics', filename).replace("\\", "/")
         
         sucesso = update_user_profile_image(session['user_email'], relative_path)
@@ -193,14 +199,13 @@ def upload_image():
         flash('Formato de arquivo inválido! Use PNG, JPG, JPEG ou GIF.', 'danger')
         return redirect(url_for('editar_perfil'))
 
-# --- FIM DO CÓDIGO ADICIONADO ---
 
 @app.route("/loading")
 def tela_de_loading():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    # O template correto parece ser com 'l' minúsculo, como no seu primeiro código
     return render_template('TelaLoading/Telaloading.html') 
+
 
 @app.route("/logout")
 def logout():
@@ -208,9 +213,11 @@ def logout():
     flash('Sessão encerrada com sucesso.', 'success')
     return redirect(url_for('login'))
 
+
 @app.route("/esqueci_senha", methods=['GET', 'POST'])
 def esqueci_senha():
     return render_template("RecuperarSenha/esqueci_senha.html")
+
 
 @app.route("/chat/<int:destinatario_id>")
 def pagina_chat(destinatario_id):
@@ -218,17 +225,13 @@ def pagina_chat(destinatario_id):
         return redirect(url_for('login'))
     return render_template("TelaChat/chat.html", destinatario_id=destinatario_id)
 
+
 @app.route("/feed")
 def pagina_feed():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     return render_template("TelaFeed/feed.html")
 
-# Rota para servir arquivos estáticos (MANTIDA E AJUSTADA)
-# Agora ela responde em /assets/caminho/para/o/arquivo.css
-@app.route('/assets/<path:filename>')
-def serve_static_files(filename):
-    return send_from_directory(BASE_DIR, filename)
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8080))
