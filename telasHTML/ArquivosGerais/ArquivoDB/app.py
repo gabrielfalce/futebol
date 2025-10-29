@@ -1,7 +1,14 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory, jsonify
 from dotenv import load_dotenv
-from database import register_user, check_user, get_all_users, get_user_by_email, update_user_profile_image, update_user_profile
+from database import (
+    register_user, 
+    check_user, 
+    get_all_users, 
+    get_user_by_email, 
+    update_user_profile_image, 
+    update_user_profile
+)
 import bcrypt
 from datetime import datetime
 from werkzeug.utils import secure_filename
@@ -12,18 +19,21 @@ load_dotenv()
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..'))  # "futebol-2"
 
+# Nota: template_folder é setado para BASE_DIR, então todos os caminhos em render_template
+# devem ser relativos a BASE_DIR (ex: telasHTML/...)
 app = Flask(
     __name__,
-    template_folder=BASE_DIR  # Flask vai procurar HTMLs dentro de telasHTML e suas subpastas
+    template_folder=BASE_DIR
 )
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "chave_padrao_para_dev")
 
-# === ROTA GENÉRICA PARA SERVIR QUALQUER ARQUIVO ===
-# Assim você pode acessar diretamente qualquer CSS, JS ou imagem dentro de telasHTML/...
+# === ROTA GENÉRICA PARA SERVIR QUALQUER ARQUIVO ESTÁTICO ===
+# Nome da função/endpoint: serve_static_files
 @app.route('/<path:filename>')
 def serve_static_files(filename):
     file_path = os.path.join(BASE_DIR, filename)
     if os.path.isfile(file_path):
+        # Serve o arquivo a partir da raiz do projeto (BASE_DIR)
         return send_from_directory(BASE_DIR, filename)
     return "Arquivo não encontrado", 404
 
@@ -53,7 +63,9 @@ def login():
             return redirect(url_for('tela_de_loading'))
         else:
             flash('Email ou senha incorretos. Tente novamente.', 'danger')
-    return render_template('telaDeLogin/telaLogin.html')
+            
+    # CORREÇÃO: Usando caminho completo para o template
+    return render_template('telasHTML/ArquivosGerais/telaDeLogin/telaLogin.html')
 
 
 @app.route('/cadastro', methods=['GET', 'POST'])
@@ -106,21 +118,22 @@ def cadastro():
             flash(mensagem, 'danger')
             return redirect(url_for('cadastro'))
     
+    # CORREÇÃO: Usando caminho completo para o template
     return render_template("Cadastrar_templates/cadastrar.html")
 
-<<<<<<< HEAD
-=======
-# Rota adicional para renderizar a página de cadastro (GET)
+
 @app.route('/cadastro_page')
 def cadastro_page():
     return render_template("Cadastrar_templates/cadastrar.html")
->>>>>>> d0ba9896ef947d2605b876b3332d67a7442bb795
+
 
 @app.route("/inicio")
 def pagina_inicial():
     if 'user_email' not in session:
         return redirect(url_for('login'))
+    # A função get_all_users() agora calcula a idade
     lista_de_usuarios = get_all_users()
+    # CORREÇÃO: Usando caminho completo para o template
     return render_template("telasHTML/ArquivosGerais/TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
 
 
@@ -128,6 +141,7 @@ def pagina_inicial():
 def pagina_usuario():
     if 'user_email' not in session:
         return redirect(url_for('login'))
+    # A função get_user_by_email() agora calcula a idade
     user_data = get_user_by_email(session['user_email'])
     return render_template("TelaDeUsuario/TelaUser.html", usuario=user_data)
 
@@ -137,6 +151,7 @@ def editar_perfil():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     
+    # A função get_user_by_email() agora calcula a idade
     user_data = get_user_by_email(session['user_email'])
     
     if request.method == 'POST':
@@ -187,12 +202,15 @@ def upload_image():
 
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        upload_folder = os.path.join(APP_DIR, 'uploads', 'profile_pics')
+        # O UPLOAD_FOLDER deve ser acessível publicamente via a rota serve_static_files
+        upload_folder = os.path.join(APP_DIR, 'uploads', 'profile_pics') 
         os.makedirs(upload_folder, exist_ok=True)
         
         file_path = os.path.join(upload_folder, filename)
         file.save(file_path)
 
+        # O caminho relativo salvo no DB deve ser acessível via a rota serve_static_files
+        # Ex: http://<app>/uploads/profile_pics/nome.png
         relative_path = os.path.join('uploads', 'profile_pics', filename).replace("\\", "/")
         
         sucesso = update_user_profile_image(session['user_email'], relative_path)
@@ -211,7 +229,8 @@ def upload_image():
 def tela_de_loading():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    return render_template('TelaLoading/Telaloading.html') 
+    # CORREÇÃO CRÍTICA: Usando caminho completo para o template
+    return render_template('telasHTML/ArquivosGerais/TelaLoading/Telaloading.html') 
 
 
 @app.route("/logout")

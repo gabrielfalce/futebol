@@ -2,6 +2,7 @@ import os
 from supabase import create_client, Client
 import bcrypt
 from dotenv import load_dotenv
+from datetime import date # NOVO IMPORT
 
 load_dotenv()
 
@@ -12,6 +13,22 @@ supabase: Client = create_client(url, key)
 
 print("Sucesso: Cliente Supabase inicializado.")
 
+# === FUNÇÃO HELPER PARA CÁLCULO DE IDADE ===
+def calculate_age(born):
+    """
+    Calcula a idade a partir da data de nascimento (string 'AAAA-MM-DD').
+    """
+    today = date.today()
+    try:
+        # Converte a string do DB para objeto date
+        born_date = date.fromisoformat(born) 
+    except (ValueError, TypeError):
+        return 'N/A' # Retorna N/A se a data for inválida ou nula
+        
+    # Lógica de cálculo da idade
+    return today.year - born_date.year - ((today.month, today.day) < (born_date.month, born_date.day))
+
+# === FUNÇÕES DO SUPABASE ===
 def register_user(nome, email, senha_hash, cidade, posicao, data_nasc, numero):
     """
     Registra um novo usuário no banco de dados
@@ -23,9 +40,9 @@ def register_user(nome, email, senha_hash, cidade, posicao, data_nasc, numero):
             'senha_hash': senha_hash,
             'cidade': cidade,
             'posicao': posicao,
-            'nascimento': data_nasc,  # Coluna: nascimento
-            'numero': numero,         # Coluna: numero (telefone)
-            'numero_camisa': None     # Coluna: numero_camisa (pode ser null inicialmente)
+            'nascimento': data_nasc,  
+            'numero': numero,         
+            'numero_camisa': None     
         }).execute()
         
         if response.data:
@@ -57,23 +74,38 @@ def check_user(email, senha):
 
 def get_all_users():
     """
-    Retorna todos os usuários cadastrados
+    Retorna todos os usuários cadastrados com a idade calculada.
     """
     try:
         response = supabase.table('usuarios').select('*').execute()
-        return response.data
+        usuarios = response.data
+        
+        # NOVO: Adiciona a idade calculada para cada usuário
+        for user in usuarios:
+            if user.get('nascimento'):
+                user['idade'] = calculate_age(user['nascimento'])
+            else:
+                user['idade'] = 'N/A'
+                
+        return usuarios
     except Exception as e:
         print(f"ERRO em get_all_users: {e}")
         return []
 
 def get_user_by_email(email):
     """
-    Busca um usuário pelo email
+    Busca um usuário pelo email e adiciona a idade calculada.
     """
     try:
         response = supabase.table('usuarios').select('*').eq('email', email).execute()
         if response.data:
-            return response.data[0]
+            user = response.data[0]
+            # NOVO: Adiciona o campo 'idade'
+            if user.get('nascimento'):
+                user['idade'] = calculate_age(user['nascimento'])
+            else:
+                user['idade'] = 'N/A'
+            return user
         return None
     except Exception as e:
         print(f"ERRO em get_user_by_email: {e}")
@@ -105,8 +137,6 @@ def update_user_camisa(email, numero_camisa):
         print(f"ERRO em update_user_camisa: {e}")
         return False
 
-# Outras funções permanecem iguais...
-
 def get_user_by_id(user_id):
     """
     Busca um usuário pelo ID
@@ -130,6 +160,7 @@ def update_user_profile(email, **update_data):
     except Exception as e:
         print(f"ERRO em update_user_profile: {e}")
         return False
+        
 def delete_user(email):
     """
     Deleta um usuário pelo email
