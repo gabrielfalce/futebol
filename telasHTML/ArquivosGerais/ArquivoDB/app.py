@@ -15,42 +15,33 @@ from werkzeug.utils import secure_filename
 
 load_dotenv()
 
-# === CONFIGURAÇÃO DE DIRETÓRIOS (CORRIGIDA) ===
-# Se o app.py estiver em /src/telasHTML/ArquivosGerais/ArquivoDB/app.py, 
-# subimos 3 níveis (.., .., ..) para alcançar o diretório raiz /src.
+# === CONFIGURAÇÃO DE DIRETÓRIOS ===
+# Sobe 3 níveis (.., .., ..) para alcançar o diretório raiz /src.
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..', '..', '..')) 
 
 app = Flask(
     __name__,
-    # Flask procurará templates a partir da raiz do projeto (BASE_DIR)
     template_folder=BASE_DIR
 )
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "chave_padrao_para_dev")
 
 # === ROTAS DEDICADAS PARA ARQUIVOS ESTÁTICOS ===
-# ATENÇÃO: Você deve replicar este padrão para todas as suas pastas de ativos (CSS, JS, Imagens)
+# ⚠️ Importante: Replicar este padrão para qualquer outra pasta de assets que você tiver.
 
-# Rota para os arquivos estáticos da tela de Login
-# URL: /login-assets/style.css
-# Pasta no servidor: BASE_DIR/telasHTML/ArquivosGerais/telaDeLogin/
+# 1. Rota para os arquivos estáticos da tela de Login
+# Permite carregar style.css, logo.png, etc., da pasta telaDeLogin.
 @app.route('/login-assets/<path:filename>')
 def login_assets(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'telaDeLogin')
     return send_from_directory(dir_path, filename)
 
-# Rota para os arquivos de UPLOAD de usuários (pasta uploads/ profile_pics)
-# URL: /uploads/profile_pics/image.png
-# Pasta no servidor: BASE_DIR/uploads/
+# 2. Rota para os arquivos de UPLOAD de usuários
+# Permite carregar profile_pics/image.png, etc.
 @app.route('/uploads/<path:path_and_filename>')
 def uploaded_files(path_and_filename):
-    # path_and_filename pode ser 'profile_pics/image.png'
     dir_path = os.path.join(BASE_DIR, 'uploads')
     return send_from_directory(dir_path, path_and_filename)
-
-
-# ROTA serve_static_files REMOVIDA conforme solicitado
-# === FIM DAS ROTAS ESTÁTICAS DEDICADAS ===
 
 
 # === ROTAS DA APLICAÇÃO ===
