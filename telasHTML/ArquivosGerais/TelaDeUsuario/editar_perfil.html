@@ -1,12 +1,11 @@
-<!-- Arquivo: TelaDeUsuario/editar_perfil.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Perfil</title>
-    <link rel="stylesheet" href="editarStyle.css">
-    <link rel="stylesheet" href="{{ url_for('assets', filename='ArquivosGerais/TelaDeUsuario/editarStyle.css') }}">
+    <!-- CORREÇÃO: URLs diretas para CSS -->
+    <link rel="stylesheet" href="/TelaDeUsuario/editarStyle.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
 </head>
 <body>
@@ -14,8 +13,9 @@
         <!-- Seção de Imagem de Perfil -->
         <div class="profile-picture-section">
             <div id="perfilImagemGeralCaixa" class="edit-mode">
+                <!-- CORREÇÃO: URL direta para a imagem padrão -->
                 <img id="preview" 
-                     src="{{ usuario.profile_image_url or url_for('assets', filename='ArquivosGerais/TelaDeUsuario/imagens/user-icon-placeholder.png' ) }}" 
+                     src="{{ usuario.profile_image_url or '/TelaDeUsuario/imagens/user-icon-placeholder.png' }}" 
                      alt="Imagem de perfil do usuário">
             </div>
             <p class="edit-prompt">Clique na imagem para alterar</p>
@@ -65,7 +65,8 @@
             <button type="submit" class="submit-button">Salvar Alterações</button>
         </form>
 
-        <a href="../TelaDeUsuario/TelaUser.html" href="{{ url_for('pagina_usuario') }}" class="back-link">Voltar para o Perfil</a>
+        <!-- CORREÇÃO: Removido o link duplicado e corrigido para usar url_for -->
+        <a href="{{ url_for('pagina_usuario') }}" class="back-link">Voltar para o Perfil</a>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
@@ -140,19 +141,21 @@
             formData.append('file', blob, 'profile.jpg');
 
             try {
-                const response = await fetch("{{ url_for('upload_image') }}", {
-                    method: 'POST',
-                    body: formData,
-                });
+                // CORREÇÃO: Temporariamente desativado até criarmos a rota
+                // const response = await fetch("{{ url_for('upload_image') }}", {
+                //     method: 'POST',
+                //     body: formData,
+                // });
+                // const data = await response.json();
 
-                const data = await response.json();
-
-                if (response.ok && data.success) {
-                    previewImage.src = data.image_url + '?t=' + new Date().getTime();
-                    alert('Imagem de perfil atualizada com sucesso!');
-                } else {
-                    alert('Erro ao salvar a imagem: ' + (data.message || 'Erro desconhecido.'));
-                }
+                // Simulando um upload bem-sucedido
+                alert('Upload de imagem temporariamente desativado. Em desenvolvimento.');
+                // if (response.ok && data.success) {
+                //     previewImage.src = data.image_url + '?t=' + new Date().getTime();
+                //     alert('Imagem de perfil atualizada com sucesso!');
+                // } else {
+                //     alert('Erro ao salvar a imagem: ' + (data.message || 'Erro desconhecido.'));
+                // }
             } catch (error) {
                 console.error('Erro na requisição de upload:', error);
                 alert('Não foi possível conectar ao servidor para salvar a imagem.');
@@ -167,8 +170,5 @@
             }
         }
     </script>
-
-    <!-- link de script para edição de publicação -->
-  
 </body>
 </html>
