@@ -14,7 +14,7 @@ template_root = os.path.abspath(os.path.join(app_dir, '..'))
 app = Flask(
     __name__,
     template_folder=template_root,
-    static_folder=os.path.join(template_root, 'STATIC'), 
+    static_folder=template_root, 
     static_url_path='/static'
 )
 app.secret_key = 'uma_chave_muito_secreta_e_dificil_de_adivinhar'
@@ -23,7 +23,11 @@ app.secret_key = 'uma_chave_muito_secreta_e_dificil_de_adivinhar'
 
 @app.route("/")
 def index():
-    return render_template("Cadastrar_templates/cadastrar.html") 
+    return redirect(url_for('cadastro'))
+
+@app.route("/cadastro")
+def cadastro():
+    return render_template("Cadastrar_templates/cadastrar.html")
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -34,7 +38,7 @@ def login():
         user_data = check_user(email, senha)
         
         if user_data:
-            session['user_email'] = email
+            session['user_email'] = user_data['email']
             flash('Login bem-sucedido!', 'success')
             return redirect(url_for('tela_de_loading'))
         else:
@@ -45,7 +49,7 @@ def login():
     except TemplateNotFound:
         print(f"Template 'TelaDeLogin/telaLogin.html' not found in {app.template_folder}")
         flash('Erro interno: Template de login não encontrado.', 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('cadastro'))
 
 @app.route("/inicio")
 def pagina_inicial():
@@ -60,6 +64,10 @@ def pagina_inicial():
     
     return render_template("TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
 
+@app.route("/esqueci_senha")
+def esqueci_senha():
+    return render_template("RecuperarSenha/esqueci_senha.html")
+
 @app.route("/usuario")
 def pagina_usuario():
     if 'user_email' not in session:
@@ -71,7 +79,7 @@ def pagina_usuario():
         return render_template("TelaDeUsuario/TelaUser.html", usuario=user_data)
     else:
         flash('Erro: Dados do usuário não encontrados.', 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('cadastro'))
 
 @app.route("/loading")
 def tela_de_loading():
@@ -89,7 +97,7 @@ def cadastrar():
 
     if not all([nome, email, senha_texto_puro, cidade, posicao, nascimento_str, numero]):
         flash("Erro no cadastro: Todos os campos são obrigatórios.", 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('cadastro'))
         
     # --- Validação e Conversão da Data de Nascimento ---
     try:
@@ -97,17 +105,17 @@ def cadastrar():
         data_nascimento_iso = data_obj.strftime('%Y-%m-%d')
         if data_obj > datetime.now():
             flash("Erro: A data de nascimento não pode ser no futuro.", 'danger')
-            return redirect(url_for('index'))
+            return redirect(url_for('cadastro'))
     except ValueError:
         flash("Erro: A data de nascimento deve ser no formato DD/MM/AAAA (ex: 15/09/2007).", 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('cadastro'))
 
     # Hash da senha usando bcrypt
     senha_hash = bcrypt.hashpw(senha_texto_puro.encode('utf-8'), bcrypt.gensalt())
 
     sucesso, mensagem = register_user(
         nome=nome, email=email, senha_hash=senha_hash, cidade=cidade, 
-        posicao=posicao, nascimento=data_nascimento_iso, numero=numero
+        posicao=posicao, data_nasc=data_nascimento_iso, numero=numero
     )
 
     if sucesso:
@@ -116,7 +124,45 @@ def cadastrar():
         return redirect(url_for('tela_de_loading'))
     else:
         flash(mensagem, 'danger')
-        return redirect(url_for('index')) 
+        return redirect(url_for('cadastro')) 
+
+@app.route("/chat/<int:destinatario_id>")
+def pagina_chat(destinatario_id):
+    if 'user_email' not in session:
+        flash('Você precisa fazer login para aceder a esta página.', 'warning')
+        return redirect(url_for('login'))
+        
+    # Lógica para obter dados do destinatário e do remetente
+    # ... (assumindo que esta lógica será implementada posteriormente)
+    
+    return render_template("TelaChat/chat.html", destinatario={"id": destinatario_id, "nome": "Usuário " + str(destinatario_id), "profile_image_url": None}, remetente={"id": 1, "nome": "Eu"}, supabase_url="URL_SUPABASE", supabase_key="KEY_SUPABASE")
+
+@app.route("/feed")
+def pagina_feed():
+    if 'user_email' not in session:
+        flash('Você precisa fazer login para aceder a esta página.', 'warning')
+        return redirect(url_for('login'))
+        
+    return render_template("TelaFeed/feed.html")
+
+@app.route("/logout")
+def logout():
+    session.pop('user_email', None)
+    flash('Sessão encerrada com sucesso.', 'success')
+    return redirect(url_for('login'))
+
+@app.route("/editar_perfil")
+def editar_perfil():
+    if 'user_email' not in session:
+        flash('Você precisa fazer login para aceder a esta página.', 'warning')
+        return redirect(url_for('login'))
+        
+    user_data = get_user_by_email(session['user_email'])
+    if user_data:
+        return render_template("TelaDeUsuario/editar_perfil.html", usuario=user_data)
+    else:
+        flash('Erro: Dados do usuário não encontrados.', 'danger')
+        return redirect(url_for('cadastro'))
 
 @app.route("/api/usuarios", methods=['GET'])
 def buscar_usuarios():
