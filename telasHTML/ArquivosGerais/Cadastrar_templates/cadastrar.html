@@ -9,15 +9,15 @@
     <link rel="stylesheet" href="/Cadastrar_templates/estilo.css">
 </head>
 <body>
-    <!-- CORREÇÃO: URL direta para a imagem -->
-    <img src="/TelaLoading/logoGeral.png" alt="Logotipo">
+    <!-- CORREÇÃO: Use o logo que existe na pasta telaDeLogin -->
+    <img src="/telaDeLogin/logo.png" alt="Logotipo">
     
     <h1 class="titulo">Cadastro</h1>
     
     <!-- Toast Notification para exibir mensagens flash -->
     <div id="toast-notification" class="toast"></div>
     
-    <!-- CORREÇÃO: action para 'cadastro' (sem o 'r' no final) -->
+    <!-- CORREÇÃO: action para 'cadastro' (nome correto da rota) -->
     <form action="{{ url_for('cadastro') }}" method="post">
         <input placeholder="Nome Completo" type="text" name="nome" required>
         <input placeholder="Email" type="email" name="email" required>
