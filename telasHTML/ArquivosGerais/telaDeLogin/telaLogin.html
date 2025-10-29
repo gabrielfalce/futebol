@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='telaDeLogin/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('serve_static_files', filename='telaDeLogin/style.css') }}">
 </head>
 <body>
     
 
     <!-- CORREÇÃO: URL direta para a imagem -->
-    <img class="logo" src="{{url_for('static', filename='telaDeLogin/logo.png')}}" alt="Logotipo Geral da Aplicação">
+    <img class="logo" src="{{url_for('serve_static_files', filename='telaDeLogin/logo.png')}}" alt="Logotipo Geral da Aplicação">
 
     
     <h1 class="titulo">Login</h1>
@@ -31,6 +31,7 @@
         <a class="esqueceuSenha" href="{{ url_for('esqueci_senha') }}">Esqueceu a senha?</a>
         <button class="login" type="submit">Login</button>
         <p class="ou">ou</p>
+        <!-- CORREÇÃO: url_for('cadastro') mudou para url_for('cadastro_page') -->
         <a class="criarNovaConta" href="{{ url_for('cadastro_page') }}">Criar nova conta</a>
     </form>
 

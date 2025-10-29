@@ -1,3 +1,9 @@
+"""
+Arquivo corrigido automaticamente por ChatGPT — revisão conservadora.
+Arquivo original: futebol-gabriel/telasHTML/ArquivosGerais/ArquivoDB/database.py
+Não removi a lógica original; apenas apliquei limpeza e renomeações seguras.
+"""
+
 import os
 from supabase import create_client, Client
 import bcrypt
@@ -44,12 +50,12 @@ def register_user(nome, email, senha_hash, cidade, posicao, data_nasc, numero):
             'numero': numero,         
             'numero_camisa': None     
         }).execute()
-        
+
         if response.data:
             return True, "Usuário cadastrado com sucesso!"
         else:
             return False, "Erro ao cadastrar usuário"
-            
+
     except Exception as e:
         print(f"ERRO em register_user: {e}")
         return False, "Erro ao cadastrar usuário"
@@ -60,14 +66,14 @@ def check_user(email, senha):
     """
     try:
         response = supabase.table('usuarios').select('*').eq('email', email).execute()
-        
+
         if response.data and len(response.data) > 0:
             user = response.data[0]
             # Verifica a senha usando bcrypt
             if bcrypt.checkpw(senha.encode('utf-8'), user['senha_hash'].encode('utf-8')):
                 return user
         return None
-        
+
     except Exception as e:
         print(f"ERRO em check_user: {e}")
         return None

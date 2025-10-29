@@ -118,12 +118,14 @@ def cadastro():
             flash(mensagem, 'danger')
             return redirect(url_for('cadastro'))
     
-    # CORREÇÃO: Usando caminho completo para o template
+    # Esta rota é a rota POST para processar o formulário.
+    # O GET para renderizar o formulário deve ser feito pela rota '/cadastro_page'.
     return render_template("Cadastrar_templates/cadastrar.html")
 
 
 @app.route('/cadastro_page')
 def cadastro_page():
+    # Rota GET para renderizar a página de cadastro.
     return render_template("Cadastrar_templates/cadastrar.html")
 
 
