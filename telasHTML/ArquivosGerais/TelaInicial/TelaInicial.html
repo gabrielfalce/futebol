@@ -36,7 +36,7 @@
 
         <div class="user-list" id="user-list">
             {% for usuario in usuarios %}
-                <a href="{{ url_for('telasHTML.ArquivosGerais.TelaChat.chat') }}" class="user-card-link">
+                <a href="{{ url_for('pagina_usuario') }}" class="user-card-link">
                     <div class="user-card">
                         <img id="user-foto" 
                              src="{{ url_for('serve_static_files', filename=usuario.foto_perfil if usuario.foto_perfil else 'TelaInicial/iconeUser.png') }}" 
