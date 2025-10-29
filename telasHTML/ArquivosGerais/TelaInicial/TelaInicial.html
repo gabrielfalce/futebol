@@ -5,13 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil de {{ usuario.nome }}</title>
     
-    <!-- 
-      CORREÇÃO: Usando url_for para carregar o CSS a partir da raiz do projeto.
-      O Flask irá gerar a URL /assets/TelaDeUsuario/stylesTest.css
-    -->
+    <!-- Caminho corrigido para o CSS via url_for -->
     <link rel="stylesheet" href="{{ url_for('static', filename='TelaDeUsuario/stylesTest.css') }}">
     
-    <!-- Estilos para o toast de notificação (pode ser movido para o CSS principal) -->
+    <!-- Estilos para o toast de notificação -->
     <style>
         .toast {
             visibility: hidden;
@@ -37,20 +34,13 @@
     </style>
 </head>
 <body>
-    <!-- 
-      CORREÇÃO: Imagem de fundo carregada com url_for.
-      Usa a imagem de capa do usuário se existir, senão uma padrão.
-    -->
+    <!-- Imagem de fundo carregada dinamicamente -->
     <div class="background-image" style="background-image: url('{{ url_for('static', filename=usuario.foto_capa if usuario.foto_capa else 'TelaDeUsuario/imagens/WallpaperTest.jpg') }}');">
     </div>
 
     <div class="profile-container">
         <header class="profile-header">
-            <!-- 
-              CORREÇÃO: Imagem de perfil carregada com url_for.
-              Usa a foto de perfil do banco de dados ou uma imagem padrão.
-              O caminho 'telasHTML/...' foi removido pois o app.py já aponta para a raiz.
-            -->
+            <!-- Imagem de perfil carregada dinamicamente -->
             <img src="{{ url_for('static', filename=usuario.foto_perfil if usuario.foto_perfil else 'TelaDeUsuario/imagens/user-icon-placeholder.png') }}" alt="Foto de Perfil de {{ usuario.nome }}" class="profile-picture">
             
             <div class="profile-info">
@@ -58,18 +48,19 @@
                 <p>{{ usuario.posicao or 'Posição não definida' }}</p>
             </div>
             
-            <!-- 
-              CORREÇÃO: Imagem do logo no header carregada com url_for.
-              Usei o caminho que você me passou.
-            -->
+            <!-- Logo no cabeçalho -->
             <img src="{{ url_for('static', filename='telasHTML/ArquivosGerais/TelaInicial/bolaLogo.png') }}" alt="Logo" class="header-logo">
         </header>
 
+        <!-- 
+          INÍCIO DA SEÇÃO CORRIGIDA 
+          O código da barra de navegação foi removido pois não pertence a esta seção.
+          Mantivemos a grade de informações do usuário.
+        -->
         <main class="profile-content">
             <div class="info-grid">
                 <div class="info-item">
                     <span class="label">Idade</span>
-                    <!-- Assumindo que 'idade' é um atributo do objeto 'usuario' -->
                     <span class="value">{{ usuario.idade or 'N/A' }} anos</span>
                 </div>
                 <div class="info-item">
@@ -85,6 +76,7 @@
                     <span class="value">{{ usuario.numero or 'Não informado' }}</span>
                 </div>
             </div>
+            <!-- FIM DA SEÇÃO CORRIGIDA -->
 
             <div class="profile-actions">
                 <a href="{{ url_for('editar_perfil') }}" class="btn-edit">Editar Perfil</a>
@@ -96,9 +88,7 @@
     <!-- Div para exibir mensagens flash (toast) -->
     <div id="toast-notification" class="toast"></div>
 
-    <!-- 
-      CORREÇÃO: Carregando o script JS com url_for.
-    -->
+    <!-- Carregando o script JS via url_for -->
     <script src="{{ url_for('static', filename='TelaDeUsuario/script.js') }}"></script>
 
     <script>
@@ -106,7 +96,6 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 (function() {
-                    // Usa 'tojson' para evitar erros com caracteres especiais na mensagem
                     const message = {{ messages[0][1] | tojson }};
                     const category = {{ messages[0][0] | tojson }};
                     
@@ -118,7 +107,7 @@
                     } else if (category === 'danger') {
                         toast.style.backgroundColor = '#f44336';
                     } else {
-                        toast.style.backgroundColor = '#333'; // Cor padrão
+                        toast.style.backgroundColor = '#333';
                     }
                     
                     toast.classList.add("show");

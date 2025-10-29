@@ -1,0 +1,63 @@
+/* Localização: telasHTML/ArquivosGerais/TelaAvisoManuteção/styleManu.css */
+
+/* Importando variáveis de outro arquivo para manter a consistência de estilo. */
+@import url('../TelaInicial/style.css');
+
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    width: 100vw;
+    background-color: var(--cor-fundo, #1E1E1E);
+    color: var(--cor-texto, #FFFFFF);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    overflow: hidden;
+}
+
+.maintenance-container {
+    max-width: 90%;
+    width: 500px;
+    padding: 40px;
+    background-color: var(--cor-card, #2C2C2C);
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.logo {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+}
+
+h1 {
+    color: var(--cor-primaria, #2BBF90);
+    font-size: 2.5rem;
+    margin: 0 0 10px 0;
+}
+
+p {
+    color: var(--cor-texto-card, #E0E0E0);
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.back-button {
+    background-color: var(--cor-primaria);
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.back-button:hover {
+    transform: scale(1.05);
+    background-color: #25a880; /* Um tom um pouco mais escuro da cor primária */
+}
