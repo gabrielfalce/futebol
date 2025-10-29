@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feed de Posts</title>
-    <!-- CORREÇÃO: Alterado para usar url_for com a rota 'assets' -->
-    <link rel="stylesheet" href="{{ url_for('assets', filename='ArquivosGerais/TelaFeed/feed.css') }}">
+    
+    <!-- CORREÇÃO: Removido 'ArquivosGerais/' do filename -->
+    <link rel="stylesheet" href="{{ url_for('assets', filename='TelaFeed/feed.css') }}">
 </head>
 <body>
     <header class="page-header">
@@ -23,7 +24,7 @@
         <div class="loading-spinner" id="loading-spinner"></div>
     </main>
 
-    <!-- CORREÇÃO: Alterado para usar url_for com a rota 'assets' -->
-    <script src="{{ url_for('assets', filename='ArquivosGerais/TelaFeed/feed.js') }}"></script>
+    <!-- CORREÇÃO: Removido 'ArquivosGerais/' do filename -->
+    <script src="{{ url_for('assets', filename='TelaFeed/feed.js') }}"></script>
 </body>
 </html>

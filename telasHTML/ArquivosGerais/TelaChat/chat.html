@@ -5,16 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat com {{ destinatario.nome }}</title>
-    <!-- CORREÇÃO: Alterado para a rota 'assets' com o caminho correto e removida a linha duplicada -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='ArquivosGerais/TelaChat/chat.css') }}">
-    <link rel="stylesheet" href="chat.css">
+    
+    <!-- CORREÇÃO: Trocado 'static' por 'assets' e removido 'ArquivosGerais/' do filename. Linha duplicada removida. -->
+    <link rel="stylesheet" href="{{ url_for('assets', filename='TelaChat/chat.css') }}">
 </head>
 <body>
     <div class="chat-container">
         <header class="chat-header">
             <a href="{{ url_for('pagina_inicial') }}" class="back-button" aria-label="Voltar para a página anterior">&larr;</a>
-            <!-- CORREÇÃO: Alterado para a rota 'assets' e ignorando o erro 404 conforme solicitado -->
-            <img src="{{ destinatario.profile_image_url or url_for('static', filename='ArquivosGerais/TelaDeUsuario/imagens/user-icon-placeholder.png') }}" alt="Avatar de {{ destinatario.nome }}" class="avatar">
+            
+            <!-- CORREÇÃO: Trocado 'static' por 'assets' e removido 'ArquivosGerais/' do filename. -->
+            <img src="{{ destinatario.profile_image_url or url_for('assets', filename='TelaDeUsuario/imagens/user-icon-placeholder.png') }}" alt="Avatar de {{ destinatario.nome }}" class="avatar">
+            
             <div class="user-info">
                 <!-- O nome agora será exibido abaixo do avatar -->
             </div>
@@ -23,13 +25,12 @@
 
         <main class="chat-body" id="chat-body">
             <p style="text-align:center; color: #555;">Carregando mensagens...</p>
-
         </main>
 
         <footer class="chat-footer">
             <form id="message-form" class="message-form">
                 <input class="CaixaTexto" type="text" id="message-input" placeholder="Digite uma mensagem..." autocomplete="off">
-                <button  type="submit" aria-label="Enviar mensagem">
+                <button type="submit" aria-label="Enviar mensagem">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
                         <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
                     </svg>
@@ -48,8 +49,8 @@
         const SUPABASE_KEY = {{ supabase_key | tojson }};
     </script>
 
-    <!-- CORREÇÃO: Alterado para a rota 'assets' com o caminho correto -->
-    <script src="{{ url_for('static', filename='ArquivosGerais/TelaChat/chat.js') }}"></script>
+    <!-- CORREÇÃO: Trocado 'static' por 'assets' e removido 'ArquivosGerais/' do filename. -->
+    <script src="{{ url_for('assets', filename='TelaChat/chat.js' ) }}"></script>
 
 </body>
 </html>
