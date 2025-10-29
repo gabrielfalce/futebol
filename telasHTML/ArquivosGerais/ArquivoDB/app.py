@@ -97,41 +97,36 @@ def pagina_inicial():
     lista_de_usuarios = get_all_users()
     return render_template("telaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
 
+# CORRIJA TODAS ESTAS LINhas conforme os nomes reais das suas pastas:
+
 @app.route("/usuario")
 def pagina_usuario():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     user_data = get_user_by_email(session['user_email'])
-    return render_template("telaDeUsuario/TelaUser.html", usuario=user_data)
+    return render_template("TelaDeUsuario/TelaUser.html", usuario=user_data)
 
 @app.route("/loading")
 def tela_de_loading():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    return render_template('telaLoading/Telaloading.html')
-
-@app.route("/logout")
-def logout():
-    session.clear()
-    flash('Sessão encerrada com sucesso.', 'success')
-    return redirect(url_for('login'))
+    return render_template('TelaLoading/Telaloading.html')
 
 @app.route("/esqueci_senha", methods=['GET', 'POST'])
 def esqueci_senha():
-    return render_template("recuperarSenha/esqueci_senha.html")
+    return render_template("RecuperarSenha/esqueci_senha.html")
 
 @app.route("/chat/<int:destinatario_id>")
 def pagina_chat(destinatario_id):
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    return render_template("telaChat/chat.html", destinatario_id=destinatario_id)
+    return render_template("TelaChat/chat.html", destinatario_id=destinatario_id)
 
 @app.route("/feed")
 def pagina_feed():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    return render_template("telaFeed/feed.html")
-
+    return render_template("TelaFeed/feed.html")
 # Rota para servir arquivos estáticos
 @app.route('/<path:filename>')
 def serve_static_files(filename):

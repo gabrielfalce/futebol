@@ -13,18 +13,15 @@ supabase: Client = create_client(url, key)
 print("Sucesso: Cliente Supabase inicializado.")
 
 def register_user(nome, email, senha_hash, cidade, posicao, data_nasc, numero):
-    """
-    Registra um novo usuário no banco de dados
-    """
     try:
         response = supabase.table('usuarios').insert({
             'nome': nome,
             'email': email,
-            'senha_hash': senha_hash,  # Nome correto: senha_hash
+            'senha_hash': senha_hash,
             'cidade': cidade,
             'posicao': posicao,
-            'data_nascimento': data_nasc,
-            'numero_camisa': numero  # Nome correto: numero_camisa
+            'nascimento': data_nasc,  # CORREÇÃO FINAL: 'nascimento'
+            'numero_camisa': numero
         }).execute()
         
         if response.data:
@@ -35,7 +32,6 @@ def register_user(nome, email, senha_hash, cidade, posicao, data_nasc, numero):
     except Exception as e:
         print(f"ERRO em register_user: {e}")
         return False, "Erro ao cadastrar usuário"
-
 def check_user(email, senha):
     """
     Verifica se o usuário existe e se a senha está correta
