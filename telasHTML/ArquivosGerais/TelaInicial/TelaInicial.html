@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tela Inicial</title>
     
-    <!-- CORREÇÃO: Removido 'ArquivosGerais/' do filename -->
-    <link rel="stylesheet" href="{{ url_for('assets', filename='TelaInicial/style.css') }}">
+    <!-- CORREÇÃO: URL direta para o CSS -->
+    <link rel="stylesheet" href="/TelaInicial/style.css">
 </head>
 <body>
     <header class="page-header">
@@ -17,8 +17,8 @@
     <main>
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Buscar usuários..." onkeyup="searchUsers()">
-            <!-- CORREÇÃO: Removido 'ArquivosGerais/' do filename -->
-            <img src="{{ url_for('assets', filename='TelaInicial/lupa.png') }}" alt="Ícone de busca" class="search-icon">
+            <!-- CORREÇÃO: URL direta para a imagem -->
+            <img src="/TelaInicial/lupa.png" alt="Ícone de busca" class="search-icon">
         </div>
 
         <div class="user-list" id="user-list">
@@ -26,8 +26,8 @@
             {% for usuario in usuarios %} 
                 <a href="{{ url_for('pagina_chat', destinatario_id=usuario.id) }}" class="user-card-link">
                     <div class="user-card">
-                        <!-- CORREÇÃO: Removido 'ArquivosGerais/' do filename da imagem padrão -->
-                        <img id="user-foto" src="{{ usuario.profile_image_url or url_for('assets', filename='TelaInicial/iconeUser.png') }}" 
+                        <!-- CORREÇÃO: URL direta para a imagem padrão -->
+                        <img id="user-foto" src="{{ usuario.profile_image_url or '/TelaInicial/iconeUser.png' }}" 
                              alt="Foto de perfil de {{ usuario.nome }}">
                         
                         <div class="user-info">
@@ -49,14 +49,14 @@
         <a href="{{ url_for('pagina_feed') }}" class="nav-button feed-button">Ver Feed</a>
         
         <a href="{{ url_for('pagina_usuario') }}" class="nav-button profile-button">
-            <!-- CORREÇÃO: Removido 'ArquivosGerais/' do filename -->
-            <img src="{{ url_for('assets', filename='TelaInicial/BotaoUsuario.ico') }}" alt="Ver Perfil">
+            <!-- CORREÇÃO: URL direta para a imagem -->
+            <img src="/TelaInicial/BotaoUsuario.ico" alt="Ver Perfil">
         </a>
         
         <a href="{{ url_for('logout') }}" class="nav-button logout-button">Sair</a>
     </nav>
 
-    <!-- O resto do seu código (toast e script) está correto e pode ser mantido -->
+    <!-- Toast para mensagens flash -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% set category, message = messages[0] %}
@@ -65,7 +65,36 @@
     {% endwith %}
 
     <script>
-        // Seu script de busca e toast continua aqui...
+        function searchUsers() {
+            const input = document.getElementById('search-input');
+            const filter = input.value.toLowerCase();
+            const userCards = document.getElementsByClassName('user-card-link');
+            
+            for (let i = 0; i < userCards.length; i++) {
+                const userName = userCards[i].getElementsByClassName('user-name')[0].textContent.toLowerCase();
+                if (userName.includes(filter)) {
+                    userCards[i].style.display = '';
+                } else {
+                    userCards[i].style.display = 'none';
+                }
+            }
+        }
+
+        // Toast notification
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const toast = document.getElementById("toast-notification");
+            
+            if (toast && toast.dataset.message) {
+                const message = toast.dataset.message;
+                const category = toast.dataset.category;
+                
+                toast.textContent = message;
+                toast.style.backgroundColor = category === 'success' ? 'green' : '#f44336';
+                
+                toast.style.display = 'block';
+                setTimeout(() => toast.style.display = 'none', 4000);
+            }
+        });
     </script>
 </body>
 </html>
