@@ -546,25 +546,21 @@ input[type="file"]::-webkit-file-upload-button:hover {
     }
     
     #profileContainer {
-        justify-content: center; /* Centraliza o grupo de informações do perfil horizontalmente */
-        width: 100%; /* Garante que o container ocupe a largura total para o centralização funcionar */
+        /* Mantém o alinhamento base de 'space-between' para o botão 'Editar Perfil' */
     }
 
     .profile-info-group {
-        flex-direction: row; /* Coloca o nome ao lado do ícone */
-        align-items: center; /* Centraliza verticalmente o ícone e o nome */
-        gap: 15px; /* Ajusta o espaço entre o ícone e o nome */
+        /* A regra base (flex-direction: row) já alinha os itens lado a lado. */
+        /* Apenas garantimos o alinhamento vertical e o espaçamento. */
+        align-items: center;
     }
 
     .edit-profile-button { 
-        margin-right: 10px; /* Mantém a margem direita */
     }
 
     #perfilImagemGeralCaixa {
         width: 100px; /* Reduz um pouco o tamanho do ícone */
         height: 100px;
-        /* Adicionado para realinhar o avatar sutilmente sem afetar o layout do nome */
-        transform: translateY(-5px); /* Exemplo: move o avatar 5px para cima. Ajuste este valor conforme a necessidade visual. */
     }
 
     .nomeUsuario {
