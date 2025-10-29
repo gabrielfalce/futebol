@@ -150,7 +150,8 @@ img {
     height: 20vw;
     max-height: 120px;
     min-height: 60px;
-    background: url('bolaverde 3.png') no-repeat center;
+    /* CORREÇÃO: mudado de 'bolaverde 3.png' para 'bolaverde_3.png' */
+    background: url('bolaverde_3.png') no-repeat center;
     background-size: cover;
     animation: spin 2s linear infinite;
     margin-bottom: 20px; /* Espaço entre a bola e o formulário */

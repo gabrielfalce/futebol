@@ -95,9 +95,7 @@ def pagina_inicial():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     lista_de_usuarios = get_all_users()
-    return render_template("telaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
-
-# CORRIJA TODAS ESTAS LINhas conforme os nomes reais das suas pastas:
+    return render_template("TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
 
 @app.route("/usuario")
 def pagina_usuario():
@@ -111,6 +109,12 @@ def tela_de_loading():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     return render_template('TelaLoading/Telaloading.html')
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash('Sessão encerrada com sucesso.', 'success')
+    return redirect(url_for('login'))
 
 @app.route("/esqueci_senha", methods=['GET', 'POST'])
 def esqueci_senha():
@@ -126,7 +130,9 @@ def pagina_chat(destinatario_id):
 def pagina_feed():
     if 'user_email' not in session:
         return redirect(url_for('login'))
+    # Verifique se este template existe, se não, comente esta rota
     return render_template("TelaFeed/feed.html")
+
 # Rota para servir arquivos estáticos
 @app.route('/<path:filename>')
 def serve_static_files(filename):
