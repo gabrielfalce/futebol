@@ -7,7 +7,7 @@
     
     <!-- CORREÇÃO: Removido 'ArquivosGerais/' do filename -->
     <link rel="stylesheet" href="{{ url_for('assets', filename='TelaDeUsuario/stylesTest.css') }}">
-    
+    <link rel="stylesheet" href="stylesTest.css">
     <div class="Wallpaper">
         <!-- CORREÇÃO: Removido 'ArquivosGerais/' do filename. Também removido o src duplicado. -->
         <img class="imagemWallpaper" src="{{ url_for('assets', filename='TelaDeUsuario/imagens/hM94BRC.jpeg') }}" alt="Wallpaper de fundo">
@@ -34,7 +34,7 @@
         <!-- Coluna das Publicações -->
         <div class="posts-container">
             <hr class="section-divider">
-            <h1 class="section-title">Publicações do Usuário</h1>
+            <h1 id="tituloPublicacao" class="section-title">Publicações</h1>
             <div class="BoxePublicacoes">
                 <!-- CORREÇÃO: Removido 'ArquivosGerais/' do filename -->
                 <img class="publicacaoImagem" src="{{ url_for('assets', filename='TelaDeUsuario/imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">

@@ -511,6 +511,11 @@ input[type="file"]::-webkit-file-upload-button:hover {
     margin-top: 10px;
 }
 
+#tituloPublicacao {
+    color: var(--cor-secundaria) ;
+    font-size: 2.9vh;
+}
+
 /* =======================
    MEDIA QUERIES (RESPONSIVIDADE)
    ======================= */
