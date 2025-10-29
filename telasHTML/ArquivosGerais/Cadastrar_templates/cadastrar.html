@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro</title>
-    <!-- CORREÇÃO: Usando a rota 'assets' para encontrar o CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='ArquivosGerais/Cadastrar_templates/estilo.css') }}">
+    
+    <!-- CORREÇÃO 1: Mudar de 'static' para 'assets' e remover o prefixo do caminho -->
+    <link rel="stylesheet" href="{{ url_for('assets', filename='Cadastrar_templates/estilo.css') }}">
 </head>
 <body>
-    <!-- CORREÇÃO: Usando a rota 'assets' para encontrar a imagem -->
-    <img src="{{ url_for('static', filename='ArquivosGerais/TelaLoading/logoGeral.png') }}" alt="Logotipo">
+    <!-- CORREÇÃO 2: Mudar de 'static' para 'assets' e remover o prefixo do caminho -->
+    <img src="{{ url_for('assets', filename='TelaLoading/logoGeral.png') }}" alt="Logotipo">
+    
     <h1 class="titulo">Cadastro</h1>
     
     <!-- Toast Notification para exibir mensagens flash -->
@@ -21,7 +23,10 @@
         <input placeholder="Senha" type="password" name="senha" required minlength="8">
         <input placeholder="Cidade" type="text" name="cidade" required>
         <input placeholder="Posição em Campo" type="text" name="posicao" required>
-        <input placeholder="Data de Nascimento" type="text" name="nascimento" required onfocus="(this.type='date')" onblur="(this.type='text')">
+        
+        <!-- Pequena melhoria para a data de nascimento para funcionar melhor com o formato esperado -->
+        <input placeholder="Data de Nascimento (DD/MM/AAAA)" type="text" name="nascimento" required>
+        
         <input placeholder="Número de Telefone" type="tel" name="numero" required>
 
         <button type="submit">Cadastrar</button>

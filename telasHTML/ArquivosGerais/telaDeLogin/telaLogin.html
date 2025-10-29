@@ -4,36 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <!-- CORRIGIDO: Usando a rota 'assets' e o caminho completo do arquivo a partir de 'telasHTML' -->
-    <link rel="stylesheet" href="{{ url_for('assets', filename='ArquivosGerais/telaDeLogin/style.css') }}">
-    <link rel="stylesheet" href="style.css">
-    <!-- <style>
-        /* .soccer-ball {
-            width: 20vw;
-            max-width: 120px;
-            min-width: 60px;
-            height: 20vw;
-            max-height: 120px;
-            min-height: 60px;
-            /* CORRIGIDO: Usando a rota 'assets' e o caminho completo do arquivo */
-            background: url("{{ url_for('assets', filename='ArquivosGerais/telaDeLogin/bolaverde_3.png') }}") no-repeat center;
-            background-size: cover;
-            animation: spin 1s linear infinite;
-            margin-bottom: 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        form { margin-top: 0; }
-    </style>-->
+    
+    <!-- CORREÇÃO: Removido 'ArquivosGerais/' do caminho do filename -->
+    <link rel="stylesheet" href="{{ url_for('assets', filename='telaDeLogin/style.css') }}">
+    
+    <!-- Esta linha abaixo é redundante e pode ser removida se o 'style.css' já contém tudo -->
+    <!-- <link rel="stylesheet" href="style.css"> -->
 </head> 
 <body>
     <div class="soccer-ball"></div>
-    <!-- CORRIGIDO: Usando a rota 'assets' e o caminho completo do arquivo. (Ajustei o nome da imagem para 'logoGeral.png' conforme o erro 404 original) -->
-    <img class="logo" src="{{ url_for('assets', filename='ArquivosGerais/TelaLoading/logoGeral.png') }}" alt="Logotipo Geral da Aplicação">
-    <!-- <img src="logo.png" alt=""> -->
+    
+    <!-- CORREÇÃO: Removido 'ArquivosGerais/' do caminho do filename -->
+    <img class="logo" src="{{ url_for('assets', filename='TelaLoading/logoGeral.png') }}" alt="Logotipo Geral da Aplicação">
+    
     <h1 class="titulo">Login</h1>
     
     <div id="toast-notification" class="toast"
@@ -41,9 +24,6 @@
             {% if messages %}
                 data-message="{{ messages[0][1] }}" 
                 data-category="{{ messages[0][0] }}"
-            {% else %}
-                data-message="" 
-                data-category=""
             {% endif %}
         {% endwith %}
     ></div>
@@ -66,7 +46,6 @@
                 const category = toast.dataset.category;
                 
                 toast.textContent = message;
-                
                 toast.style.backgroundColor = category === 'success' ? 'green' : '#f44336';
                 
                 toast.classList.add("show");
