@@ -564,7 +564,7 @@ input[type="file"]::-webkit-file-upload-button:hover {
     }
 
     .nomeUsuario {
-        font-size: 1.2rem; /* Ajusta o tamanho da fonte */
+        font-size: 1.0rem; /* Ajusta o tamanho da fonte */
         white-space: normal; /* Permite que o nome quebre a linha se for muito longo */
     }
 
