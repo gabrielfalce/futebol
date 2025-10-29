@@ -1,174 +1,168 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Perfil</title>
-    <!-- CORREÇÃO: URLs diretas para CSS -->
-    <link rel="stylesheet" href="/TelaDeUsuario/editarStyle.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+    <!-- 
+      CORREÇÃO: Usando url_for para carregar o CSS. 
+      O Flask irá gerar o caminho correto, como /assets/TelaDeUsuario/stylesTest.css 
+    -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='TelaDeUsuario/stylesTest.css') }}">
+    
+    <!-- Estilos para o toast de notificação (pode ser movido para o CSS principal) -->
+    <style>
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 5px;
+            padding: 16px;
+            position: fixed;
+            z-index: 101;
+            left: 50%;
+            bottom: 30px;
+            font-size: 17px;
+        }
+        .toast.show {
+            visibility: visible;
+            -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+        @-webkit-keyframes fadein {
+            from {bottom: 0; opacity: 0;} 
+            to {bottom: 30px; opacity: 1;}
+        }
+        @keyframes fadein {
+            from {bottom: 0; opacity: 0;}
+            to {bottom: 30px; opacity: 1;}
+        }
+        @-webkit-keyframes fadeout {
+            from {bottom: 30px; opacity: 1;} 
+            to {bottom: 0; opacity: 0;}
+        }
+        @keyframes fadeout {
+            from {bottom: 30px; opacity: 1;}
+            to {bottom: 0; opacity: 0;}
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Seção de Imagem de Perfil -->
-        <div class="profile-picture-section">
-            <div id="perfilImagemGeralCaixa" class="edit-mode">
-                <!-- CORREÇÃO: URL direta para a imagem padrão -->
-                <img id="preview" 
-                     src="{{ usuario.profile_image_url or '/TelaDeUsuario/imagens/user-icon-placeholder.png' }}" 
-                     alt="Imagem de perfil do usuário">
-            </div>
-            <p class="edit-prompt">Clique na imagem para alterar</p>
-        </div>
-
-        <!-- Modal de Corte -->
-        <div id="cropModal" class="modal">
-            <div class="modal-content">
-                <button id="closeModalButton" class="close-button">Salvar</button>
-                <h2>Cortar Imagem</h2>
-                <p>Escolha uma imagem e ajuste o corte.</p>
-                <input type="file" id="imageInput" accept="image/*">
-                <img id="image" src="" alt="Imagem para cortar" style="display:none; max-width:100%;">
-            </div>
-        </div>
-
+    <header>
+        <!-- CORREÇÃO: Caminho da imagem de logo com url_for -->
+        <img src="{{ url_for('static', filename='TelaDeUsuario/imagens/bolaLogo.png') }}" alt="Logo" class="logo">
         <h1>Editar Perfil</h1>
-        <p>Preencha apenas os campos que deseja alterar.</p>
-        
-        <!-- CORREÇÃO: Ação do formulário reativada para apontar para a rota 'editar_perfil' -->
-        <form action="{{ url_for('editar_perfil') }}" method="POST">
-            <div class="form-group">
-                <label for="nome">Nome</label>
-                <input type="text" id="nome" name="nome" placeholder="{{ usuario.nome or 'Não definido' }}">
-            </div>
-            <div class="form-group">
-                <label for="cidade">Cidade</label>
-                <input type="text" id="cidade" name="cidade" placeholder="{{ usuario.cidade or 'Não definida' }}">
-            </div>
-            <div class="form-group">
-                <label for="posicao">Posição em Campo</label>
-                <input type="text" id="posicao" name="posicao" placeholder="{{ usuario.posicao or 'Não definida' }}">
-            </div>
-            
-            <!-- CAMPO CORRIGIDO PARA NÚMERO DA CAMISA -->
-            <div class="form-group">
-                <label for="numero_camisa">Número da Camisa</label>
-                <input type="text" id="numero_camisa" name="numero_camisa" placeholder="{{ usuario.numero_camisa or 'Não definido' }}">
-            </div>
-        
-            <!-- NOVO CAMPO PARA NÚMERO DE TELEFONE -->
-            <div class="form-group">
-                <label for="numero_telefone">Número de Telefone</label>
-                <input type="tel" id="numero_telefone" name="numero_telefone" placeholder="{{ usuario.numero or 'Não definido' }}">
-            </div>
-            
-            <button type="submit" class="submit-button">Salvar Alterações</button>
-        </form>
+        <!-- Link para voltar para a página de usuário -->
+        <a href="{{ url_for('pagina_usuario') }}" class="back-button">Voltar</a>
+    </header>
 
-        <!-- CORREÇÃO: Removido o link duplicado e corrigido para usar url_for -->
-        <a href="{{ url_for('pagina_usuario') }}" class="back-link">Voltar para o Perfil</a>
+    <div class="profile-container">
+        <!-- Formulário para upload da imagem de perfil -->
+        <div class="profile-picture-section">
+            <h2>Alterar Foto de Perfil</h2>
+            <!-- 
+              CORREÇÃO: Caminho da imagem de perfil atual do usuário.
+              Usa a imagem do banco de dados ou uma imagem padrão se não houver.
+            -->
+            <img id="profile-image-preview" 
+                 src="{{ url_for('static', filename=usuario.foto_perfil if usuario.foto_perfil else 'TelaDeUsuario/imagens/user-icon-placeholder.png') }}" 
+                 alt="Foto de Perfil" 
+                 class="profile-pic-large">
+            
+            <!-- 
+              Formulário específico para a imagem.
+              CORREÇÃO: A action agora aponta para a rota 'upload_image' corretamente.
+            -->
+            <form id="image-upload-form" method="POST" action="{{ url_for('upload_image') }}" enctype="multipart/form-data">
+                <input type="file" id="profile_image_input" name="profile_image" accept="image/*" style="display: none;">
+                <button type="button" onclick="document.getElementById('profile_image_input').click();">Escolher Imagem</button>
+                <button type="submit">Salvar Imagem</button>
+            </form>
+        </div>
+
+        <hr>
+
+        <!-- Formulário para editar os dados do perfil -->
+        <div class="profile-details-section">
+            <h2>Editar Informações</h2>
+            <!-- 
+              Formulário para os dados de texto.
+              CORREÇÃO: A action aponta para a rota 'editar_perfil'.
+            -->
+            <form id="details-form" method="POST" action="{{ url_for('editar_perfil') }}">
+                <div class="form-group">
+                    <label for="nome">Nome:</label>
+                    <input type="text" id="nome" name="nome" value="{{ usuario.nome or '' }}" placeholder="Seu nome completo">
+                </div>
+                <div class="form-group">
+                    <label for="cidade">Cidade:</label>
+                    <input type="text" id="cidade" name="cidade" value="{{ usuario.cidade or '' }}" placeholder="Onde você mora">
+                </div>
+                <div class="form-group">
+                    <label for="posicao">Posição em Campo:</label>
+                    <input type="text" id="posicao" name="posicao" value="{{ usuario.posicao or '' }}" placeholder="Ex: Atacante, Goleiro">
+                </div>
+                <div class="form-group">
+                    <label for="numero_camisa">Número da Camisa:</label>
+                    <input type="number" id="numero_camisa" name="numero_camisa" value="{{ usuario.numero_camisa or '' }}" placeholder="Seu número preferido">
+                </div>
+                <div class="form-group">
+                    <label for="numero_telefone">Telefone (WhatsApp):</label>
+                    <input type="tel" id="numero_telefone" name="numero_telefone" value="{{ usuario.numero or '' }}" placeholder="(XX) XXXXX-XXXX">
+                </div>
+                <button type="submit">Salvar Alterações</button>
+            </form>
+        </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <!-- Div para exibir mensagens flash -->
+    <div id="toast-notification" class="toast"></div>
+
     <script>
-        let cropper;
+        // Script para exibir a pré-visualização da imagem selecionada
+        const imageInput = document.getElementById('profile_image_input');
+        const imagePreview = document.getElementById('profile-image-preview');
 
-        // --- Elementos do DOM ---
-        const profileImageContainer = document.getElementById('perfilImagemGeralCaixa' );
-        const closeModalButton = document.getElementById('closeModalButton');
-        const cropModal = document.getElementById('cropModal');
-        const imageInput = document.getElementById('imageInput');
-        const imageToCrop = document.getElementById('image');
-        const previewImage = document.getElementById('preview');
-
-        // --- Abrir o modal ao clicar na imagem de perfil ---
-        profileImageContainer.addEventListener('click', () => {
-            cropModal.style.display = 'flex';
+        imageInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
         });
 
-        // --- Lidar com a seleção de imagem ---
-        imageInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                imageToCrop.src = event.target.result;
-                imageToCrop.style.display = 'block';
-                
-                if (cropper) {
-                    cropper.destroy();
-                }
-                
-                cropper = new Cropper(imageToCrop, {
-                    aspectRatio: 1,
-                    viewMode: 1,
-                    background: false,
-                    autoCropArea: 0.9,
-                });
-            };
-            reader.readAsDataURL(file);
-        });
-
-        // --- Fechar modal e salvar a imagem cortada ---
-        closeModalButton.addEventListener('click', () => {
-            cropModal.style.display = 'none';
-
-            if (!cropper) {
-                return;
-            }
-
-            const canvas = cropper.getCroppedCanvas({
-                width: 256,
-                height: 256,
-            });
-
-            if (!canvas) {
-                console.error("Canvas não pôde ser criado.");
-                return;
-            }
-
-            canvas.toBlob(blob => {
-                if (blob) {
-                    uploadImage(blob);
-                }
-            }, 'image/jpeg', 0.9);
-        });
-
-        // --- Função para fazer o upload da imagem para o backend ---
-        async function uploadImage(blob) {
-            const formData = new FormData();
-            formData.append('file', blob, 'profile.jpg');
-
-            try {
-                // CORREÇÃO: Temporariamente desativado até criarmos a rota
-                // const response = await fetch("{{ url_for('upload_image') }}", {
-                //     method: 'POST',
-                //     body: formData,
-                // });
-                // const data = await response.json();
-
-                // Simulando um upload bem-sucedido
-                alert('Upload de imagem temporariamente desativado. Em desenvolvimento.');
-                // if (response.ok && data.success) {
-                //     previewImage.src = data.image_url + '?t=' + new Date().getTime();
-                //     alert('Imagem de perfil atualizada com sucesso!');
-                // } else {
-                //     alert('Erro ao salvar a imagem: ' + (data.message || 'Erro desconhecido.'));
-                // }
-            } catch (error) {
-                console.error('Erro na requisição de upload:', error);
-                alert('Não foi possível conectar ao servidor para salvar a imagem.');
-            } finally {
-                imageInput.value = '';
-                if (cropper) {
-                    cropper.destroy();
-                    cropper = null;
-                }
-                imageToCrop.src = '';
-                imageToCrop.style.display = 'none';
-            }
-        }
+        // Script para exibir mensagens flash (toast)
+        // CORREÇÃO: Usa tojson para passar mensagens de forma segura
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                (function() {
+                    const message = {{ messages[0][1] | tojson }};
+                    const category = {{ messages[0][0] | tojson }};
+                    
+                    const toast = document.getElementById("toast-notification");
+                    toast.textContent = message;
+                    
+                    if (category === 'success') {
+                        toast.style.backgroundColor = 'green';
+                    } else if (category === 'danger') {
+                        toast.style.backgroundColor = '#f44336';
+                    } else {
+                        toast.style.backgroundColor = '#333';
+                    }
+                    
+                    toast.classList.add("show");
+                    setTimeout(() => {
+                        toast.classList.remove("show");
+                    }, 3000);
+                })();
+            {% endif %}
+        {% endwith %}
     </script>
 </body>
 </html>
