@@ -9,8 +9,6 @@ from werkzeug.utils import secure_filename
 load_dotenv()
 
 # === CONFIGURAÇÃO DE DIRETÓRIOS CORRIGIDA ===
-# Assumindo a estrutura: /src/telasHTML/ArquivosGerais/ArquivoDB/app.py
-# Subindo 3 níveis (.., .., ..) para alcançar o diretório raiz (/src).
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..', '..', '..')) 
 

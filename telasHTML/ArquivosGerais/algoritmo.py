@@ -12,7 +12,7 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("telasHTML\ArquivosGerais\telaDeLogin\telaLogin.html")
 
 @app.route("/random_user")
 def random_user():
