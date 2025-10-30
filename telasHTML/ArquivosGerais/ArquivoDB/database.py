@@ -72,17 +72,17 @@ def register_user(nome, email, senha, cidade, posicao, nascimento, numero): # <-
         # Hash da senha
         hashed_password = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         
-        # Insere o usuário no banco.
-        # CORREÇÃO CRÍTICA: O campo agora usa a chave 'numero', conforme solicitado.
-        response = supabase.table('usuarios').insert({
-            'nome': nome,
-            'email': email,
-            'senha': hashed_password,
-            'cidade': cidade,
-            'posicao': posicao,
-            'nascimento': nascimento,
-            'numero': numero # <--- CHAVE CORRIGIDA!
-        }).execute()
+        def register_user(nome, email, senha, cidade, posicao, nascimento, numero):
+    # ...
+    response = supabase.table('usuarios').insert({
+        'nome': nome,
+        'email': email,
+        'senha': hashed_password,
+        'cidade': cidade,
+        'posicao': posicao,
+        'nascimento': nascimento,
+        'numero': numero # Correto: 'numero'
+    }).execute()
         
         if response.data:
             return True, "Cadastro realizado com sucesso!"
