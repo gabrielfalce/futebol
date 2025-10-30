@@ -8,7 +8,7 @@ load_dotenv()
 
 # Configuração do Supabase
 url: str = os.environ.get("SUPABASE_URL")
-# ALTERAÇÃO: Usando a chave de serviço para operações de backend.
+# Usando a chave de serviço para operações de backend.
 key: str = os.environ.get("SUPABASE_SERVICE_KEY")
 
 # Garante que as variáveis de ambiente foram carregadas
@@ -67,7 +67,8 @@ def get_user_by_email(email):
         print(f"ERRO em get_user_by_email: {e}")
         return None
 
-def register_user(nome, email, senha, cidade, posicao, nascimento, numero_camisa):
+# ALTERAÇÃO 1: Adicionado o parâmetro 'numero_telefone' para aceitar o oitavo argumento.
+def register_user(nome, email, senha, cidade, posicao, nascimento, numero_camisa, numero_telefone):
     """
     Cadastra um novo usuário no banco de dados.
     """
@@ -78,6 +79,7 @@ def register_user(nome, email, senha, cidade, posicao, nascimento, numero_camisa
 
         hashed_password = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         
+        # ALTERAÇÃO 2: Adicionado o campo 'numero' ao dicionário de inserção.
         response = supabase.table('usuarios').insert({
             'nome': nome,
             'email': email,
@@ -85,7 +87,8 @@ def register_user(nome, email, senha, cidade, posicao, nascimento, numero_camisa
             'cidade': cidade,
             'posicao': posicao,
             'nascimento': nascimento, 
-            'numero_camisa': numero_camisa         
+            'numero_camisa': numero_camisa,
+            'numero': numero_telefone  # A coluna 'numero' recebe o valor de 'numero_telefone'
         }).execute()
         
         if response.data:
@@ -117,8 +120,8 @@ def check_user(email, senha):
 def get_all_users():
     """Retorna a lista de todos os usuários."""
     try:
-        # ALTERAÇÃO: Adicionado 'email' à seleção para garantir que o filtro na tela inicial funcione.
-        response = supabase.table('usuarios').select('id, nome, email, cidade, posicao, profile_image_url, nascimento, numero_camisa').execute()
+        # Garantindo que 'email' e 'numero' também são selecionados.
+        response = supabase.table('usuarios').select('id, nome, email, cidade, posicao, profile_image_url, nascimento, numero_camisa, numero').execute()
         if response.data:
             users = response.data
             for user in users:
