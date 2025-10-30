@@ -2,7 +2,7 @@ import os
 from supabase import create_client, Client
 import bcrypt
 from dotenv import load_dotenv
-from datetime import date
+from datetime import date 
 
 load_dotenv()
 
@@ -10,6 +10,7 @@ load_dotenv()
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
 
+# Garante que as variáveis de ambiente foram carregadas
 if not url or not key:
     print("ERRO: SUPABASE_URL ou SUPABASE_KEY não encontrados no ambiente.")
     url = "http://mock-url"
@@ -20,18 +21,19 @@ try:
     print("Sucesso: Cliente Supabase inicializado.")
 except Exception as e:
     print(f"ERRO ao inicializar o Cliente Supabase: {e}")
-    # Cliente Mock para evitar que o código quebre na inicialização
+    # Cliente Mock para evitar que o código quebre na inicialização, se o Supabase falhar.
     class MockSupabaseClient:
         def table(self, name): return self
         def insert(self, data): return self
         def select(self, columns): return self
         def eq(self, column, value): return self
         def limit(self, count): return self
-        def execute(self):
+        def execute(self): 
             class MockResponse:
                 data = []
             return MockResponse()
         def update(self, data): return self
+
     supabase = MockSupabaseClient()
 
 # === FUNÇÃO HELPER PARA CÁLCULO DE IDADE ===
@@ -39,17 +41,17 @@ def calculate_age(born):
     """Calcula a idade de um usuário com base na data de nascimento (AAAA-MM-DD)."""
     today = date.today()
     try:
-        born_date = date.fromisoformat(born)
+        born_date = date.fromisoformat(born) 
     except (ValueError, TypeError):
         return 'N/A'
     return today.year - born_date.year - ((today.month, today.day) < (born_date.month, born_date.day))
 
-# === FUNÇÕES DE BANCO DE DADOS (CORRIGIDAS) ===
+
+# === FUNÇÕES DE BANCO DE DADOS ===
 
 def get_user_by_email(email):
     """Busca um usuário por email e calcula sua idade."""
     try:
-        # CORREÇÃO: Seleciona todas as colunas para garantir que temos todos os dados
         response = supabase.table('usuarios').select('*').eq('email', email).limit(1).execute()
         if response.data:
             user = response.data[0]
@@ -63,36 +65,44 @@ def get_user_by_email(email):
         print(f"ERRO em get_user_by_email: {e}")
         return None
 
-def register_user(nome, email, senha, cidade, posicao, nascimento, numero_camisa): # <-- CORREÇÃO: Parâmetro 'numero' mudou para 'numero_camisa'
+# CORREÇÃO: O último parâmetro foi renomeado para 'numero_camisa' para clareza.
+def register_user(nome, email, senha, cidade, posicao, nascimento, numero_camisa):
     """
     Cadastra um novo usuário no banco de dados.
     """
     try:
+        # 1. Verifica se o email já existe
         existing_user = get_user_by_email(email)
         if existing_user:
             return False, "Este e-mail já está cadastrado."
 
+        # 2. Hash da senha
         hashed_password = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-
+        
+        # 3. Insere o usuário no banco.
+        # CORREÇÃO: A chave do dicionário agora é 'numero_camisa' para corresponder à coluna do Supabase.
         response = supabase.table('usuarios').insert({
             'nome': nome,
             'email': email,
             'senha_hash': hashed_password,
             'cidade': cidade,
             'posicao': posicao,
-            'nascimento': nascimento,
-            'numero_cami': numero_camisa # <-- CORREÇÃO: Nome da coluna 'numero_cami'
+            'nascimento': nascimento, 
+            'numero_camisa': numero_camisa         
         }).execute()
-
+        
         if response.data:
             return True, "Cadastro realizado com sucesso!"
         else:
-            return False, "Falha ao cadastrar. Nenhuma linha inserida."
-
+            return False, "Falha ao cadastrar. Nenhuma linha inserida. (Verifique RLS/Permissões)"
+            
     except Exception as e:
+        # A mensagem de erro agora deve refletir o erro do Supabase, se houver
         error_message = str(e)
         if hasattr(e, 'message') and isinstance(e.message, dict):
+            # Tenta extrair a mensagem de erro formatada do Supabase
             error_message = e.message.get('message', str(e))
+            
         print(f"ERRO em register_user: {error_message}")
         return False, f"Falha ao cadastrar devido a um erro de banco de dados: {error_message}"
 
@@ -101,6 +111,7 @@ def check_user(email, senha):
     """Verifica as credenciais do usuário para login."""
     try:
         user = get_user_by_email(email)
+        
         if user and user.get('senha_hash') and bcrypt.checkpw(senha.encode('utf-8'), user['senha_hash'].encode('utf-8')):
             return user
         return None
@@ -111,8 +122,8 @@ def check_user(email, senha):
 def get_all_users():
     """Retorna a lista de todos os usuários."""
     try:
-        # CORREÇÃO: Usando os nomes corretos das colunas 'profile_image' e 'numero_cami'
-        response = supabase.table('usuarios').select('id, nome, cidade, posicao, profile_image, nascimento, numero_cami').execute()
+        # CORREÇÃO: A consulta agora seleciona 'profile_image_url' e 'numero_camisa'.
+        response = supabase.table('usuarios').select('id, nome, cidade, posicao, profile_image_url, nascimento, numero_camisa').execute()
         if response.data:
             users = response.data
             for user in users:
@@ -129,7 +140,6 @@ def get_all_users():
 def get_user_by_id(user_id):
     """Busca um usuário por ID."""
     try:
-        # CORREÇÃO: Seleciona todas as colunas
         response = supabase.table('usuarios').select('*').eq('id', user_id).limit(1).execute()
         if response.data:
             user = response.data[0]
@@ -143,16 +153,17 @@ def get_user_by_id(user_id):
         print(f"ERRO em get_user_by_id: {e}")
         return None
 
-def update_user_profile_image(email, profile_image_path): # <-- CORREÇÃO: Nome do parâmetro
+# CORREÇÃO: O parâmetro foi renomeado para refletir o nome da coluna.
+def update_user_profile_image(email, profile_image_url_path):
     """Atualiza o caminho da foto de perfil do usuário."""
     try:
-        # CORREÇÃO: Nome da coluna 'profile_image'
+        # CORREÇÃO: O nome da coluna a ser atualizada é 'profile_image_url'.
         response = supabase.table('usuarios').update({
-            'profile_image': profile_image_path
+            'profile_image_url': profile_image_url_path
         }).eq('email', email).execute()
-
+        
         return bool(response.data)
-
+        
     except Exception as e:
         print(f"ERRO em update_user_profile_image: {e}")
         return False
@@ -160,16 +171,14 @@ def update_user_profile_image(email, profile_image_path): # <-- CORREÇÃO: Nome
 def update_user_profile(email, **update_data):
     """Atualiza o perfil do usuário com dados dinâmicos."""
     try:
-        # CORREÇÃO: Renomeia a chave se 'numero' for passado, para corresponder à coluna 'numero_cami'
-        if 'numero' in update_data:
-            update_data['numero_cami'] = update_data.pop('numero')
-
+        # NOTA: O app.py já está enviando os nomes de coluna corretos ('numero_camisa', 'profile_image_url'),
+        # então nenhuma modificação é necessária aqui.
         response = supabase.table('usuarios').update(update_data).eq('email', email).execute()
         return bool(response.data)
     except Exception as e:
         print(f"ERRO em update_user_profile: {e}")
         return False
-
+        
 def update_password(email, new_password):
     """Redefine a senha de um usuário existente."""
     try:
