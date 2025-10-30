@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tela Inicial</title>
 
-    <!-- ALTERAÇÃO 1: Corrigido 'inicio-assets' para 'inicio_assets' -->
     <link rel="stylesheet" href="{{ url_for('inicio_assets', filename='style.css') }}">
 
     <style>
@@ -102,7 +101,8 @@
     <header class="page-header">
         <nav class="navigation">
             <a href="{{ url_for('pagina_feed') }}" title="Feed de Posts">Feed</a>
-            <a href="{{ url_for('pagina_usuario') }}" title="Meu Perfil">Meu Perfil</a>
+            <!-- ALTERAÇÃO NECESSÁRIA AQUI -->
+            <a href="{{ url_for('pagina_usuario', user_id=session.user_id) }}" title="Meu Perfil">Meu Perfil</a>
             <a href="{{ url_for('logout') }}" title="Sair">Sair</a>
         </nav>
     </header>
@@ -110,16 +110,15 @@
     <main>
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Buscar usuários..." onkeyup="searchUsers()">
-            <!-- ALTERAÇÃO 2: Corrigido 'inicio-assets' para 'inicio_assets' -->
             <img src="{{ url_for('inicio_assets', filename='lupa.png') }}" alt="Ícone de busca" class="search-icon">
         </div>
 
         <div class="user-list" id="user-list">
             {% if users %}
                 {% for user in users %}
+                    <!-- CORREÇÃO: O link aqui deve ser para 'chat_with_user' -->
                     <a href="{{ url_for('chat_with_user', destinatario_id=user.id) }}" class="user-card-link">
                         <div class="user-card">
-                            <!-- ALTERAÇÃO 3: Corrigida a forma de carregar a imagem de perfil -->
                             <img class="user-avatar" 
                                  src="{{ url_for('serve_static_files', filename=user.profile_image_url) if user.profile_image_url else '' }}" 
                                  alt="Avatar de {{ user.nome or 'Usuário' }}">
