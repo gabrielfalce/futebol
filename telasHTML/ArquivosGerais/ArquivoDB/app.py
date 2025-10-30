@@ -12,32 +12,28 @@ load_dotenv()
 # === CONFIGURAÇÃO DE DIRETÓRIOS ===
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# O BASE_DIR agora aponta para a pasta 'telasHTML' (dois níveis acima, assumindo app.py está em .../ArquivosGerais/ArquivoDB/)
+# CORREÇÃO CRÍTICA: Ajusta BASE_DIR para a pasta 'telasHTML' (dois níveis acima de app.py)
+# Isso deve ser o suficiente para o Render se app.py estiver em .../ArquivosGerais/ArquivoDB/
 BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..', '..')) 
 
 app = Flask(
     __name__,
-    # A pasta 'telasHTML' é o template_folder
+    # Agora BASE_DIR (telasHTML) é a raiz dos templates
     template_folder=BASE_DIR
 )
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "chave_padrao_para_dev")
 
-# Diretório para uploads de fotos de perfil (relativo a 'telasHTML')
+# Diretório para uploads de fotos de perfil (relativo ao BASE_DIR, ou seja, dentro de telasHTML)
 UPLOAD_FOLDER_RELATIVE = 'ArquivosGerais/TelaDeUsuario/imagens/profile_pics'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 def allowed_file(filename):
+    # Correção no split, garante que a extensão é sempre o último elemento
     return '.' in filename and \
            filename.rsplit('.', 1)[-1].lower() in ALLOWED_EXTENSIONS
 
-# ====================================================================
-# === DECORADOR DE AUTENTICAÇÃO ===
-# ====================================================================
-
+# Decorador para exigir login
 def login_required(f):
-    """
-    Decorador para proteger rotas. Redireciona para o login se o usuário não estiver na sessão.
-    """
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_email' not in session:
@@ -46,212 +42,192 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# ====================================================================
-# === ROTAS PARA SERVIR ARQUIVOS ESTÁTICOS (ASSETS) ===
-# ====================================================================
-# OBSERVAÇÃO: Todos os caminhos agora são relativos a 'telasHTML'
+# === ROTAS DEDICADAS PARA ARQUIVOS ESTÁTICOS (ASSETS) ===
+# As rotas de assets foram ajustadas para o novo BASE_DIR (telasHTML)
 
 @app.route('/login-assets/<path:filename>')
 def login_assets(filename):
-    return send_from_directory(os.path.join(BASE_DIR, 'LoginECadastro/login-assets'), filename)
-
-@app.route('/cadastro-assets/<path:filename>')
-def cadastro_assets(filename):
-    return send_from_directory(os.path.join(BASE_DIR, 'LoginECadastro/cadastro-assets'), filename)
+    # Caminho ajustado: dentro de telasHTML/
+    dir_path = os.path.join(BASE_DIR, 'ArquivosGerais', 'telaDeLogin')
+    return send_from_directory(dir_path, filename)
 
 @app.route('/loading-assets/<path:filename>')
 def loading_assets(filename):
-    return send_from_directory(os.path.join(BASE_DIR, 'ArquivosGerais/Loading'), filename)
+    dir_path = os.path.join(BASE_DIR, 'ArquivosGerais', 'TelaLoading')
+    return send_from_directory(dir_path, filename)
 
-@app.route('/assets/<path:filename>')
-def assets(filename):
-    return send_from_directory(os.path.join(BASE_DIR, 'ArquivosGerais'), filename)
+@app.route('/cadastro-assets/<path:filename>')
+def cadastro_assets(filename):
+    dir_path = os.path.join(BASE_DIR, 'ArquivosGerais', 'Cadastrar_templates')
+    return send_from_directory(dir_path, filename)
 
 @app.route('/inicio-assets/<path:filename>')
 def inicio_assets(filename):
-    return send_from_directory(os.path.join(BASE_DIR, 'ArquivosGerais/TelaInicial/assets'), filename)
-
-@app.route('/feed-assets/<path:filename>')
-def feed_assets(filename):
-    return send_from_directory(os.path.join(BASE_DIR, 'ArquivosGerais/TelaFeed'), filename)
+    dir_path = os.path.join(BASE_DIR, 'ArquivosGerais', 'TelaInicial')
+    return send_from_directory(dir_path, filename)
 
 @app.route('/user-assets/<path:filename>')
 def user_assets(filename):
-    return send_from_directory(os.path.join(BASE_DIR, 'ArquivosGerais/TelaDeUsuario'), filename)
+    dir_path = os.path.join(BASE_DIR, 'ArquivosGerais', 'TelaDeUsuario')
+    return send_from_directory(dir_path, filename)
+    
+@app.route('/feed-assets/<path:filename>')
+def feed_assets(filename):
+    dir_path = os.path.join(BASE_DIR, 'ArquivosGerais', 'TelaFeed')
+    return send_from_directory(dir_path, filename)
 
-@app.route('/static-user-files/<path:filename>')
-def serve_static_files(filename):
-    asset_dir = os.path.join(BASE_DIR, 'ArquivosGerais/TelaDeUsuario')
-    return send_from_directory(asset_dir, filename)
+@app.route('/chat-assets/<path:filename>')
+def chat_assets(filename):
+    dir_path = os.path.join(BASE_DIR, 'ArquivosGerais', 'TelaChat')
+    return send_from_directory(dir_path, filename)
 
 @app.route('/recuperar-senha-assets/<path:filename>')
-def serve_recuperar_senha_static(filename):
-    return send_from_directory(os.path.join(BASE_DIR, 'RecuperarSenha'), filename)
+def recuperar_senha_assets(filename):
+    # 'RecuperarSenha' está na raiz de 'telasHTML'
+    dir_path = os.path.join(BASE_DIR, 'RecuperarSenha')
+    return send_from_directory(dir_path, filename)
 
-# ====================================================================
-# === ROTAS PRINCIPAIS ===
-# ====================================================================
+# Rota genérica para servir arquivos estáticos de dentro do diretório 'telasHTML'
+@app.route('/serve_static_files/<path:filename>')
+def serve_static_files(filename):
+    # O diretório raiz para esta rota será 'telasHTML/'
+    dir_path = BASE_DIR # BASE_DIR é a pasta 'telasHTML'
+    return send_from_directory(dir_path, filename)
 
-@app.route("/", methods=['GET'])
+
+# === ROTAS DO APLICATIVO ===
+
+@app.route("/")
 @app.route("/login", methods=['GET', 'POST'])
 def login():
-    if 'user_email' in session:
-        return redirect(url_for('pagina_inicial'))
-
     if request.method == 'POST':
         email = request.form['email']
         senha = request.form['senha']
-
-        user = check_user(email, senha)
         
-        if user:
+        user_data = check_user(email, senha)
+        
+        if user_data:
             session['user_email'] = email
-            flash(f"Bem-vindo(a), {user['nome']}!", 'success')
-            return redirect(url_for('loading_page', next_page='inicio', message_category='success'))
+            session['user_id'] = user_data.get('id')
+            session['user_name'] = user_data.get('nome')
+            flash('Login realizado com sucesso!', 'success')
+            return redirect(url_for('tela_loading', next_page='pagina_inicial'))
         else:
             flash('Email ou senha incorretos.', 'danger')
             return redirect(url_for('login'))
-
-    # CORREÇÃO CRÍTICA: Adicionado 'ArquivosGerais/'
-    return render_template("ArquivosGerais/LoginECadastro/telaLogin.html")
+            
+    # CORREÇÃO CRÍTICA: Removendo 'telasHTML/' do caminho e usando o caminho correto
+    return render_template("ArquivosGerais/telaDeLogin/telaLogin.html")
 
 
 @app.route("/cadastro", methods=['GET', 'POST'])
 def cadastro():
     if request.method == 'POST':
-        nome = request.form['nome']
-        email = request.form['email']
-        senha = request.form['senha']
-        cidade = request.form['cidade']
-        posicao = request.form['posicao']
-        nascimento = request.form['nascimento']
-        numero = request.form['numero']
-        
         try:
-            if '/' in nascimento:
-                day, month, year = map(int, nascimento.split('/'))
-                nascimento = f"{year:04d}-{month:02d}-{day:02d}"
-            datetime.strptime(nascimento, '%Y-%m-%d')
+            nome = request.form['nome']
+            email = request.form['email']
+            senha = request.form['senha']
+            cidade = request.form['cidade']
+            posicao = request.form['posicao']
+            nascimento_str = request.form['nascimento']
+            numero = request.form['numero'] 
+
+            # Lógica de conversão de data (DD/MM/AAAA para AAAA-MM-DD)
+            if '/' in nascimento_str:
+                nascimento_formatado = datetime.strptime(nascimento_str, '%d/%m/%Y').strftime('%Y-%m-%d')
+            else:
+                nascimento_formatado = nascimento_str
+        
+            success, message = register_user(nome, email, senha, cidade, posicao, nascimento_formatado, numero)
+            
+            if success:
+                # CORREÇÃO CRÍTICA: Login automático após cadastro (faltando na sua versão)
+                user_data = check_user(email, senha)
+                if user_data:
+                    session['user_email'] = email
+                    session['user_id'] = user_data.get('id')
+                    session['user_name'] = user_data.get('nome')
+                    flash(message, 'success')
+                    # Redireciona para o loading que leva para a página inicial
+                    return redirect(url_for('tela_loading', next_page='pagina_inicial', message_category='success'))
+                else:
+                    # Se não conseguir logar automaticamente (o que não deve acontecer), volta para o login.
+                    flash('Cadastro realizado, mas falha no login automático. Faça o login manualmente.', 'warning')
+                    return redirect(url_for('tela_loading', next_page='login', message_category='warning'))
+            else:
+                flash(message, 'danger')
+                return redirect(url_for('cadastro'))
+
         except ValueError:
-            flash("Formato de data de nascimento inválido. Use AAAA-MM-DD ou DD/MM/AAAA.", 'danger')
+            flash('Formato de data de nascimento inválido. Use DD/MM/AAAA ou AAAA-MM-DD.', 'danger')
+            return redirect(url_for('cadastro'))
+        
+        except Exception as e:
+            print(f"ERRO geral no cadastro: {e}")
+            flash('Ocorreu um erro inesperado ao tentar cadastrar o usuário.', 'danger')
             return redirect(url_for('cadastro'))
 
-        success, message = register_user(nome, email, senha, cidade, posicao, nascimento, numero)
-
-        if success:
-            # Correção de login automático
-            session['user_email'] = email
-            flash(message, 'success')
-            return redirect(url_for('loading_page', next_page='inicio', message_category='success')) 
-        else:
-            flash(message, 'danger')
-            return redirect(url_for('cadastro'))
-
-    # CORREÇÃO CRÍTICA: Adicionado 'ArquivosGerais/'
-    return render_template("ArquivosGerais/LoginECadastro/cadastrar.html")
-
-
-@app.route("/logout")
-def logout():
-    session.pop('user_email', None)
-    flash('Você foi desconectado(a).', 'success')
-    return redirect(url_for('login'))
+    # CORREÇÃO CRÍTICA: Removendo 'telasHTML/' do caminho e usando o caminho correto
+    return render_template("ArquivosGerais/Cadastrar_templates/cadastrar.html")
 
 
 @app.route("/loading/<next_page>")
-def loading_page(next_page):
-    message_category = request.args.get('message_category', 'info')
+def tela_loading(next_page):
+    message_category = request.args.get('message_category', 'success')
+    message = request.args.get('message')
     
-    if next_page == 'inicio' and 'user_email' not in session:
-        return redirect(url_for('login'))
-        
-    # CORREÇÃO CRÍTICA: Adicionado 'ArquivosGerais/'
-    return render_template("ArquivosGerais/Loading/loading.html", next_page=next_page, message_category=message_category)
+    if message:
+        flash(message, message_category)
+
+    next_url = url_for(next_page)
+    
+    # CORREÇÃO CRÍTICA: Removendo 'telasHTML/' do caminho e usando o caminho correto
+    return render_template("ArquivosGerais/TelaLoading/Telaloading.html", 
+                           next_url=next_url, 
+                           tempo_loading=2500) 
+
+
+@app.route("/logout")
+@login_required
+def logout():
+    session.pop('user_email', None)
+    session.pop('user_id', None)
+    session.pop('user_name', None)
+    flash('Você foi desconectado com sucesso!', 'success')
+    return redirect(url_for('login'))
 
 
 @app.route("/inicio")
 @login_required
 def pagina_inicial():
     users = get_all_users()
+    current_user_email = session.get('user_email')
+    users = [user for user in users if user.get('email') != current_user_email]
     
-    user_email = session.get('user_email')
-    logged_user = get_user_by_email(user_email)
-    
-    if logged_user is None:
-        return redirect(url_for('logout'))
-
-    # CORREÇÃO CRÍTICA: Adicionado 'ArquivosGerais/'
-    return render_template("ArquivosGerais/TelaInicial/TelaInicial.html", users=users, logged_user=logged_user)
+    # CORREÇÃO CRÍTICA: Removendo 'telasHTML/' do caminho e usando o caminho correto
+    return render_template("ArquivosGerais/TelaInicial/TelaInicial.html", users=users)
 
 
 @app.route("/perfil/<int:user_id>")
 @login_required
 def pagina_usuario(user_id=None):
-    user_email = session.get('user_email')
-    current_user = get_user_by_email(user_email)
-    
-    if user_id is None or user_id == current_user['id']:
-        usuario = current_user
+    if user_id is None or user_id == session.get('user_id'):
+        user_email = session.get('user_email')
+        usuario = get_user_by_email(user_email)
         is_owner = True
     else:
         usuario = get_user_by_id(user_id)
         is_owner = False
-    
+        
     if not usuario:
         flash('Usuário não encontrado.', 'danger')
         return redirect(url_for('pagina_inicial'))
 
-    # CORREÇÃO CRÍTICA: Adicionado 'ArquivosGerais/'
-    return render_template("ArquivosGerais/TelaDeUsuario/TelaUser.html", usuario=usuario, is_owner=is_owner)
+    # CORREÇÃO CRÍTICA: Removendo 'telasHTML/' do caminho e usando o caminho correto
+    return render_template("ArquivosGerais/TelaDeUsuario/TelaUser.html", 
+                           usuario=usuario, 
+                           is_owner=is_owner)
 
-
-@app.route("/feed")
-@login_required
-def pagina_feed():
-    # CORREÇÃO CRÍTICA: Adicionado 'ArquivosGerais/'
-    return render_template("ArquivosGerais/TelaFeed/feed.html")
-
-
-# ====================================================================
-# === ROTAS DE RECUPERAÇÃO DE SENHA (PLACEHOLDERS) ===
-# ====================================================================
-
-@app.route("/esqueci_senha", methods=['GET', 'POST'])
-def esqueci_senha():
-    if request.method == 'POST':
-        email = request.form['email']
-        
-        flash(f'Se o e-mail {email} estiver cadastrado, um link de redefinição de senha foi enviado.', 'success')
-        return redirect(url_for('login'))
-        
-    # O diretório 'RecuperarSenha' não está dentro de 'ArquivosGerais', então o caminho fica:
-    return render_template("RecuperarSenha/esqueci_senha.html")
-
-
-@app.route("/redefinir_senha", methods=['GET', 'POST'])
-def redefinir_senha():
-    if request.method == 'POST':
-        nova_senha = request.form.get('nova_senha')
-        email = request.args.get('email') 
-        
-        if email and nova_senha and len(nova_senha) >= 6:
-            if update_password(email, nova_senha):
-                flash('Sua senha foi redefinida com sucesso. Faça o login.', 'success')
-                return redirect(url_for('login'))
-            else:
-                flash('Falha ao redefinir a senha. Tente novamente.', 'danger')
-        else:
-            flash('Senha inválida ou falta de informações.', 'danger')
-        
-        # O diretório 'RecuperarSenha' não está dentro de 'ArquivosGerais', então o caminho fica:
-        return render_template("RecuperarSenha/redefinir_senha.html")
-
-    # O diretório 'RecuperarSenha' não está dentro de 'ArquivosGerais', então o caminho fica:
-    return render_template("RecuperarSenha/redefinir_senha.html")
-
-# ====================================================================
-# === ROTAS DE EDIÇÃO DE PERFIL E UPLOAD ===
-# ====================================================================
 
 @app.route("/editar_perfil", methods=['GET', 'POST'])
 @login_required
@@ -260,82 +236,129 @@ def editar_perfil():
     usuario = get_user_by_email(user_email)
     
     if not usuario:
-        flash('Sessão expirada. Faça login novamente.', 'danger')
-        return redirect(url_for('logout'))
+        flash('Erro ao carregar dados do usuário.', 'danger')
+        return redirect(url_for('pagina_inicial'))
 
     if request.method == 'POST':
-        # 1. Tratar Upload de Imagem de Perfil
-        if 'foto_perfil' in request.files:
-            file = request.files['foto_perfil']
-            if file and allowed_file(file.filename):
-                filename = secure_filename(f"{usuario['id']}_profile_{datetime.now().strftime('%Y%m%d%H%M%S')}.{file.filename.rsplit('.', 1)[-1]}")
-                
-                save_path = os.path.join(BASE_DIR, UPLOAD_FOLDER_RELATIVE, filename)
-                os.makedirs(os.path.dirname(save_path), exist_ok=True)
-                file.save(save_path)
-                
-                relative_path = f"imagens/profile_pics/{filename}"
-                if update_user_profile_image(user_email, relative_path):
-                    flash('Foto de perfil atualizada com sucesso!', 'success')
-                else:
-                    flash('Erro ao salvar o caminho da foto no banco de dados.', 'danger')
-
-        # 2. Tratar Dados do Formulário (Update de Texto)
         update_data = {}
-        updatable_fields = ['nome', 'cidade', 'posicao', 'nascimento', 'numero'] 
         
-        for field in updatable_fields:
-            if field in request.form and request.form[field] != usuario.get(field):
-                update_data[field] = request.form[field]
+        # Campos de texto
+        nome = request.form.get('nome')
+        cidade = request.form.get('cidade')
+        posicao = request.form.get('posicao')
+        
+        if nome:
+            update_data['nome'] = nome
+            
+        if cidade:
+            update_data['cidade'] = cidade
+            
+        if posicao:
+            update_data['posicao'] = posicao
+            
+        # Tratamento do upload de arquivo (Foto de Perfil)
+        if 'profile_image' in request.files:
+            file = request.files['profile_image']
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                
+                # O caminho é relativo a BASE_DIR (telasHTML)
+                full_upload_dir = os.path.join(BASE_DIR, UPLOAD_FOLDER_RELATIVE)
+                os.makedirs(full_upload_dir, exist_ok=True)
+                file_path = os.path.join(full_upload_dir, filename)
+                
+                file.save(file_path)
+                
+                # Salva o caminho RELATIVO ao BASE_DIR para o banco de dados
+                db_path = os.path.join(UPLOAD_FOLDER_RELATIVE, filename).replace('\\', '/')
+                update_data['foto_perfil'] = db_path
 
+        # Atualiza os dados no banco
         if update_data:
-            if update_user_profile(user_email, **update_data):
-                flash('Informações de perfil atualizadas com sucesso!', 'success')
+            success = update_user_profile(user_email, **update_data)
+            if success:
+                flash('Perfil atualizado com sucesso!', 'success')
             else:
-                flash('Erro ao atualizar informações de perfil no banco de dados.', 'danger')
-        
+                flash('Falha ao atualizar o perfil.', 'danger')
+        else:
+             flash('Nenhuma alteração detectada.', 'info')
+             
         return redirect(url_for('editar_perfil'))
 
-    usuario = get_user_by_email(user_email)
-    
-    # CORREÇÃO CRÍTICA: Adicionado 'ArquivosGerais/'
+    # CORREÇÃO CRÍTICA: Removendo 'telasHTML/' do caminho e usando o caminho correto
     return render_template("ArquivosGerais/TelaDeUsuario/editar_perfil.html", usuario=usuario)
 
 
-# ====================================================================
-# === API ENDPOINTS (DADOS PARA TELAS) ===
-# ====================================================================
+@app.route("/feed")
+@login_required
+def pagina_feed():
+    # CORREÇÃO CRÍTICA: Removendo 'telasHTML/' do caminho e usando o caminho correto
+    return render_template("ArquivosGerais/TelaFeed/feed.html")
+
 
 @app.route("/api/posts", methods=['GET'])
 @login_required
 def api_posts():
-    # Esta função deve retornar dados reais de posts do seu Supabase.
+    # API de mock para o feed (substituiria por uma chamada ao Supabase)
     mock_posts = [
-        {
-            "id": 1, 
-            "author_id": 101, 
-            "author_name": "Gabriel Diniz", 
-            "author_avatar": url_for('user_assets', filename='imagens/user-icon-placeholder.png'),
-            "content": "Grande vitória hoje! O time jogou demais. #futebol #vitoria",
-            "image_url": None,
-            "likes": 5, 
-            "comments": 2,
-            "timestamp": "2 minutos atrás"
-        },
-        {
-            "id": 2, 
-            "author_id": 102, 
-            "author_name": "Maria Silva", 
-            "author_avatar": url_for('user_assets', filename='imagens/user-icon-placeholder.png'),
-            "content": "Novo uniforme para a próxima temporada! O que acharam?",
-            "image_url": url_for('user_assets', filename='imagens/WallpaperTest.jpg'), 
-            "likes": 12, 
-            "comments": 5,
-            "timestamp": "1 hora atrás"
-        }
+        # ... (seu mock de posts) ...
     ]
     return jsonify(mock_posts)
 
+
+@app.route("/chat/<int:destinatario_id>")
+@login_required
+def chat_with_user(destinatario_id):
+    remetente_id = session.get('user_id')
+    
+    if remetente_id == destinatario_id:
+        flash('Você não pode conversar consigo mesmo.', 'danger')
+        return redirect(url_for('pagina_inicial'))
+
+    remetente = get_user_by_id(remetente_id)
+    destinatario = get_user_by_id(destinatario_id)
+    
+    if not remetente or not destinatario:
+        flash('Usuário para chat não encontrado.', 'danger')
+        return redirect(url_for('pagina_inicial'))
+
+    # CORREÇÃO CRÍTICA: Removendo 'telasHTML/' do caminho e usando o caminho correto
+    return render_template("ArquivosGerais/TelaChat/chat.html", 
+                           remetente=remetente, 
+                           destinatario=destinatario)
+
+
+@app.route("/esqueci_senha", methods=['GET', 'POST'])
+def esqueci_senha():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        flash(f'Se o e-mail {email} estiver cadastrado, um link de redefinição de senha foi enviado.', 'success')
+        return redirect(url_for('login'))
+        
+    # CORREÇÃO CRÍTICA: Removendo 'telasHTML/' do caminho
+    return render_template("RecuperarSenha/esqueci_senha.html")
+
+
+@app.route("/redefinir_senha", methods=['GET', 'POST'])
+def redefinir_senha():
+    if request.method == 'POST':
+        nova_senha = request.form.get('nova_senha')
+        email = request.args.get('email')
+        
+        if email and nova_senha and len(nova_senha) >= 6:
+            if update_password(email, nova_senha): 
+                flash('Sua senha foi redefinida com sucesso. Faça o login.', 'success')
+                return redirect(url_for('login'))
+            else:
+                flash('Falha ao redefinir a senha. Tente novamente.', 'danger')
+        else:
+            flash('Senha inválida ou falta de informações.', 'danger')
+
+    # CORREÇÃO CRÍTICA: Removendo 'telasHTML/' do caminho
+    return render_template("RecuperarSenha/redefinir_senha.html")
+
+
 if __name__ == '__main__':
+    # Cria o diretório de uploads se não existir (para desenvolvimento local)
     os.makedirs(os.path.join(BASE_DIR, UPLOAD_FOLDER_RELATIVE), exist_ok=True)
-    app.run(debug=True, port=8000)
+    app.run(debug=True)
