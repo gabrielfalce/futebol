@@ -324,9 +324,15 @@ def chat_with_user(destinatario_id):
         flash('Usuário para chat não encontrado.', 'danger')
         return redirect(url_for('pagina_inicial'))
 
+    # ALTERAÇÃO: Passando as variáveis de ambiente para o template do chat
+    supabase_url = os.environ.get("SUPABASE_URL")
+    supabase_anon_key = os.environ.get("SUPABASE_KEY") # A chave anon é usada no lado do cliente
+
     return render_template("telasHTML/ArquivosGerais/TelaChat/chat.html", 
                            remetente=remetente, 
-                           destinatario=destinatario)
+                           destinatario=destinatario,
+                           supabase_url=supabase_url,
+                           supabase_anon_key=supabase_anon_key)
 
 
 @app.route("/esqueci_senha", methods=['GET', 'POST'])
