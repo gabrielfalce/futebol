@@ -104,10 +104,10 @@ def register_user(nome, email, senha, cidade, posicao, nascimento, numero):
         'senha_hash': hashed_password.decode('utf-8'),
         'cidade': cidade,
         'posicao': posicao,
-        'data_nascimento': formatted_nascimento,
+        # CORREÇÃO CRÍTICA: Trocado 'data_nascimento' por 'nascimento'
+        'nascimento': formatted_nascimento, 
         'numero_telefone': numero,
-        'foto_perfil': None, # Inicializa a foto de perfil como nula (se a coluna existir e for nula)
-        # REMOVIDA: 'foto_capa': None, <--- REMOVIDO PARA CORRIGIR O ERRO PGRST204
+        'foto_perfil': None, 
     }
 
     try:
@@ -132,8 +132,8 @@ def get_user_by_email(email):
         if response.data:
             user = response.data[0]
             # Adiciona a idade
-            if user.get('data_nascimento'):
-                user['idade'] = calculate_age(user['data_nascimento'])
+            if user.get('nascimento'):
+                user['idade'] = calculate_age(user['nascimento'])
             else:
                 user['idade'] = 'N/A'
             return user
