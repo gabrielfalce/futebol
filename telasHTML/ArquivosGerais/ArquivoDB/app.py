@@ -145,7 +145,7 @@ def pagina_usuario():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     user_data = get_user_by_email(session['user_email'])
-    return render_template("telasHTML/TelaDeUsuario/TelaUser.html", usuario=user_data)
+    return render_template("telasHTML\ArquivosGerais\TelaDeUsuario\TelaUser.html", usuario=user_data)
 
 
 @app.route("/editar_perfil", methods=['GET', 'POST'])
@@ -249,14 +249,14 @@ def esqueci_senha():
 def pagina_chat(destinatario_id):
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    return render_template("telasHTML/TelaChat/chat.html", destinatario_id=destinatario_id)
+    return render_template("telasHTML\ArquivosGerais\TelaChat\chat.html", destinatario_id=destinatario_id)
 
 
 @app.route("/feed")
 def pagina_feed():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    return render_template("telasHTML/TelaFeed/feed.html")
+    return render_template("telasHTML\ArquivosGerais\TelaFeed\feed.html")
 
 
 if __name__ == '__main__':
