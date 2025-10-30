@@ -82,7 +82,7 @@ def register_user(nome, email, senha, cidade, posicao, nascimento, numero):
         response = supabase.table('usuarios').insert({
             'nome': nome,
             'email': email,
-            'senha': hashed_password,
+            'senha_hash': hashed_password, # <-- CORREÇÃO: Usando 'senha_hash'
             'cidade': cidade,
             'posicao': posicao,
             'nascimento': nascimento, 
@@ -95,8 +95,14 @@ def register_user(nome, email, senha, cidade, posicao, nascimento, numero):
             return False, "Falha ao cadastrar. Nenhuma linha inserida. (Verifique RLS/Permissões)"
             
     except Exception as e:
-        print(f"ERRO em register_user: {e}")
-        return False, "Falha ao cadastrar devido a um erro de servidor ou de banco de dados."
+        # A mensagem de erro agora deve refletir o erro do Supabase, se houver
+        error_message = str(e)
+        if hasattr(e, 'message') and isinstance(e.message, dict):
+            # Tenta extrair a mensagem de erro formatada do Supabase
+            error_message = e.message.get('message', str(e))
+            
+        print(f"ERRO em register_user: {error_message}")
+        return False, f"Falha ao cadastrar devido a um erro de banco de dados: {error_message}"
 
 
 def check_user(email, senha):
@@ -104,7 +110,8 @@ def check_user(email, senha):
     try:
         user = get_user_by_email(email)
         
-        if user and user.get('senha') and bcrypt.checkpw(senha.encode('utf-8'), user['senha'].encode('utf-8')):
+        # CORREÇÃO: Verificando 'senha_hash'
+        if user and user.get('senha_hash') and bcrypt.checkpw(senha.encode('utf-8'), user['senha_hash'].encode('utf-8')):
             return user
         return None
     except Exception as e:
@@ -160,6 +167,8 @@ def update_user_profile_image(email, foto_perfil_path):
 def update_user_profile(email, **update_data):
     """Atualiza o perfil do usuário com dados dinâmicos."""
     try:
+        # NOTA: Se você passar a 'senha' aqui, o hash não será refeito.
+        # A atualização de senha deve ser feita pela função 'update_password'.
         response = supabase.table('usuarios').update(update_data).eq('email', email).execute()
         return bool(response.data)
     except Exception as e:
@@ -171,7 +180,7 @@ def update_password(email, new_password):
     try:
         hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         response = supabase.table('usuarios').update({
-            'senha': hashed_password
+            'senha_hash': hashed_password # <-- CORREÇÃO: Usando 'senha_hash'
         }).eq('email', email).execute()
         return bool(response.data)
     except Exception as e:
