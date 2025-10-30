@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Perfil</title>
     
-    <link rel="stylesheet" href="{{ url_for('user-assets', filename='editarStyle.css') }}">
+    <!-- ALTERAÇÃO 1: Corrigido 'user-assets' para 'user_assets' -->
+    <link rel="stylesheet" href="{{ url_for('user_assets', filename='editarStyle.css') }}">
     
     <style>
         .toast {
@@ -36,17 +37,20 @@
     <div id="toast-notification" class="toast"></div>
 
     <header>
-        <a href="{{ url_for('pagina_usuario') }}" class="back-button">&larr; Voltar</a>
+        <!-- ALTERAÇÃO 2: Adicionado user_id para a rota de voltar ao perfil -->
+        <a href="{{ url_for('pagina_usuario', user_id=session.user_id) }}" class="back-button">&larr; Voltar</a>
         <h1>Editar Perfil</h1>
     </header>
 
     <main class="edit-container">
 
-        <form action="{{ url_for('upload_profile_image') }}" method="POST" enctype="multipart/form-data" class="profile-image-form">
+        <!-- ALTERAÇÃO 3: Unificado os dois formulários em um só. -->
+        <!-- Agora, imagem e dados são enviados juntos para a rota 'editar_perfil'. -->
+        <form action="{{ url_for('editar_perfil') }}" method="POST" enctype="multipart/form-data" class="unified-form">
             
             <label for="profile_image" class="profile-image-upload-label">
                 <img id="image-preview" 
-                     src="{{ usuario.foto_perfil_url or url_for('user-assets', filename='imagens/user-icon-placeholder.png') }}" 
+                     src="{{ url_for('serve_static_files', filename=usuario.profile_image_url) if usuario.profile_image_url else url_for('user_assets', filename='imagens/user-icon-placeholder.png') }}"
                      alt="Pré-visualização da Imagem de Perfil" 
                      class="profile-image-preview">
                 <div class="upload-icon">
@@ -54,16 +58,12 @@
                 </div>
             </label>
             
-            <input type="file" id="profile_image" name="profile_image" accept="image/*" style="display: none;" required>
-            
-            <button type="submit" class="submit-image-button">Salvar Imagem</button>
-        </form>
-
-        <form action="{{ url_for('editar_perfil') }}" method="POST" class="edit-data-form">
+            <!-- O nome do input de imagem é 'profile_image' para corresponder ao que o app.py espera -->
+            <input type="file" id="profile_image" name="profile_image" accept="image/*" style="display: none;">
             
             <div class="form-group">
                 <label for="nome">Nome</label>
-                <input type="text" id="nome" name="nome" value="{{ usuario.nome or '' }}" required>
+                <input type="text" id="nome" name="nome" value="{{ usuario.nome or '' }}">
             </div>
             
             <div class="form-group">
@@ -78,16 +78,15 @@
             
             <div class="form-group">
                 <label for="numero_camisa">Nº da Camisa</label>
-                <input type="number" id="numero_camisa" name="numero_camisa" value="{{ usuario.numero_camisa or '' }}" min="1" max="99" placeholder="Opcional">
+                <!-- O nome do input é 'numero' para corresponder ao que app.py espera -->
+                <input type="number" id="numero_camisa" name="numero" value="{{ usuario.numero_camisa or '' }}" min="1" max="99" placeholder="Opcional">
             </div>
 
             <div class="form-group">
-                <label for="nascimento">Data de Nascimento (DD/MM/AAAA)</label>
+                <label for="nascimento">Data de Nascimento (DD/MM/AAAA )</label>
                 {% set data_nasc_formatted = "" %}
                 {% if usuario.nascimento %}
-                    {% set data_nasc_formatted = usuario.nascimento %} 
-                    {# Em Flask real, você usaria uma função ou filtro para formatar: #}
-                    {# Ex: {{ usuario.nascimento | format_date('DD/MM/YYYY') }} #}
+                    {% set data_nasc_formatted = usuario.nascimento %}
                 {% endif %}
                 
                 <input type="text" id="nascimento" name="nascimento" 
@@ -96,11 +95,11 @@
             </div>
             
             <div class="form-group">
-                <label for="numero">Telefone</label>
-                <input type="tel" id="numero" name="numero" value="{{ usuario.numero or '' }}" placeholder="(XX) XXXXX-XXXX">
+                <label for="numero_tel">Telefone</label>
+                <input type="tel" id="numero_tel" name="numero_tel" value="{{ usuario.numero or '' }}" placeholder="(XX) XXXXX-XXXX">
             </div>
 
-            <button type="submit" class="submit-data-button">Salvar Dados</button>
+            <button type="submit" class="submit-data-button">Salvar Alterações</button>
         </form>
 
     </main>
@@ -122,11 +121,9 @@
 
         // Script para exibir mensagens flash (toast)
         document.addEventListener('DOMContentLoaded', () => {
-            // CORREÇÃO: Usa tojson para passar mensagens de forma segura
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     (function() {
-                        // CORREÇÃO CRÍTICA: O filtro |tojson garante que strings com aspas sejam tratadas corretamente em JS.
                         const message = {{ messages[0][1] | tojson }};
                         const category = {{ messages[0][0] | tojson }};
                         

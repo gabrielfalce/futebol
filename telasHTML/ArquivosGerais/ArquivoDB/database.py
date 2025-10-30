@@ -8,17 +8,19 @@ load_dotenv()
 
 # Configuração do Supabase
 url: str = os.environ.get("SUPABASE_URL")
-key: str = os.environ.get("SUPABASE_KEY")
+# ALTERAÇÃO: Usando a chave de serviço para operações de backend.
+key: str = os.environ.get("SUPABASE_SERVICE_KEY")
 
 # Garante que as variáveis de ambiente foram carregadas
 if not url or not key:
-    print("ERRO: SUPABASE_URL ou SUPABASE_KEY não encontrados no ambiente.")
+    print("ERRO: SUPABASE_URL ou SUPABASE_SERVICE_KEY não encontrados no ambiente.")
     url = "http://mock-url"
     key = "mock-key"
 
 try:
+    # A inicialização agora usa a chave de serviço, que tem mais privilégios.
     supabase: Client = create_client(url, key )
-    print("Sucesso: Cliente Supabase inicializado.")
+    print("Sucesso: Cliente Supabase inicializado com chave de serviço.")
 except Exception as e:
     print(f"ERRO ao inicializar o Cliente Supabase: {e}")
     # Cliente Mock para evitar que o código quebre na inicialização, se o Supabase falhar.
@@ -65,22 +67,17 @@ def get_user_by_email(email):
         print(f"ERRO em get_user_by_email: {e}")
         return None
 
-# CORREÇÃO: O último parâmetro foi renomeado para 'numero_camisa' para clareza.
 def register_user(nome, email, senha, cidade, posicao, nascimento, numero_camisa):
     """
     Cadastra um novo usuário no banco de dados.
     """
     try:
-        # 1. Verifica se o email já existe
         existing_user = get_user_by_email(email)
         if existing_user:
             return False, "Este e-mail já está cadastrado."
 
-        # 2. Hash da senha
         hashed_password = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         
-        # 3. Insere o usuário no banco.
-        # CORREÇÃO: A chave do dicionário agora é 'numero_camisa' para corresponder à coluna do Supabase.
         response = supabase.table('usuarios').insert({
             'nome': nome,
             'email': email,
@@ -97,10 +94,8 @@ def register_user(nome, email, senha, cidade, posicao, nascimento, numero_camisa
             return False, "Falha ao cadastrar. Nenhuma linha inserida. (Verifique RLS/Permissões)"
             
     except Exception as e:
-        # A mensagem de erro agora deve refletir o erro do Supabase, se houver
         error_message = str(e)
         if hasattr(e, 'message') and isinstance(e.message, dict):
-            # Tenta extrair a mensagem de erro formatada do Supabase
             error_message = e.message.get('message', str(e))
             
         print(f"ERRO em register_user: {error_message}")
@@ -122,8 +117,8 @@ def check_user(email, senha):
 def get_all_users():
     """Retorna a lista de todos os usuários."""
     try:
-        # CORREÇÃO: A consulta agora seleciona 'profile_image_url' e 'numero_camisa'.
-        response = supabase.table('usuarios').select('id, nome, cidade, posicao, profile_image_url, nascimento, numero_camisa').execute()
+        # ALTERAÇÃO: Adicionado 'email' à seleção para garantir que o filtro na tela inicial funcione.
+        response = supabase.table('usuarios').select('id, nome, email, cidade, posicao, profile_image_url, nascimento, numero_camisa').execute()
         if response.data:
             users = response.data
             for user in users:
@@ -153,11 +148,9 @@ def get_user_by_id(user_id):
         print(f"ERRO em get_user_by_id: {e}")
         return None
 
-# CORREÇÃO: O parâmetro foi renomeado para refletir o nome da coluna.
 def update_user_profile_image(email, profile_image_url_path):
     """Atualiza o caminho da foto de perfil do usuário."""
     try:
-        # CORREÇÃO: O nome da coluna a ser atualizada é 'profile_image_url'.
         response = supabase.table('usuarios').update({
             'profile_image_url': profile_image_url_path
         }).eq('email', email).execute()
@@ -171,8 +164,6 @@ def update_user_profile_image(email, profile_image_url_path):
 def update_user_profile(email, **update_data):
     """Atualiza o perfil do usuário com dados dinâmicos."""
     try:
-        # NOTA: O app.py já está enviando os nomes de coluna corretos ('numero_camisa', 'profile_image_url'),
-        # então nenhuma modificação é necessária aqui.
         response = supabase.table('usuarios').update(update_data).eq('email', email).execute()
         return bool(response.data)
     except Exception as e:
