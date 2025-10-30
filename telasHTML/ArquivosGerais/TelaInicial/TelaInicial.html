@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tela Inicial</title>
 
-    <link rel="stylesheet" href="{{ url_for('inicio-assets', filename='style.css') }}">
+    <!-- ALTERAÇÃO 1: Corrigido 'inicio-assets' para 'inicio_assets' -->
+    <link rel="stylesheet" href="{{ url_for('inicio_assets', filename='style.css') }}">
 
     <style>
         /* Estilos do Toast aprimorados, utilizando a classe 'show' */
@@ -109,16 +110,18 @@
     <main>
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Buscar usuários..." onkeyup="searchUsers()">
-            <img src="{{ url_for('inicio-assets', filename='lupa.png') }}" alt="Ícone de busca" class="search-icon">
+            <!-- ALTERAÇÃO 2: Corrigido 'inicio-assets' para 'inicio_assets' -->
+            <img src="{{ url_for('inicio_assets', filename='lupa.png') }}" alt="Ícone de busca" class="search-icon">
         </div>
 
         <div class="user-list" id="user-list">
             {% if users %}
                 {% for user in users %}
-                    <a href="{{ url_for('pagina_chat', destinatario_id=user.id) }}" class="user-card-link">
+                    <a href="{{ url_for('chat_with_user', destinatario_id=user.id) }}" class="user-card-link">
                         <div class="user-card">
+                            <!-- ALTERAÇÃO 3: Corrigida a forma de carregar a imagem de perfil -->
                             <img class="user-avatar" 
-                                 src="{{ user.profile_image_url }}" 
+                                 src="{{ url_for('serve_static_files', filename=user.profile_image_url) if user.profile_image_url else '' }}" 
                                  alt="Avatar de {{ user.nome or 'Usuário' }}">
                             <p class="user-name">{{ user.nome or 'Nome Desconhecido' }}</p>
                             <div class="user-details">
