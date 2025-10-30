@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tela Inicial</title>
 
-    <link rel="stylesheet" href="{{ url_for('inicio_assets', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('inicio-assets', filename='style.css') }}">
 
     <style>
         /* Estilos do Toast aprimorados, utilizando a classe 'show' */
@@ -31,65 +31,121 @@
             visibility: visible;
             opacity: 1;
         }
+        
+        /* Estilo para a lista de usuários para melhor usabilidade */
+        .user-list {
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        /* Estilo para o link do card */
+        .user-card-link {
+            text-decoration: none; /* Remove o sublinhado */
+            color: inherit; /* Mantém a cor do texto */
+            display: block; /* Garante que o link ocupe o espaço do card */
+            width: 100%; /* Ocupa a largura total do item do grid/flex */
+            max-width: 300px; /* Limita a largura para melhor visualização */
+        }
+
+        /* Estilo do Card do Usuário */
+        .user-card {
+            background-color: #23272f; /* Cor de fundo escura */
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .user-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+            border: 3px solid #2BBF90; /* Cor primária */
+        }
+
+        .user-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .user-details {
+            font-size: 0.9rem;
+            color: #aaa;
+        }
     </style>
 </head>
 <body>
+    
+    <div id="toast-notification" class="toast"
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                data-message="{{ messages[0][1] }}" 
+                data-category="{{ messages[0][0] }}"
+            {% endif %}
+        {% endwith %}
+    ></div>
+
     <header class="page-header">
-        <div class="logo-container"></div>
+        <nav class="navigation">
+            <a href="{{ url_for('pagina_feed') }}" title="Feed de Posts">Feed</a>
+            <a href="{{ url_for('pagina_usuario') }}" title="Meu Perfil">Meu Perfil</a>
+            <a href="{{ url_for('logout') }}" title="Sair">Sair</a>
+        </nav>
     </header>
 
     <main>
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Buscar usuários..." onkeyup="searchUsers()">
-            <img src="{{ url_for('inicio_assets', filename='lupa.png') }}" alt="Ícone de busca" class="search-icon">
+            <img src="{{ url_for('inicio-assets', filename='lupa.png') }}" alt="Ícone de busca" class="search-icon">
         </div>
 
         <div class="user-list" id="user-list">
-            {% for usuario in usuarios %}
-                <a href="{{ url_for('pagina_chat', destinatario_id=usuario.id) }}" class="user-card-link">
-                    <div class="user-card">
-                        <img id="user-foto" 
-                            src="{% if usuario.foto_perfil %}{{ url_for('uploaded_files', path_and_filename=usuario.foto_perfil) }}{% else %}{{ url_for('inicio_assets', filename='iconeUser.png') }}{% endif %}" 
-                            alt="Foto de perfil de {{ usuario.nome }}">
-                        
-                        <div class="user-info">
-                            <span class="user-name">{{ usuario.nome }}</span>
-                            <span class="user-posicao">{{ usuario.posicao }}</span>
-                            <span class="user-cidade">{{ usuario.cidade }}</span>
-                            <span class="user-idade">{{ usuario.idade }} anos</span> 
+            {% if users %}
+                {% for user in users %}
+                    <a href="{{ url_for('pagina_chat', destinatario_id=user.id) }}" class="user-card-link">
+                        <div class="user-card">
+                            <img class="user-avatar" 
+                                 src="{{ user.profile_image_url }}" 
+                                 alt="Avatar de {{ user.nome or 'Usuário' }}">
+                            <p class="user-name">{{ user.nome or 'Nome Desconhecido' }}</p>
+                            <div class="user-details">
+                                <p>{{ user.posicao or 'N/A' }} | {{ user.cidade or 'N/A' }}</p>
+                                <p>{{ user.idade or 'N/A' }} anos</p>
+                            </div>
                         </div>
-                    </div>
-                </a>
+                    </a>
+                {% endfor %}
             {% else %}
-                <p>Nenhum outro usuário cadastrado no momento.</p>
-            {% endfor %}
+                <p style="text-align: center; color: #aaa; width: 100%;">Nenhum outro usuário encontrado.</p>
+            {% endif %}
         </div>
     </main>
-
-    <nav class="navigation-links">
-        <a href="{{ url_for('pagina_feed') }}" class="nav-button feed-button">Ver Feed</a>
-        <a href="{{ url_for('pagina_usuario') }}" class="nav-button profile-button">
-            <img src="{{ url_for('inicio_assets', filename='BotaoUsuario.ico') }}" alt="Ver Perfil">
-        </a>
-        <a href="{{ url_for('logout') }}" class="nav-button logout-button">Sair</a>
-    </nav>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% set category, message = messages[0] %}
-            <div id="toast-notification" class="toast" data-message="{{ message }}" data-category="{{ category }}"></div>
-        {% endif %}
-    {% endwith %}
-
+    
     <script>
-        // Função de busca: Correta e funcional
+        // Função de busca de usuários (filtro local)
         function searchUsers() {
             const input = document.getElementById('search-input').value.toLowerCase();
+            // Seleciona o link, não apenas o card, para ocultar o elemento pai
             const userLinks = document.querySelectorAll('.user-card-link'); 
+            
             userLinks.forEach(link => {
+                // Assume que .user-card e .user-name sempre existem dentro de .user-card-link
                 const userCard = link.querySelector('.user-card');
-                // Assume que .user-name sempre existe dentro de .user-card
                 const name = userCard.querySelector('.user-name').textContent.toLowerCase();
+                // Oculta/Mostra o link inteiro
                 link.style.display = name.includes(input) ? 'block' : 'none'; 
             });
         }

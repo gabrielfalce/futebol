@@ -5,11 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feed de Posts</title>
     
-    <link rel="stylesheet" href="{{ url_for('feed_assets', filename='feed.css') }}">
+    <link rel="stylesheet" href="{{ url_for('feed-assets', filename='feed.css') }}">
+    
+    <style>
+        /* Estilos básicos para o spinner de carregamento */
+        .loading-spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #2BBF90; /* Cor primária */
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 50px auto;
+            display: block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Estilos básicos para o post (para previsualização) */
+        .post {
+            background: #23272f;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 15px;
+            color: #fff;
+        }
+        .post-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .post-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
     <header class="page-header">
-        <h1 class="titulo">Futebol App</h1>
+        <h1 class="titulo">Futebol App - Feed</h1>
         <nav class="navigation">
             <a href="{{ url_for('pagina_inicial') }}">Usuários</a>
             <a href="{{ url_for('pagina_usuario') }}">Meu Perfil</a>
@@ -21,6 +65,62 @@
         <div class="loading-spinner" id="loading-spinner"></div>
     </main>
 
-    <script src="{{ url_for('feed_assets', filename='feed.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const feedContainer = document.getElementById('feed-container');
+            const loadingSpinner = document.getElementById('loading-spinner');
+
+            // CORREÇÃO: Função para carregar posts via API
+            async function loadPosts() {
+                try {
+                    const response = await fetch('{{ url_for("api_posts") }}');
+                    if (!response.ok) {
+                        throw new Error('Falha ao carregar posts');
+                    }
+                    const posts = await response.json();
+                    
+                    loadingSpinner.style.display = 'none';
+                    renderPosts(posts);
+                    
+                } catch (error) {
+                    console.error('Erro:', error);
+                    loadingSpinner.style.display = 'none';
+                    feedContainer.innerHTML = '<p style="text-align: center; color: #f44336;">Erro ao carregar o feed. Tente novamente mais tarde.</p>';
+                }
+            }
+
+            function renderPosts(posts) {
+                if (posts.length === 0) {
+                    feedContainer.innerHTML = '<p style="text-align: center; color: #aaa;">Nenhum post no feed ainda.</p>';
+                    return;
+                }
+                
+                posts.forEach(post => {
+                    const postElement = document.createElement('div');
+                    postElement.className = 'post';
+                    postElement.innerHTML = `
+                        <div class="post-header">
+                            <img src="${post.author_avatar}" alt="${post.author_name}" class="post-avatar">
+                            <div>
+                                <strong>${post.author_name}</strong>
+                                <small style="display: block; color: #aaa;">${post.timestamp}</small>
+                            </div>
+                        </div>
+                        <div class="post-content">
+                            <p>${post.content}</p>
+                            ${post.image_url ? `<img src="${post.image_url}" alt="Imagem do Post">` : ''}
+                        </div>
+                        <div class="post-footer" style="margin-top: 10px; border-top: 1px solid #333; padding-top: 10px;">
+                            <span style="margin-right: 15px;">👍 ${post.likes} Likes</span>
+                            <span>💬 ${post.comments} Comentários</span>
+                        </div>
+                    `;
+                    feedContainer.appendChild(postElement);
+                });
+            }
+
+            loadPosts();
+        });
+    </script>
 </body>
 </html>

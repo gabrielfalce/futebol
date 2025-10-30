@@ -4,18 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Perfil</title>
-    <!-- 
-      CORREÇÃO: Usando url_for para carregar o CSS. 
-      O Flask irá gerar o caminho correto, como /assets/TelaDeUsuario/stylesTest.css 
-    -->
-    <link rel="stylesheet" href="{{ url_for('serve_static_files', filename='TelaDeUsuario/editarStyle.css') }}">
     
-    <!-- Estilos para o toast de notificação (pode ser movido para o CSS principal) -->
+    <link rel="stylesheet" href="{{ url_for('user-assets', filename='editarStyle.css') }}">
+    
     <style>
         .toast {
             visibility: hidden;
+            opacity: 0;
             min-width: 250px;
-            margin-left: -125px;
             background-color: #333;
             color: #fff;
             text-align: center;
@@ -24,110 +20,97 @@
             position: fixed;
             z-index: 101;
             left: 50%;
+            transform: translateX(-50%); /* Centraliza horizontalmente */
             bottom: 30px;
             font-size: 17px;
+            transition: opacity 0.5s, visibility 0.5s;
         }
         .toast.show {
             visibility: visible;
-            -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
-            animation: fadein 0.5s, fadeout 0.5s 2.5s;
-        }
-        @-webkit-keyframes fadein {
-            from {bottom: 0; opacity: 0;} 
-            to {bottom: 30px; opacity: 1;}
-        }
-        @keyframes fadein {
-            from {bottom: 0; opacity: 0;}
-            to {bottom: 30px; opacity: 1;}
-        }
-        @-webkit-keyframes fadeout {
-            from {bottom: 30px; opacity: 1;} 
-            to {bottom: 0; opacity: 0;}
-        }
-        @keyframes fadeout {
-            from {bottom: 30px; opacity: 1;}
-            to {bottom: 0; opacity: 0;}
+            opacity: 1;
         }
     </style>
 </head>
 <body>
-    <header>
-        <!-- CORREÇÃO: Caminho da imagem de logo com url_for -->
-        <img src="{{ url_for('serve_static_files', filename='TelaDeUsuario/imagens/bolaLogo.png') }}" alt="Logo" class="logo">
-        <h1>Editar Perfil</h1>
-        <!-- Link para voltar para a página de usuário -->
-        <a href="{{ url_for('pagina_usuario') }}" class="back-button">Voltar</a>
-    </header>
 
-    <div class="profile-container">
-        <!-- Formulário para upload da imagem de perfil -->
-        <div class="profile-picture-section">
-            <h2>Alterar Foto de Perfil</h2>
-            <!-- 
-              CORREÇÃO: Caminho da imagem de perfil atual do usuário.
-              Usa a imagem do banco de dados ou uma imagem padrão se não houver.
-            -->
-            <img id="profile-image-preview" 
-                 src="{{ url_for('serve_static_files', filename=usuario.foto_perfil if usuario.foto_perfil else 'TelaDeUsuario/imagens/user-icon-placeholder.png') }}" 
-                 alt="Foto de Perfil" 
-                 class="profile-pic-large">
-            
-            <!-- 
-              Formulário específico para a imagem.
-              CORREÇÃO: A action agora aponta para a rota 'upload_image' corretamente.
-            -->
-            <form id="image-upload-form" method="POST" action="{{ url_for('upload_image') }}" enctype="multipart/form-data">
-                <input type="file" id="profile_image_input" name="profile_image" accept="image/*" style="display: none;">
-                <button type="button" onclick="document.getElementById('profile_image_input').click();">Escolher Imagem</button>
-                <button type="submit">Salvar Imagem</button>
-            </form>
-        </div>
-
-        <hr>
-
-        <!-- Formulário para editar os dados do perfil -->
-        <div class="profile-details-section">
-            <h2>Editar Informações</h2>
-            <!-- 
-              Formulário para os dados de texto.
-              CORREÇÃO: A action aponta para a rota 'editar_perfil'.
-            -->
-            <form id="details-form" method="POST" action="{{ url_for('editar_perfil') }}">
-                <div class="form-group">
-                    <label for="nome">Nome:</label>
-                    <input type="text" id="nome" name="nome" value="{{ usuario.nome or '' }}" placeholder="Seu nome completo">
-                </div>
-                <div class="form-group">
-                    <label for="cidade">Cidade:</label>
-                    <input type="text" id="cidade" name="cidade" value="{{ usuario.cidade or '' }}" placeholder="Onde você mora">
-                </div>
-                <div class="form-group">
-                    <label for="posicao">Posição em Campo:</label>
-                    <input type="text" id="posicao" name="posicao" value="{{ usuario.posicao or '' }}" placeholder="Ex: Atacante, Goleiro">
-                </div>
-                <div class="form-group">
-                    <label for="numero_camisa">Número da Camisa:</label>
-                    <input type="number" id="numero_camisa" name="numero_camisa" value="{{ usuario.numero_camisa or '' }}" placeholder="Seu número preferido">
-                </div>
-                <div class="form-group">
-                    <label for="numero_telefone">Telefone (WhatsApp):</label>
-                    <input type="tel" id="numero_telefone" name="numero_telefone" value="{{ usuario.numero or '' }}" placeholder="(XX) XXXXX-XXXX">
-                </div>
-                <button type="submit">Salvar Alterações</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Div para exibir mensagens flash -->
     <div id="toast-notification" class="toast"></div>
 
-    <script>
-        // Script para exibir a pré-visualização da imagem selecionada
-        const imageInput = document.getElementById('profile_image_input');
-        const imagePreview = document.getElementById('profile-image-preview');
+    <header>
+        <a href="{{ url_for('pagina_usuario') }}" class="back-button">&larr; Voltar</a>
+        <h1>Editar Perfil</h1>
+    </header>
 
-        imageInput.addEventListener('change', function() {
+    <main class="edit-container">
+
+        <form action="{{ url_for('upload_profile_image') }}" method="POST" enctype="multipart/form-data" class="profile-image-form">
+            
+            <label for="profile_image" class="profile-image-upload-label">
+                <img id="image-preview" 
+                     src="{{ usuario.foto_perfil_url or url_for('user-assets', filename='imagens/user-icon-placeholder.png') }}" 
+                     alt="Pré-visualização da Imagem de Perfil" 
+                     class="profile-image-preview">
+                <div class="upload-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                </div>
+            </label>
+            
+            <input type="file" id="profile_image" name="profile_image" accept="image/*" style="display: none;" required>
+            
+            <button type="submit" class="submit-image-button">Salvar Imagem</button>
+        </form>
+
+        <form action="{{ url_for('editar_perfil') }}" method="POST" class="edit-data-form">
+            
+            <div class="form-group">
+                <label for="nome">Nome</label>
+                <input type="text" id="nome" name="nome" value="{{ usuario.nome or '' }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="cidade">Cidade</label>
+                <input type="text" id="cidade" name="cidade" value="{{ usuario.cidade or '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="posicao">Posição</label>
+                <input type="text" id="posicao" name="posicao" value="{{ usuario.posicao or '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="numero_camisa">Nº da Camisa</label>
+                <input type="number" id="numero_camisa" name="numero_camisa" value="{{ usuario.numero_camisa or '' }}" min="1" max="99" placeholder="Opcional">
+            </div>
+
+            <div class="form-group">
+                <label for="nascimento">Data de Nascimento (DD/MM/AAAA)</label>
+                {% set data_nasc_formatted = "" %}
+                {% if usuario.nascimento %}
+                    {% set data_nasc_formatted = usuario.nascimento %} 
+                    {# Em Flask real, você usaria uma função ou filtro para formatar: #}
+                    {# Ex: {{ usuario.nascimento | format_date('DD/MM/YYYY') }} #}
+                {% endif %}
+                
+                <input type="text" id="nascimento" name="nascimento" 
+                       value="{{ data_nasc_formatted }}" 
+                       placeholder="Ex: 01/01/1990">
+            </div>
+            
+            <div class="form-group">
+                <label for="numero">Telefone</label>
+                <input type="tel" id="numero" name="numero" value="{{ usuario.numero or '' }}" placeholder="(XX) XXXXX-XXXX">
+            </div>
+
+            <button type="submit" class="submit-data-button">Salvar Dados</button>
+        </form>
+
+    </main>
+
+    <script>
+        // Lógica de pré-visualização da imagem
+        document.getElementById('profile_image').addEventListener('change', function() {
             const file = this.files[0];
+            const imagePreview = document.getElementById('image-preview');
+            
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -138,31 +121,34 @@
         });
 
         // Script para exibir mensagens flash (toast)
-        // CORREÇÃO: Usa tojson para passar mensagens de forma segura
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                (function() {
-                    const message = {{ messages[0][1] | tojson }};
-                    const category = {{ messages[0][0] | tojson }};
-                    
-                    const toast = document.getElementById("toast-notification");
-                    toast.textContent = message;
-                    
-                    if (category === 'success') {
-                        toast.style.backgroundColor = 'green';
-                    } else if (category === 'danger') {
-                        toast.style.backgroundColor = '#f44336';
-                    } else {
-                        toast.style.backgroundColor = '#333';
-                    }
-                    
-                    toast.classList.add("show");
-                    setTimeout(() => {
-                        toast.classList.remove("show");
-                    }, 3000);
-                })();
-            {% endif %}
-        {% endwith %}
+        document.addEventListener('DOMContentLoaded', () => {
+            // CORREÇÃO: Usa tojson para passar mensagens de forma segura
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    (function() {
+                        // CORREÇÃO CRÍTICA: O filtro |tojson garante que strings com aspas sejam tratadas corretamente em JS.
+                        const message = {{ messages[0][1] | tojson }};
+                        const category = {{ messages[0][0] | tojson }};
+                        
+                        const toast = document.getElementById("toast-notification");
+                        toast.textContent = message;
+                        
+                        if (category === 'success') {
+                            toast.style.backgroundColor = 'green';
+                        } else if (category === 'danger') {
+                            toast.style.backgroundColor = '#f44336';
+                        } else {
+                            toast.style.backgroundColor = '#333';
+                        }
+                        
+                        toast.classList.add("show");
+                        setTimeout(() => {
+                            toast.classList.remove("show");
+                        }, 3000);
+                    })();
+                {% endif %}
+            {% endwith %}
+        });
     </script>
 </body>
 </html>

@@ -5,64 +5,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil de {{ usuario.nome or 'Usuário' }}</title>
     
-    <link rel="stylesheet" href="{{ url_for('serve_static_files', filename='TelaDeUsuario/stylesTest.css') }}">
+    <link rel="stylesheet" href="{{ url_for('user-assets', filename='stylesTest.css') }}">
+</head>
+<body>
     
     <div class="Wallpaper">
         <img class="imagemWallpaper" 
-             src="{{ url_for('serve_static_files', filename=usuario.foto_capa if usuario.foto_capa else 'TelaDeUsuario/imagens/hM94BRC.jpeg') }}" 
+             src="{{ usuario.foto_capa_url or url_for('user-assets', filename='imagens/hM94BRC.jpeg') }}" 
              alt="Wallpaper de fundo">
     </div>
-</head>
-<body>
+    
+    <div class="header-actions">
+        <a href="{{ url_for('editar_perfil') }}" class="edit-button" title="Editar Perfil">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+        </a>
+        <a href="{{ url_for('logout') }}" class="logout-button" title="Sair">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3h-2v10h2V3zm4.84 12.86l1.41 1.41c-1.39 1.39-3.23 2.14-5.18 2.14-1.95 0-3.79-.75-5.18-2.14l1.41-1.41c1.07 1.07 2.44 1.66 3.77 1.66s2.7-5 3.77-1.66z"/></svg>
+        </a>
+    </div>
+
     <div class="main-content-wrapper">
         <div id="profileContainer">
             <div class="profile-info-group">
                 <div id="perfilImagemGeralCaixa">
                     <img id="preview" 
-                         src="{{ url_for('serve_static_files', filename=usuario.foto_perfil if usuario.foto_perfil else 'TelaDeUsuario/imagens/user-icon-placeholder.png') }}" 
+                         src="{{ usuario.foto_perfil_url or url_for('user-assets', filename='imagens/user-icon-placeholder.png') }}" 
                          alt="Imagem de perfil do usuário">
                 </div>
                 <p class="nomeUsuario">{{ usuario.nome or 'Nome de Usuário' }}</p>
             </div>
             <div class="info-grid">
                 <div class="info-item">
-                    <span class="label">Idade</span>
-                    <span class="value">{{ usuario.idade or 'N/A' }} anos</span>
+                    <span class="info-label">Email:</span>
+                    <span class="info-value">{{ usuario.email or 'N/A' }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="label">Posição</span>
-                    <span class="value">{{ usuario.posicao or 'Não definida' }}</span>
+                    <span class="info-label">Idade:</span>
+                    <span class="info-value">{{ usuario.idade or 'N/A' }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="label">Cidade</span>
-                    <span class="value">{{ usuario.cidade or 'Não informada' }}</span>
+                    <span class="info-label">Cidade:</span>
+                    <span class="info-value">{{ usuario.cidade or 'N/A' }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="label">Camisa</span>
-                    <span class="value">#{{ usuario.numero_camisa or 'N/A' }}</span>
+                    <span class="info-label">Posição:</span>
+                    <span class="info-value">{{ usuario.posicao or 'N/A' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Nº Camisa:</span>
+                    <span class="info-value">{{ usuario.numero_camisa or 'Sem Nº' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Telefone:</span>
+                    <span class="info-value">{{ usuario.numero or 'N/A' }}</span>
                 </div>
             </div>
-            <a href="{{ url_for('editar_perfil') }}" class="edit-profile-button">Editar Perfil</a>
         </div>
-        
-        <div class="posts-container">
-            <hr class="section-divider">
-            <h1 id="tituloPublicacao" class="section-title">Publicações</h1>
-            
-            <div class="BoxePublicacoes">
-                <div class="post-header">
-                    <span>Minha Primeira Foto</span>
-                    <img src="{{ url_for('serve_static_files', filename='TelaDeUsuario/imagens/TresPontos.png') }}" alt="Opções" class="post-options-icon">
-                </div>
-                <img class="publicacaoImagem" src="{{ url_for('serve_static_files', filename='TelaDeUsuario/imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
-            </div>
 
+        <div class="publicacoes-section">
+            <h2>Minhas Publicações (Mock)</h2>
             <div class="BoxePublicacoes">
                 <div class="post-header">
                     <span>Lembrança do Jogo</span>
-                    <img src="{{ url_for('serve_static_files', filename='TelaDeUsuario/imagens/TresPontos.png') }}" alt="Opções" class="post-options-icon">
+                    <img src="{{ url_for('user-assets', filename='imagens/TresPontos.png') }}" alt="Opções" class="post-options-icon">
                 </div>
-                <img class="publicacaoImagem" src="{{ url_for('serve_static_files', filename='TelaDeUsuario/imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
+                <img class="publicacaoImagem" src="{{ url_for('user-assets', filename='imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
+                <div class="post-actions">
+                    <span class="like-count">12 Likes</span>
+                    <span class="comment-count">3 Comentários</span>
+                </div>
             </div>
         </div>
     </div>
@@ -70,9 +81,9 @@
     <div class="floating-buttons-group">
         <div class="floating-button-wrapper">
             <div class="floating-button-bar"></div>
-            <a href="{{ url_for('pagina_inicial') }}">
+            <a href="{{ url_for('pagina_inicial') }}" title="Usuários">
                 <button class="floating-button">
-                    <img src="{{ url_for('serve_static_files', filename='TelaDeUsuario/imagens/bolaLogo.png') }}" alt="Ir para tela inicial">
+                    <img src="{{ url_for('user-assets', filename='imagens/bolaLogo.png') }}" alt="Ir para tela inicial">
                 </button>
             </a>
         </div>
@@ -83,10 +94,6 @@
             </button>
         </div>
     </div>
-
-    <div id="postModal" class="modal">
-        </div>
-
-    <script src="{{ url_for('serve_static_files', filename='TelaDeUsuario/script.js') }}"></script>
+    
 </body>
 </html>
