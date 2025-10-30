@@ -5,8 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recuperar Senha</title>
     
-    <!-- CORREÇÃO: Trocado 'static' por 'assets' e removido 'ArquivosGerais/' do filename -->
-    <link rel="stylesheet" href="{{ url_for('assets', filename='RecuperarSenha/esqueci.css') }}">
+    <link rel="stylesheet" href="{{ url_for('recuperar-assets', filename='esqueci.css') }}">
+
+    <style>
+        .flash-message {
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .flash-message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .flash-message.danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -30,7 +47,7 @@
             {% endif %}
         {% endwith %}
 
-        <a href="{{ url_for('login') }}" class="back-link">Voltar para o Login</a>
+        <a href="{{ url_for('login') }}" class="back-link">Voltar para Login</a>
     </div>
 </body>
 </html>

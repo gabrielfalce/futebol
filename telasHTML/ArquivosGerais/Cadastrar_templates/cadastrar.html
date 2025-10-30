@@ -6,8 +6,33 @@
     <title>Cadastro</title>
     
     <link rel="stylesheet" href="{{ url_for('cadastro-assets', filename='estilo.css') }}">
+    
+    <style>
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #f44336;
+            color: white;
+            text-align: center;
+            border-radius: 5px;
+            padding: 16px;
+            position: fixed;
+            z-index: 100;
+            right: 30px;
+            top: 30px;
+            font-size: 17px;
+            opacity: 0;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
 </head>
 <body>
+    
     <img src="{{ url_for('login-assets', filename='logo.png') }}" alt="Logotipo">
     
     <h1 class="titulo">Cadastro</h1>
@@ -35,7 +60,8 @@
             
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
-                    const message = "{{ messages[0][1] | safe }}";
+                    // Usando |safe para permitir caracteres especiais em mensagens, embora |tojson seja mais seguro
+                    const message = "{{ messages[0][1] | safe }}"; 
                     const category = "{{ messages[0][0] }}";
                     
                     toast.textContent = message;
