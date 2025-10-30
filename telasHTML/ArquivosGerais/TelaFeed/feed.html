@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feed de Posts</title>
     
-    <link rel="stylesheet" href="{{ url_for('feed-assets', filename='feed.css') }}">
+    <!-- ALTERAÇÃO: Corrigido 'feed-assets' para 'feed_assets' -->
+    <link rel="stylesheet" href="{{ url_for('feed_assets', filename='feed.css') }}">
     
     <style>
         /* Estilos básicos para o spinner de carregamento */
@@ -56,7 +57,8 @@
         <h1 class="titulo">Futebol App - Feed</h1>
         <nav class="navigation">
             <a href="{{ url_for('pagina_inicial') }}">Usuários</a>
-            <a href="{{ url_for('pagina_usuario') }}">Meu Perfil</a>
+            <!-- ALTERAÇÃO: Adicionado user_id para a rota do perfil -->
+            <a href="{{ url_for('pagina_usuario', user_id=session.user_id) }}">Meu Perfil</a>
             <a href="{{ url_for('logout') }}">Sair</a>
         </nav>
     </header>
