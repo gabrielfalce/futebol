@@ -8,43 +8,46 @@ from werkzeug.utils import secure_filename
 
 load_dotenv()
 
-# === CONFIGURAÇÃO DE DIRETÓRIOS CORRIGIDA ===
-# Assumindo a estrutura: ProjectRoot/telasHTML/ArquivosGerais/ArquivoDB/app.py
-# Subindo 3 níveis para alcançar o diretório raiz (ProjectRoot).
+# === CONFIGURAÇÃO DE DIRETÓRIOS CORRIGIDA (Mais robusta) ===
+# O app.py está em: ProjectRoot/telasHTML/ArquivosGerais/ArquivoDB/app.py
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
-# Assumindo que a pasta telasHTML está 3 níveis acima de app.py
+# Subindo 3 níveis para alcançar a raiz do projeto (ProjectRoot)
 BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..', '..', '..')) 
 
 app = Flask(
     __name__,
-    template_folder=BASE_DIR
+    # Define a raiz do projeto como pasta de templates, forçando o uso de 'telasHTML/' no render_template
+    template_folder=BASE_DIR 
 )
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "chave_padrao_para_dev")
 
-# === ROTAS DEDICADAS PARA ARQUIVOS ESTÁTICOS ===
-# A rota genérica 'serve_static_files' e 'assets' foram removidas.
+# === ROTAS DEDICADAS PARA ARQUIVOS ESTÁTICOS (Capitalização Corrigida) ===
 
 # 1. Rota para os assets da tela de Login (telasHTML/ArquivosGerais/telaDeLogin/)
 @app.route('/login-assets/<path:filename>')
 def login_assets(filename):
+    # Uso da capitalização EXATA: 'telasHTML' e 'telaDeLogin' (t minúsculo)
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'telaDeLogin')
     return send_from_directory(dir_path, filename)
 
 # 2. Rota para os assets da Tela de Loading (telasHTML/ArquivosGerais/TelaLoading/)
 @app.route('/loading-assets/<path:filename>')
 def loading_assets(filename):
+    # Uso da capitalização EXATA: 'telasHTML' e 'TelaLoading' (T maiúsculo)
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaLoading')
     return send_from_directory(dir_path, filename)
 
 # 3. Rota para os assets da TELA INICIAL (telasHTML/ArquivosGerais/TelaInicial/)
 @app.route('/inicio-assets/<path:filename>')
 def inicio_assets(filename):
+    # Uso da capitalização EXATA: 'telasHTML' e 'TelaInicial' (T maiúsculo)
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaInicial')
     return send_from_directory(dir_path, filename)
 
-# 4. Rota para os assets da TELA DE CADASTRO (telasHTML/Cadastrar_templates/) << NOVO
+# 4. Rota para os assets da TELA DE CADASTRO (telasHTML/Cadastrar_templates/)
 @app.route('/cadastro-assets/<path:filename>')
 def cadastro_assets(filename):
+    # Uso da capitalização EXATA: 'telasHTML' e 'Cadastrar_templates' (C e T maiúsculos)
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'Cadastrar_templates')
     return send_from_directory(dir_path, filename)
 
@@ -55,7 +58,7 @@ def uploaded_files(path_and_filename):
     return send_from_directory(dir_path, path_and_filename)
 
 
-# === ROTAS DA APLICAÇÃO ===
+# === ROTAS DA APLICAÇÃO (render_template com capitalização corrigida) ===
 @app.route("/")
 def index():
     if 'user_email' in session:
@@ -80,6 +83,8 @@ def login():
             return redirect(url_for('tela_de_loading'))
         else:
             flash('Email ou senha incorretos. Tente novamente.', 'danger')
+            
+    # CRÍTICO: Uso da capitalização correta em 'telasHTML' e 'telaDeLogin'
     return render_template('telasHTML/ArquivosGerais/telaDeLogin/telaLogin.html')
 
 
@@ -139,7 +144,7 @@ def cadastro():
             flash(mensagem, 'danger')
             return redirect(url_for('cadastro'))
     
-    # Renderiza o template de cadastro (GET request)
+    # CRÍTICO: Uso da capitalização correta em 'telasHTML' e 'Cadastrar_templates'
     return render_template("telasHTML/Cadastrar_templates/cadastrar.html")
 
 
@@ -148,6 +153,7 @@ def pagina_inicial():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     lista_de_usuarios = get_all_users()
+    # CRÍTICO: Uso da capitalização correta em 'telasHTML' e 'TelaInicial'
     return render_template("telasHTML/ArquivosGerais/TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
 
 
@@ -156,6 +162,7 @@ def pagina_usuario():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     user_data = get_user_by_email(session['user_email'])
+    # CRÍTICO: Uso da capitalização correta em 'telasHTML' e 'TelaDeUsuario'
     return render_template("telasHTML/TelaDeUsuario/TelaUser.html", usuario=user_data)
 
 
@@ -187,6 +194,7 @@ def editar_perfil():
         
         return redirect(url_for('pagina_usuario'))
     
+    # CRÍTICO: Uso da capitalização correta em 'telasHTML' e 'TelaDeUsuario'
     return render_template("telasHTML/TelaDeUsuario/editar_perfil.html", usuario=user_data)
 
 
@@ -239,6 +247,7 @@ def upload_image():
 def tela_de_loading():
     if 'user_email' not in session:
         return redirect(url_for('login'))
+    # CRÍTICO: Uso da capitalização correta em 'telasHTML' e 'TelaLoading'
     return render_template('telasHTML/ArquivosGerais/TelaLoading/Telaloading.html') 
 
 
@@ -251,6 +260,7 @@ def logout():
 
 @app.route("/esqueci_senha", methods=['GET', 'POST'])
 def esqueci_senha():
+    # CRÍTICO: Uso da capitalização correta em 'telasHTML' e 'RecuperarSenha'
     return render_template("telasHTML/RecuperarSenha/esqueci_senha.html")
 
 
@@ -258,6 +268,7 @@ def esqueci_senha():
 def pagina_chat(destinatario_id):
     if 'user_email' not in session:
         return redirect(url_for('login'))
+    # CRÍTICO: Uso da capitalização correta em 'telasHTML' e 'TelaChat'
     return render_template("telasHTML/TelaChat/chat.html", destinatario_id=destinatario_id)
 
 
@@ -265,6 +276,7 @@ def pagina_chat(destinatario_id):
 def pagina_feed():
     if 'user_email' not in session:
         return redirect(url_for('login'))
+    # CRÍTICO: Uso da capitalização correta em 'telasHTML' e 'TelaFeed'
     return render_template("telasHTML/TelaFeed/feed.html")
 
 
