@@ -4,7 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    
     <link rel="stylesheet" href="{{ url_for('login_assets', filename='style.css') }}">
+
+    <style>
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #f44336;
+            color: white;
+            text-align: center;
+            border-radius: 5px;
+            padding: 16px;
+            position: fixed;
+            z-index: 100;
+            right: 30px;
+            top: 30px;
+            font-size: 17px;
+            opacity: 0;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
 </head>
 <body>
     
@@ -25,9 +50,13 @@
     <form action="{{ url_for('login') }}" method="post">
         <input placeholder="Email" type="email" name="email" required>
         <input placeholder="Senha" type="password" name="senha" required>
+        
         <a class="esqueceuSenha" href="{{ url_for('esqueci_senha') }}">Esqueceu a senha?</a>
+        
         <button class="login" type="submit">Login</button>
+        
         <p class="ou">ou</p>
+        
         <a class="criarNovaConta" href="{{ url_for('cadastro') }}">Criar nova conta</a>
     </form>
 
@@ -40,6 +69,7 @@
                 const category = toast.dataset.category;
                 
                 toast.textContent = message;
+                // Define a cor de fundo baseado na categoria
                 toast.style.backgroundColor = category === 'success' ? 'green' : '#f44336';
                 
                 toast.classList.add("show");

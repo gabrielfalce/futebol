@@ -8,8 +8,11 @@ from werkzeug.utils import secure_filename
 
 load_dotenv()
 
-# === CONFIGURAÇÃO DE DIRETÓRIOS ===
+# === CONFIGURAÇÃO DE DIRETÓRIOS CORRIGIDA ===
+# Assumindo a estrutura: ProjectRoot/telasHTML/ArquivosGerais/ArquivoDB/app.py
+# Subindo 3 níveis para alcançar o diretório raiz (ProjectRoot).
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
+# Assumindo que a pasta telasHTML está 3 níveis acima de app.py
 BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..', '..', '..')) 
 
 app = Flask(
@@ -19,31 +22,33 @@ app = Flask(
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "chave_padrao_para_dev")
 
 # === ROTAS DEDICADAS PARA ARQUIVOS ESTÁTICOS ===
-# 1. Rota para os assets da tela de Login
+# A rota genérica 'serve_static_files' e 'assets' foram removidas.
+
+# 1. Rota para os assets da tela de Login (telasHTML/ArquivosGerais/telaDeLogin/)
 @app.route('/login-assets/<path:filename>')
 def login_assets(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'telaDeLogin')
     return send_from_directory(dir_path, filename)
 
-# 2. Rota para os assets da Tela de Loading
+# 2. Rota para os assets da Tela de Loading (telasHTML/ArquivosGerais/TelaLoading/)
 @app.route('/loading-assets/<path:filename>')
 def loading_assets(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaLoading')
     return send_from_directory(dir_path, filename)
 
-# 3. Rota para os assets da TELA INICIAL
+# 3. Rota para os assets da TELA INICIAL (telasHTML/ArquivosGerais/TelaInicial/)
 @app.route('/inicio-assets/<path:filename>')
 def inicio_assets(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaInicial')
     return send_from_directory(dir_path, filename)
 
-# 4. Rota para os assets da TELA FEED (Assumindo que você a adicionou)
-@app.route('/feed-assets/<path:filename>')
-def feed_assets(filename):
-    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaFeed')
+# 4. Rota para os assets da TELA DE CADASTRO (telasHTML/Cadastrar_templates/) << NOVO
+@app.route('/cadastro-assets/<path:filename>')
+def cadastro_assets(filename):
+    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'Cadastrar_templates')
     return send_from_directory(dir_path, filename)
-    
-# 5. Rota para os arquivos de UPLOAD de usuários
+
+# 5. Rota para os arquivos de UPLOAD de usuários (uploads/ profile_pics)
 @app.route('/uploads/<path:path_and_filename>')
 def uploaded_files(path_and_filename):
     dir_path = os.path.join(BASE_DIR, 'uploads')
@@ -75,7 +80,6 @@ def login():
             return redirect(url_for('tela_de_loading'))
         else:
             flash('Email ou senha incorretos. Tente novamente.', 'danger')
-    # CORREÇÃO: Usando barras normais (/)
     return render_template('telasHTML/ArquivosGerais/telaDeLogin/telaLogin.html')
 
 
@@ -96,21 +100,27 @@ def cadastro():
         
         try:
             data_obj = None
+            # Tenta parsear nos formatos YYYY-MM-DD e DD/MM/AAAA
             for fmt in ('%Y-%m-%d', '%d/%m/%Y'):
                 try:
                     data_obj = datetime.strptime(nascimento_str, fmt)
                     break
                 except ValueError:
-                    pass
+                    continue
+            
             if data_obj is None:
                 raise ValueError("Formato de data inválido")
             
+            # Converte para o formato ISO padrão para salvar no DB
             data_nascimento_iso = data_obj.strftime('%Y-%m-%d')
         except ValueError:
             flash("Erro: A data de nascimento deve estar no formato AAAA-MM-DD ou DD/MM/AAAA.", 'danger')
             return redirect(url_for('cadastro'))
         
+        # Gera o hash da senha
         senha_hash = bcrypt.hashpw(senha_texto_puro.encode('utf-8'), bcrypt.gensalt())
+        
+        # Chama a função de registro do banco de dados
         sucesso, mensagem = register_user(
             nome=nome, 
             email=email, 
@@ -129,7 +139,7 @@ def cadastro():
             flash(mensagem, 'danger')
             return redirect(url_for('cadastro'))
     
-    # CORREÇÃO: Usando barras normais (/)
+    # Renderiza o template de cadastro (GET request)
     return render_template("telasHTML/Cadastrar_templates/cadastrar.html")
 
 
@@ -138,7 +148,6 @@ def pagina_inicial():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     lista_de_usuarios = get_all_users()
-    # CORREÇÃO: Usando barras normais (/)
     return render_template("telasHTML/ArquivosGerais/TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
 
 
@@ -147,8 +156,7 @@ def pagina_usuario():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     user_data = get_user_by_email(session['user_email'])
-    # CORREÇÃO: Trocado '\' por '/'
-    return render_template("telasHTML/ArquivosGerais/TelaDeUsuario/TelaUser.html", usuario=user_data)
+    return render_template("telasHTML/TelaDeUsuario/TelaUser.html", usuario=user_data)
 
 
 @app.route("/editar_perfil", methods=['GET', 'POST'])
@@ -179,7 +187,6 @@ def editar_perfil():
         
         return redirect(url_for('pagina_usuario'))
     
-    # CORREÇÃO: Usando barras normais (/)
     return render_template("telasHTML/TelaDeUsuario/editar_perfil.html", usuario=user_data)
 
 
@@ -208,14 +215,12 @@ def upload_image():
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         
-        # O UPLOAD_FOLDER agora é relativo ao BASE_DIR
         upload_dir = os.path.join(BASE_DIR, 'uploads', 'profile_pics')
         os.makedirs(upload_dir, exist_ok=True)
         
         file_path = os.path.join(upload_dir, filename)
         file.save(file_path)
 
-        # O caminho salvo no DB deve ser 'profile_pics/filename.ext'
         relative_path = os.path.join('profile_pics', filename).replace("\\", "/")
         
         sucesso = update_user_profile_image(session['user_email'], relative_path)
@@ -234,7 +239,6 @@ def upload_image():
 def tela_de_loading():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    # CORREÇÃO: Usando barras normais (/)
     return render_template('telasHTML/ArquivosGerais/TelaLoading/Telaloading.html') 
 
 
@@ -247,7 +251,6 @@ def logout():
 
 @app.route("/esqueci_senha", methods=['GET', 'POST'])
 def esqueci_senha():
-    # CORREÇÃO: Usando barras normais (/)
     return render_template("telasHTML/RecuperarSenha/esqueci_senha.html")
 
 
@@ -255,16 +258,14 @@ def esqueci_senha():
 def pagina_chat(destinatario_id):
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    # CORREÇÃO: Trocado '\' por '/'
-    return render_template("telasHTML/ArquivosGerais/TelaChat/chat.html", destinatario_id=destinatario_id)
+    return render_template("telasHTML/TelaChat/chat.html", destinatario_id=destinatario_id)
 
 
 @app.route("/feed")
 def pagina_feed():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    # CORREÇÃO: Trocado '\' por '/'
-    return render_template("telasHTML/ArquivosGerais/TelaFeed/feed.html")
+    return render_template("telasHTML/TelaFeed/feed.html")
 
 
 if __name__ == '__main__':
