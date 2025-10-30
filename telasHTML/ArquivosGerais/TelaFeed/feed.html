@@ -5,14 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feed de Posts</title>
     
-    <!-- CORREÇÃO: Removido 'ArquivosGerais/' do filename -->
-    <link rel="stylesheet" href="{{ url_for('assets', filename='TelaFeed/feed.css') }}">
+    <link rel="stylesheet" href="{{ url_for('feed_assets', filename='feed.css') }}">
 </head>
 <body>
     <header class="page-header">
         <h1 class="titulo">Futebol App</h1>
         <nav class="navigation">
-            <!-- Links para outras partes do site -->
             <a href="{{ url_for('pagina_inicial') }}">Usuários</a>
             <a href="{{ url_for('pagina_usuario') }}">Meu Perfil</a>
             <a href="{{ url_for('logout') }}">Sair</a>
@@ -20,11 +18,9 @@
     </header>
 
     <main class="feed-container" id="feed-container">
-        <!-- Os posts carregados pelo JavaScript aparecerão aqui -->
         <div class="loading-spinner" id="loading-spinner"></div>
     </main>
 
-    <!-- CORREÇÃO: Removido 'ArquivosGerais/' do filename -->
-    <script src="{{ url_for('assets', filename='TelaFeed/feed.js') }}"></script>
+    <script src="{{ url_for('feed_assets', filename='feed.js') }}"></script>
 </body>
 </html>
