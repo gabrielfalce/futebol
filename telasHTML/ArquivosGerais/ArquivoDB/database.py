@@ -8,7 +8,7 @@ import os
 from supabase import create_client, Client
 import bcrypt
 from dotenv import load_dotenv
-from datetime import date # NOVO IMPORT
+from datetime import date, datetime # NOVO IMPORT: Adicionado 'datetime'
 
 load_dotenv()
 
@@ -34,8 +34,12 @@ except Exception as e:
         def insert(self, data): return self
         def select(self, columns): return self
         def eq(self, column, value): return self
-        def execute(self): return type('MockResponse', (object,), {'data': []})()
         def update(self, data): return self
+        def execute(self): 
+            class MockResponse:
+                data = None
+                def json(self): return "{'message': 'Mock Supabase call failed'}"
+            return MockResponse()
     supabase = MockSupabaseClient()
 
 
@@ -55,109 +59,92 @@ def calculate_age(born):
     return today.year - born_date.year - ((today.month, today.day) < (born_date.month, born_date.day))
 
 # === FUNÇÕES DO SUPABASE ===
-def register_user(nome, email, senha_hash, cidade, posicao, data_nasc, numero):
+
+def check_user(email):
     """
-    Registra um novo usuário no banco de dados
-    data_nasc deve estar no formato 'AAAA-MM-DD'
+    Verifica se um usuário com o email fornecido já existe no banco.
     """
     try:
-        # 1. Verifica se o email já existe
-        response_check = supabase.table('usuarios').select('email').eq('email', email).execute()
-        if response_check.data:
-            return False, "Erro: Este e-mail já está cadastrado."
-            
-        # 2. Insere o novo usuário
-        response = supabase.table('usuarios').insert({
-            'nome': nome,
-            'email': email,
-            'senha_hash': senha_hash,
-            'cidade': cidade,
-            'posicao': posicao,
-            'nascimento': data_nasc,  # Coluna: nascimento (AAAA-MM-DD)
-            'numero': numero,         # Coluna: numero (telefone)
-            'numero_camisa': None,    # NOVO: numero_camisa
-            'foto_perfil': None,      # NOVO: Caminho da imagem de perfil
-            'foto_capa': None         # NOVO: Caminho da imagem de capa
-        }).execute()
-        
-        if response.data:
-            return True, "Usuário cadastrado com sucesso!"
-        else:
-            return False, "Erro ao cadastrar usuário (Sem dados de retorno)."
-            
-    except Exception as e:
-        print(f"ERRO em register_user: {e}")
-        return False, "Erro ao cadastrar usuário. Tente novamente mais tarde."
-
-def check_user(email, senha):
-    """
-    Verifica as credenciais do usuário.
-    """
-    try:
-        # 1. Busca o usuário pelo email
-        response = supabase.table('usuarios').select('id, nome, email, senha_hash, foto_perfil').eq('email', email).execute()
-        
-        if not response.data:
-            return None  # Usuário não encontrado
-
-        user_data = response.data[0]
-        senha_hash = user_data['senha_hash'].encode('utf-8')
-        
-        # 2. Verifica a senha
-        if bcrypt.checkpw(senha.encode('utf-8'), senha_hash):
-            return user_data
-        else:
-            return None  # Senha incorreta
-            
+        response = supabase.table('usuarios').select('email').eq('email', email).execute()
+        return bool(response.data)
     except Exception as e:
         print(f"ERRO em check_user: {e}")
-        return None
+        return False # Retorna Falso em caso de erro
+
+def register_user(nome, email, senha, cidade, posicao, nascimento, numero):
+    """
+    Registra um novo usuário no banco de dados.
+    """
+    # 1. Checagem de usuário
+    if check_user(email):
+        print("ERRO em register_user: Usuário já existe.")
+        return False
+
+    # 2. Hashing da senha
+    hashed_password = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt())
+
+    # 3. Formatação da data de nascimento (necessária para o Supabase)
+    try:
+        # Tenta DD/MM/AAAA (Formato do HTML)
+        date_obj = datetime.strptime(nascimento, '%d/%m/%Y')
+    except ValueError:
+        try:
+            # Tenta AAAA-MM-DD (Formato alternativo)
+            date_obj = datetime.strptime(nascimento, '%Y-%m-%d')
+        except ValueError:
+            print("ERRO em register_user: Formato de data de nascimento inválido.")
+            return False
+    
+    formatted_nascimento = date_obj.strftime('%Y-%m-%d') # Salva no formato SQL
+
+    # 4. Definição dos dados para inserção (CORREÇÃO APLICADA AQUI)
+    data = {
+        'nome': nome,
+        'email': email,
+        'senha_hash': hashed_password.decode('utf-8'),
+        'cidade': cidade,
+        'posicao': posicao,
+        'data_nascimento': formatted_nascimento,
+        'numero_telefone': numero,
+        'foto_perfil': None, # Inicializa a foto de perfil como nula (se a coluna existir e for nula)
+        # REMOVIDA: 'foto_capa': None, <--- REMOVIDO PARA CORRIGIR O ERRO PGRST204
+    }
+
+    try:
+        # Tenta a inserção
+        response = supabase.table('usuarios').insert(data).execute()
+        if response.data:
+            return True
+        else:
+            print(f"ERRO em register_user: Falha na inserção, resposta: {response.json()}")
+            return False
+    except Exception as e:
+        # Este é o print que estava gerando o erro no log
+        print(f"ERRO em register_user: {e}") 
+        return False
 
 def get_user_by_email(email):
     """
-    Busca todos os dados de um usuário pelo email.
-    Também adiciona o campo 'idade'.
+    Busca um usuário pelo email
     """
     try:
         response = supabase.table('usuarios').select('*').eq('email', email).execute()
         if response.data:
             user = response.data[0]
-            # Adiciona o campo 'idade'
-            if user.get('nascimento'):
-                user['idade'] = calculate_age(user['nascimento'])
+            # Adiciona a idade
+            if user.get('data_nascimento'):
+                user['idade'] = calculate_age(user['data_nascimento'])
             else:
                 user['idade'] = 'N/A'
-            
             return user
         return None
     except Exception as e:
         print(f"ERRO em get_user_by_email: {e}")
         return None
 
-def get_user_by_id(user_id):
-    """
-    Busca todos os dados de um usuário pelo ID.
-    Também adiciona o campo 'idade'.
-    """
-    try:
-        response = supabase.table('usuarios').select('*').eq('id', user_id).execute()
-        if response.data:
-            user = response.data[0]
-            # Adiciona o campo 'idade'
-            if user.get('nascimento'):
-                user['idade'] = calculate_age(user['nascimento'])
-            else:
-                user['idade'] = 'N/A'
-            
-            return user
-        return None
-    except Exception as e:
-        print(f"ERRO em get_user_by_id: {e}")
-        return None
-
 def get_all_users():
     """
-    Busca todos os usuários.
+    Busca e retorna todos os usuários.
     """
     try:
         # Seleciona apenas os campos essenciais
@@ -197,9 +184,34 @@ def update_user_profile(email, **update_data):
     """
     try:
         response = supabase.table('usuarios').update(update_data).eq('email', email).execute()
-        
-        return bool(response.data)
-        
+        # A resposta do Supabase tem que ser verificada para garantir que a atualização ocorreu
+        return bool(response.data) 
     except Exception as e:
         print(f"ERRO em update_user_profile: {e}")
         return False
+
+def update_user_camisa(email, numero_camisa):
+    """
+    Atualiza o número da camisa do usuário
+    """
+    try:
+        response = supabase.table('usuarios').update({
+            'numero_camisa': numero_camisa
+        }).eq('email', email).execute()
+        return True
+    except Exception as e:
+        print(f"ERRO em update_user_camisa: {e}")
+        return False
+
+def get_user_by_id(user_id):
+    """
+    Busca um usuário pelo ID
+    """
+    try:
+        response = supabase.table('usuarios').select('*').eq('id', user_id).execute()
+        if response.data:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"ERRO em get_user_by_id: {e}")
+        return None
