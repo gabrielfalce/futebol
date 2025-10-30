@@ -1,364 +1,179 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory, jsonify
-from dotenv import load_dotenv
-from database import register_user, check_user, get_all_users, get_user_by_email, update_user_profile_image, update_user_profile, get_user_by_id, update_password
+from supabase import create_client, Client
 import bcrypt
-from datetime import datetime
-from werkzeug.utils import secure_filename
-from functools import wraps
+from dotenv import load_dotenv
+from datetime import date 
 
 load_dotenv()
 
-# === CONFIGURAÇÃO DE DIRETÓRIOS ===
-APP_DIR = os.path.dirname(os.path.abspath(__file__))
-# Ajuste o BASE_DIR para apontar para a raiz do projeto se 'telasHTML' estiver em um nível acima.
-BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..', '..', '..')) 
+# Configuração do Supabase
+url: str = os.environ.get("SUPABASE_URL")
+key: str = os.environ.get("SUPABASE_KEY")
 
-app = Flask(
-    __name__,
-    template_folder=BASE_DIR
-)
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "chave_padrao_para_dev")
+# Garante que as variáveis de ambiente foram carregadas
+if not url or not key:
+    print("ERRO: SUPABASE_URL ou SUPABASE_KEY não encontrados no ambiente.")
+    url = "http://mock-url"
+    key = "mock-key"
 
-# Diretório para uploads de fotos de perfil (relativo ao BASE_DIR)
-UPLOAD_FOLDER_RELATIVE = 'telasHTML/ArquivosGerais/TelaDeUsuario/imagens/profile_pics'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+try:
+    supabase: Client = create_client(url, key)
+    print("Sucesso: Cliente Supabase inicializado.")
+except Exception as e:
+    print(f"ERRO ao inicializar o Cliente Supabase: {e}")
+    # Cliente Mock para evitar que o código quebre na inicialização, se o Supabase falhar.
+    class MockSupabaseClient:
+        def table(self, name): return self
+        def insert(self, data): return self
+        def select(self, columns): return self
+        def eq(self, column, value): return self
+        def limit(self, count): return self
+        def execute(self): 
+            class MockResponse:
+                data = []
+            return MockResponse()
+        def update(self, data): return self
 
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    supabase = MockSupabaseClient()
 
-# Decorador para exigir login
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_email' not in session:
-            flash('Você precisa estar logado para acessar esta página.', 'danger')
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated_function
-
-# === ROTAS DEDICADAS PARA ARQUIVOS ESTÁTICOS (ASSETS) ===
-
-@app.route('/login-assets/<path:filename>')
-def login_assets(filename):
-    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'telaDeLogin')
-    return send_from_directory(dir_path, filename)
-
-@app.route('/loading-assets/<path:filename>')
-def loading_assets(filename):
-    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaLoading')
-    return send_from_directory(dir_path, filename)
-
-@app.route('/cadastro-assets/<path:filename>')
-def cadastro_assets(filename):
-    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'Cadastrar_templates')
-    return send_from_directory(dir_path, filename)
-
-@app.route('/inicio-assets/<path:filename>')
-def inicio_assets(filename):
-    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaInicial')
-    return send_from_directory(dir_path, filename)
-
-@app.route('/user-assets/<path:filename>')
-def user_assets(filename):
-    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaDeUsuario')
-    return send_from_directory(dir_path, filename)
-    
-@app.route('/feed-assets/<path:filename>')
-def feed_assets(filename):
-    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaFeed')
-    return send_from_directory(dir_path, filename)
-
-@app.route('/chat-assets/<path:filename>')
-def chat_assets(filename):
-    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaChat')
-    return send_from_directory(dir_path, filename)
-
-@app.route('/recuperar-senha-assets/<path:filename>')
-def recuperar_senha_assets(filename):
-    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'RecuperarSenha')
-    return send_from_directory(dir_path, filename)
-
-# Rota genérica para servir arquivos estáticos de dentro do diretório 'telasHTML'
-# Usado por algumas telas para imagens de perfil, etc.
-@app.route('/serve_static_files/<path:filename>')
-def serve_static_files(filename):
-    # O diretório raiz para esta rota será 'telasHTML/'
-    dir_path = os.path.join(BASE_DIR, 'telasHTML')
-    return send_from_directory(dir_path, filename)
+# === FUNÇÃO HELPER PARA CÁLCULO DE IDADE ===
+def calculate_age(born):
+    """Calcula a idade de um usuário com base na data de nascimento (AAAA-MM-DD)."""
+    today = date.today()
+    try:
+        born_date = date.fromisoformat(born) 
+    except (ValueError, TypeError):
+        return 'N/A'
+    return today.year - born_date.year - ((today.month, today.day) < (born_date.month, born_date.day))
 
 
-# === ROTAS DO APLICATIVO ===
+# === FUNÇÕES DE BANCO DE DADOS ===
 
-@app.route("/")
-@app.route("/login", methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        email = request.form['email']
-        senha = request.form['senha']
-        
-        user_data = check_user(email, senha)
-        
-        if user_data:
-            session['user_email'] = email
-            session['user_id'] = user_data.get('id')
-            session['user_name'] = user_data.get('nome')
-            flash('Login realizado com sucesso!', 'success')
-            return redirect(url_for('tela_loading', next_page='pagina_inicial'))
-        else:
-            flash('Email ou senha incorretos.', 'danger')
-            return redirect(url_for('login'))
-            
-    return render_template("telasHTML/ArquivosGerais/telaDeLogin/telaLogin.html")
-
-
-@app.route("/cadastro", methods=['GET', 'POST'])
-def cadastro():
-    if request.method == 'POST':
-        try:
-            nome = request.form['nome']
-            email = request.form['email']
-            senha = request.form['senha']
-            cidade = request.form['cidade']
-            posicao = request.form['posicao']
-            
-            # CRÍTICO: Define 'nascimento_str' antes de usá-lo na conversão
-            nascimento_str = request.form['nascimento']
-            
-            # Coleta do campo 'numero' (correto)
-            numero = request.form['numero'] 
-
-            # Lógica de conversão de data (DD/MM/AAAA para AAAA-MM-DD)
-            nascimento_formatado = datetime.strptime(nascimento_str, '%d/%m/%Y').strftime('%Y-%m-%d')
-        
-            # Chamada à função register_user
-            success, message = register_user(nome, email, senha, cidade, posicao, nascimento_formatado, numero)
-            
-            if success:
-                flash(message, 'success')
-                return redirect(url_for('tela_loading', next_page='login', message_category='success'))
+def get_user_by_email(email):
+    """Busca um usuário por email e calcula sua idade."""
+    try:
+        response = supabase.table('usuarios').select('*').eq('email', email).limit(1).execute()
+        if response.data:
+            user = response.data[0]
+            if user.get('nascimento'):
+                user['idade'] = calculate_age(user['nascimento'])
             else:
-                flash(message, 'danger')
-                return redirect(url_for('cadastro'))
+                user['idade'] = 'N/A'
+            return user
+        return None
+    except Exception as e:
+        print(f"ERRO em get_user_by_email: {e}")
+        return None
 
-        except ValueError:
-            # Captura erro se o formato da data estiver incorreto
-            flash('Formato de data de nascimento inválido. Use DD/MM/AAAA.', 'danger')
-            return redirect(url_for('cadastro'))
+def register_user(nome, email, senha, cidade, posicao, nascimento, numero):
+    """
+    Cadastra um novo usuário no banco de dados.
+    """
+    try:
+        # 1. Verifica se o email já existe
+        existing_user = get_user_by_email(email)
+        if existing_user:
+            return False, "Este e-mail já está cadastrado."
+
+        # 2. Hash da senha
+        hashed_password = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         
-        except Exception as e:
-            # Exceções gerais
-            print(f"ERRO geral no cadastro: {e}")
-            flash('Ocorreu um erro inesperado ao tentar cadastrar o usuário.', 'danger')
-            return redirect(url_for('cadastro'))
-
-    return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html")
-
-
-@app.route("/loading/<next_page>")
-def tela_loading(next_page):
-    # Parâmetros opcionais para customizar a mensagem/tempo
-    message_category = request.args.get('message_category', 'success')
-    message = request.args.get('message')
-    
-    # Se 'message' for passado, sobrescreve o flash
-    if message:
-        flash(message, message_category)
-
-    # Redireciona para a rota 'next_page'
-    next_url = url_for(next_page)
-    
-    # Renderiza a tela de loading passando o destino e um tempo (em ms)
-    return render_template("telasHTML/ArquivosGerais/TelaLoading/Telaloading.html", 
-                           next_url=next_url, 
-                           tempo_loading=2500) # 2.5 segundos
-
-
-@app.route("/logout")
-@login_required
-def logout():
-    session.pop('user_email', None)
-    session.pop('user_id', None)
-    session.pop('user_name', None)
-    flash('Você foi desconectado com sucesso!', 'success')
-    return redirect(url_for('login'))
-
-
-@app.route("/inicio")
-@login_required
-def pagina_inicial():
-    # Obtém todos os usuários para exibição
-    users = get_all_users()
-    
-    # Filtra o próprio usuário da lista
-    current_user_email = session.get('user_email')
-    users = [user for user in users if user.get('email') != current_user_email]
-    
-    return render_template("telasHTML/ArquivosGerais/TelaInicial/TelaInicial.html", users=users)
-
-
-@app.route("/perfil")
-@app.route("/perfil/<int:user_id>")
-@login_required
-def pagina_usuario(user_id=None):
-    if user_id is None or user_id == session.get('user_id'):
-        # Exibir perfil do usuário logado
-        user_email = session.get('user_email')
-        usuario = get_user_by_email(user_email)
-        is_owner = True
-    else:
-        # Exibir perfil de outro usuário
-        usuario = get_user_by_id(user_id)
-        is_owner = False
+        # 3. Insere o usuário no banco.
+        response = supabase.table('usuarios').insert({
+            'nome': nome,
+            'email': email,
+            'senha': hashed_password,
+            'cidade': cidade,
+            'posicao': posicao,
+            'nascimento': nascimento, 
+            'numero': numero         
+        }).execute()
         
-    if not usuario:
-        flash('Usuário não encontrado.', 'danger')
-        return redirect(url_for('pagina_inicial'))
-
-    return render_template("telasHTML/ArquivosGerais/TelaDeUsuario/TelaUser.html", 
-                           usuario=usuario, 
-                           is_owner=is_owner)
-
-
-@app.route("/editar_perfil", methods=['GET', 'POST'])
-@login_required
-def editar_perfil():
-    user_email = session.get('user_email')
-    usuario = get_user_by_email(user_email)
-    
-    if not usuario:
-        flash('Erro ao carregar dados do usuário.', 'danger')
-        return redirect(url_for('pagina_inicial'))
-
-    if request.method == 'POST':
-        update_data = {}
-        
-        # Campos de texto
-        nome = request.form.get('nome')
-        cidade = request.form.get('cidade')
-        posicao = request.form.get('posicao')
-        
-        if nome:
-            update_data['nome'] = nome
-            
-        if cidade:
-            update_data['cidade'] = cidade
-            
-        if posicao:
-            update_data['posicao'] = posicao
-            
-        # Tratamento do upload de arquivo (Foto de Perfil)
-        if 'profile_image' in request.files:
-            file = request.files['profile_image']
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                
-                # Cria o caminho de destino no sistema de arquivos
-                full_upload_dir = os.path.join(BASE_DIR, UPLOAD_FOLDER_RELATIVE)
-                os.makedirs(full_upload_dir, exist_ok=True)
-                file_path = os.path.join(full_upload_dir, filename)
-                
-                file.save(file_path)
-                
-                # Salva o caminho RELATIVO ao BASE_DIR para o banco de dados
-                db_path = os.path.join(UPLOAD_FOLDER_RELATIVE, filename).replace('\\', '/')
-                update_data['foto_perfil'] = db_path
-                session['user_profile_image'] = db_path # Atualiza a sessão (se necessário)
-
-        # Atualiza os dados no banco
-        if update_data:
-            success = update_user_profile(user_email, **update_data)
-            if success:
-                # Atualiza o nome na sessão caso tenha sido alterado
-                if 'nome' in update_data:
-                    session['user_name'] = update_data['nome']
-                flash('Perfil atualizado com sucesso!', 'success')
-            else:
-                flash('Falha ao atualizar o perfil.', 'danger')
+        if response.data:
+            return True, "Cadastro realizado com sucesso!"
         else:
-             flash('Nenhuma alteração detectada.', 'info')
-             
-        # Redireciona para a própria página GET para evitar reenvio de formulário
-        return redirect(url_for('editar_perfil'))
-
-    # Rota GET
-    return render_template("telasHTML/ArquivosGerais/TelaDeUsuario/editar_perfil.html", usuario=usuario)
+            return False, "Falha ao cadastrar. Nenhuma linha inserida. (Verifique RLS/Permissões)"
+            
+    except Exception as e:
+        print(f"ERRO em register_user: {e}")
+        return False, "Falha ao cadastrar devido a um erro de servidor ou de banco de dados."
 
 
-@app.route("/feed")
-@login_required
-def pagina_feed():
-    # Renderiza a tela do feed (o conteúdo será carregado via API)
-    return render_template("telasHTML/ArquivosGerais/TelaFeed/feed.html")
-
-
-@app.route("/api/posts", methods=['GET'])
-@login_required
-def api_posts():
-    # API de mock para o feed (substituiria por uma chamada ao Supabase)
-    mock_posts = [
-        # ... (seu mock de posts) ...
-    ]
-    return jsonify(mock_posts)
-
-
-@app.route("/chat/<int:destinatario_id>")
-@login_required
-def chat_with_user(destinatario_id):
-    remetente_id = session.get('user_id')
-    
-    if remetente_id == destinatario_id:
-        flash('Você não pode conversar consigo mesmo.', 'danger')
-        return redirect(url_for('pagina_inicial'))
-
-    remetente = get_user_by_id(remetente_id)
-    destinatario = get_user_by_id(destinatario_id)
-    
-    if not remetente or not destinatario:
-        flash('Usuário para chat não encontrado.', 'danger')
-        return redirect(url_for('pagina_inicial'))
-
-    return render_template("telasHTML/ArquivosGerais/TelaChat/chat.html", 
-                           remetente=remetente, 
-                           destinatario=destinatario)
-
-
-@app.route("/esqueci_senha", methods=['GET', 'POST'])
-def esqueci_senha():
-    if request.method == 'POST':
-        email = request.form.get('email')
-        # Lógica de Supabase para enviar link de redefinição de senha por email
-        flash(f'Se o e-mail {email} estiver cadastrado, um link de redefinição de senha foi enviado.', 'success')
-        # Na aplicação real, aqui você chamaria a API de auth do Supabase
-        return redirect(url_for('login'))
+def check_user(email, senha):
+    """Verifica as credenciais do usuário para login."""
+    try:
+        user = get_user_by_email(email)
         
-    return render_template("telasHTML/RecuperarSenha/esqueci_senha.html")
+        if user and user.get('senha') and bcrypt.checkpw(senha.encode('utf-8'), user['senha'].encode('utf-8')):
+            return user
+        return None
+    except Exception as e:
+        print(f"ERRO em check_user: {e}")
+        return None
 
+def get_all_users():
+    """Retorna a lista de todos os usuários."""
+    try:
+        response = supabase.table('usuarios').select('id, nome, cidade, posicao, foto_perfil, nascimento').execute()
+        if response.data:
+            users = response.data
+            for user in users:
+                if user.get('nascimento'):
+                    user['idade'] = calculate_age(user['nascimento'])
+                else:
+                    user['idade'] = 'N/A'
+            return users
+        return []
+    except Exception as e:
+        print(f"ERRO em get_all_users: {e}")
+        return []
 
-@app.route("/redefinir_senha", methods=['GET', 'POST'])
-def redefinir_senha():
-    # Esta rota é um placeholder, pois a lógica de redefinição de senha
-    # depende de tokens de URL enviados pelo Supabase (ou serviço de email).
-    
-    if request.method == 'POST':
-        # Aqui você receberia a nova senha e o email/token
-        nova_senha = request.form.get('nova_senha')
-        # Assumindo que o email pode vir da URL ou de um campo oculto
-        email = request.args.get('email') or request.form.get('email_oculto')
-        
-        # Exemplo de lógica para atualizar a senha no banco
-        if email and nova_senha and len(nova_senha) >= 6:
-            if update_password(email, nova_senha): # Chama a função corrigida
-                flash('Sua senha foi redefinida com sucesso. Faça o login.', 'success')
-                return redirect(url_for('login'))
+def get_user_by_id(user_id):
+    """Busca um usuário por ID."""
+    try:
+        response = supabase.table('usuarios').select('*').eq('id', user_id).limit(1).execute()
+        if response.data:
+            user = response.data[0]
+            if user.get('nascimento'):
+                user['idade'] = calculate_age(user['nascimento'])
             else:
-                flash('Falha ao redefinir a senha. Tente novamente.', 'danger')
-        else:
-            flash('Senha inválida (mínimo 6 caracteres) ou falta de informações.', 'danger')
+                user['idade'] = 'N/A'
+            return user
+        return None
+    except Exception as e:
+        print(f"ERRO em get_user_by_id: {e}")
+        return None
 
-    return render_template("telasHTML/RecuperarSenha/redefinir_senha.html")
+def update_user_profile_image(email, foto_perfil_path):
+    """Atualiza o caminho da foto de perfil do usuário."""
+    try:
+        response = supabase.table('usuarios').update({
+            'foto_perfil': foto_perfil_path
+        }).eq('email', email).execute()
+        
+        return bool(response.data)
+        
+    except Exception as e:
+        print(f"ERRO em update_user_profile_image: {e}")
+        return False
 
-
-if __name__ == '__main__':
-    app.run(debug=True)
+def update_user_profile(email, **update_data):
+    """Atualiza o perfil do usuário com dados dinâmicos."""
+    try:
+        response = supabase.table('usuarios').update(update_data).eq('email', email).execute()
+        return bool(response.data)
+    except Exception as e:
+        print(f"ERRO em update_user_profile: {e}")
+        return False
+        
+def update_password(email, new_password):
+    """Redefine a senha de um usuário existente."""
+    try:
+        hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        response = supabase.table('usuarios').update({
+            'senha': hashed_password
+        }).eq('email', email).execute()
+        return bool(response.data)
+    except Exception as e:
+        print(f"ERRO em update_password: {e}")
+        return False
