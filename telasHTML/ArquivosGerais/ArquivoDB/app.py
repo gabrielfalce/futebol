@@ -106,4 +106,4 @@ def cadastro():
             
             data_nascimento_iso = data_obj.strftime('%Y-%m-%d')
         except ValueError:
-            flash("Erro: A data de nascimento deve
+            flash("Erro: A data de nascimento deve")
