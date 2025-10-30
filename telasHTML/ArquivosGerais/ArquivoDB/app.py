@@ -21,8 +21,6 @@ app = Flask(
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "chave_padrao_para_dev")
 
 # === ROTAS DEDICADAS PARA ARQUIVOS ESTÁTICOS ===
-# A rota 'serve_static_files' genérica foi removida e substituída por rotas seguras:
-
 # 1. Rota para os assets da tela de Login (telasHTML/ArquivosGerais/telaDeLogin/)
 @app.route('/login-assets/<path:filename>')
 def login_assets(filename):
@@ -35,7 +33,7 @@ def loading_assets(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaLoading')
     return send_from_directory(dir_path, filename)
 
-# 3. Rota para os assets da TELA INICIAL (telasHTML/ArquivosGerais/TelaInicial/) << NOVO
+# 3. Rota para os assets da TELA INICIAL (telasHTML/ArquivosGerais/TelaInicial/)
 @app.route('/inicio-assets/<path:filename>')
 def inicio_assets(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaInicial')
@@ -73,7 +71,7 @@ def login():
             return redirect(url_for('tela_de_loading'))
         else:
             flash('Email ou senha incorretos. Tente novamente.', 'danger')
-    # Caminho corrigido para o template
+    # Caminho corrigido (já estava OK)
     return render_template('telasHTML/ArquivosGerais/telaDeLogin/telaLogin.html')
 
 
@@ -127,16 +125,16 @@ def cadastro():
             flash(mensagem, 'danger')
             return redirect(url_for('cadastro'))
     
-    # Caminho corrigido para o template de cadastro
+    # Caminho corrigido (já estava OK)
     return render_template("telasHTML/Cadastrar_templates/cadastrar.html")
 
-# A rota '/cadastro_page' redundante foi removida, mantendo apenas a '/cadastro'
 
 @app.route("/inicio")
 def pagina_inicial():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     lista_de_usuarios = get_all_users()
+    # Caminho corrigido (já estava OK)
     return render_template("telasHTML/ArquivosGerais/TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
 
 
@@ -145,7 +143,8 @@ def pagina_usuario():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     user_data = get_user_by_email(session['user_email'])
-    return render_template("telasHTML\ArquivosGerais\TelaDeUsuario\TelaUser.html", usuario=user_data)
+    # CORREÇÃO AQUI: Trocado '\' por '/'
+    return render_template("telasHTML/ArquivosGerais/TelaDeUsuario/TelaUser.html", usuario=user_data)
 
 
 @app.route("/editar_perfil", methods=['GET', 'POST'])
@@ -249,14 +248,16 @@ def esqueci_senha():
 def pagina_chat(destinatario_id):
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    return render_template("telasHTML\ArquivosGerais\TelaChat\chat.html", destinatario_id=destinatario_id)
+    # CORREÇÃO AQUI: Trocado '\' por '/'
+    return render_template("telasHTML/ArquivosGerais/TelaChat/chat.html", destinatario_id=destinatario_id)
 
 
 @app.route("/feed")
 def pagina_feed():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    return render_template("telasHTML\ArquivosGerais\TelaFeed\feed.html")
+    # CORREÇÃO AQUI: Trocado '\' por '/'
+    return render_template("telasHTML/ArquivosGerais/TelaFeed/feed.html")
 
 
 if __name__ == '__main__':

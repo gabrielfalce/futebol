@@ -8,8 +8,11 @@
     <link rel="stylesheet" href="{{ url_for('inicio_assets', filename='style.css') }}">
 
     <style>
+        /* Estilos do Toast aprimorados, utilizando a classe 'show' */
         .toast {
-            display: none;
+            visibility: hidden; /* Inicialmente oculto */
+            opacity: 0;
+            min-width: 250px;
             position: fixed;
             bottom: 20px;
             left: 50%;
@@ -19,6 +22,14 @@
             padding: 15px;
             border-radius: 5px;
             z-index: 1000;
+            transition: opacity 0.5s, visibility 0.5s; /* Para uma transição suave */
+            text-align: center; /* Centraliza o texto */
+        }
+        
+        /* Classe que torna o toast visível */
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
         }
     </style>
 </head>
@@ -71,32 +82,40 @@
     {% endwith %}
 
     <script>
+        // Função de busca: Correta e funcional
         function searchUsers() {
             const input = document.getElementById('search-input').value.toLowerCase();
             const userLinks = document.querySelectorAll('.user-card-link'); 
             userLinks.forEach(link => {
                 const userCard = link.querySelector('.user-card');
+                // Assume que .user-name sempre existe dentro de .user-card
                 const name = userCard.querySelector('.user-name').textContent.toLowerCase();
                 link.style.display = name.includes(input) ? 'block' : 'none'; 
             });
         }
 
+        // Lógica do Toast: Corrigida para usar classes CSS
         document.addEventListener('DOMContentLoaded', () => {
             const toast = document.getElementById('toast-notification');
             if (toast && toast.dataset.message) {
                 toast.textContent = toast.dataset.message;
                 
                 const category = toast.dataset.category;
+                
+                // Define a cor de fundo com base na categoria
                 if (category === 'success') {
                     toast.style.backgroundColor = 'green';
                 } else if (category === 'danger') {
                     toast.style.backgroundColor = '#f44336';
                 } else {
-                    toast.style.backgroundColor = '#333';
+                    toast.style.backgroundColor = '#333'; // Padrão
                 }
                 
-                toast.style.display = 'block';
-                setTimeout(() => toast.style.display = 'none', 3000);
+                // Adiciona a classe 'show' para torná-lo visível (com transição)
+                toast.classList.add('show');
+                
+                // Remove a classe 'show' após 3 segundos
+                setTimeout(() => toast.classList.remove('show'), 3000);
             }
         });
     </script>
