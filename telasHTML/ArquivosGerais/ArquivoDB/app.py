@@ -1,22 +1,16 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory, jsonify
 from dotenv import load_dotenv
-from database import (
-    register_user, 
-    check_user, 
-    get_all_users, 
-    get_user_by_email, 
-    update_user_profile_image, 
-    update_user_profile
-)
+from database import register_user, check_user, get_all_users, get_user_by_email, update_user_profile_image, update_user_profile
 import bcrypt
 from datetime import datetime
 from werkzeug.utils import secure_filename
 
 load_dotenv()
 
-# === CONFIGURAÇÃO DE DIRETÓRIOS ===
-# Sobe 3 níveis (.., .., ..) para alcançar o diretório raiz /src.
+# === CONFIGURAÇÃO DE DIRETÓRIOS CORRIGIDA ===
+# Assumindo a estrutura: /src/telasHTML/ArquivosGerais/ArquivoDB/app.py
+# Subindo 3 níveis (.., .., ..) para alcançar o diretório raiz (/src).
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..', '..', '..')) 
 
@@ -27,17 +21,27 @@ app = Flask(
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "chave_padrao_para_dev")
 
 # === ROTAS DEDICADAS PARA ARQUIVOS ESTÁTICOS ===
-# ⚠️ Importante: Replicar este padrão para qualquer outra pasta de assets que você tiver.
+# A rota 'serve_static_files' genérica foi removida e substituída por rotas seguras:
 
-# 1. Rota para os arquivos estáticos da tela de Login
-# Permite carregar style.css, logo.png, etc., da pasta telaDeLogin.
+# 1. Rota para os assets da tela de Login (telasHTML/ArquivosGerais/telaDeLogin/)
 @app.route('/login-assets/<path:filename>')
 def login_assets(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'telaDeLogin')
     return send_from_directory(dir_path, filename)
 
-# 2. Rota para os arquivos de UPLOAD de usuários
-# Permite carregar profile_pics/image.png, etc.
+# 2. Rota para os assets da Tela de Loading (telasHTML/ArquivosGerais/TelaLoading/)
+@app.route('/loading-assets/<path:filename>')
+def loading_assets(filename):
+    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaLoading')
+    return send_from_directory(dir_path, filename)
+
+# 3. Rota para os assets da TELA INICIAL (telasHTML/ArquivosGerais/TelaInicial/) << NOVO
+@app.route('/inicio-assets/<path:filename>')
+def inicio_assets(filename):
+    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaInicial')
+    return send_from_directory(dir_path, filename)
+
+# 4. Rota para os arquivos de UPLOAD de usuários (uploads/ profile_pics)
 @app.route('/uploads/<path:path_and_filename>')
 def uploaded_files(path_and_filename):
     dir_path = os.path.join(BASE_DIR, 'uploads')
@@ -69,7 +73,6 @@ def login():
             return redirect(url_for('tela_de_loading'))
         else:
             flash('Email ou senha incorretos. Tente novamente.', 'danger')
-            
     # Caminho corrigido para o template
     return render_template('telasHTML/ArquivosGerais/telaDeLogin/telaLogin.html')
 
@@ -127,13 +130,13 @@ def cadastro():
     # Caminho corrigido para o template de cadastro
     return render_template("telasHTML/Cadastrar_templates/cadastrar.html")
 
+# A rota '/cadastro_page' redundante foi removida, mantendo apenas a '/cadastro'
 
 @app.route("/inicio")
 def pagina_inicial():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     lista_de_usuarios = get_all_users()
-    # Caminho corrigido para o template
     return render_template("telasHTML/ArquivosGerais/TelaInicial/TelaInicial.html", usuarios=lista_de_usuarios)
 
 
@@ -142,7 +145,6 @@ def pagina_usuario():
     if 'user_email' not in session:
         return redirect(url_for('login'))
     user_data = get_user_by_email(session['user_email'])
-    # Caminho corrigido para o template
     return render_template("telasHTML/TelaDeUsuario/TelaUser.html", usuario=user_data)
 
 
@@ -174,7 +176,6 @@ def editar_perfil():
         
         return redirect(url_for('pagina_usuario'))
     
-    # Caminho corrigido para o template
     return render_template("telasHTML/TelaDeUsuario/editar_perfil.html", usuario=user_data)
 
 
@@ -229,7 +230,6 @@ def upload_image():
 def tela_de_loading():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    # Caminho corrigido para o template
     return render_template('telasHTML/ArquivosGerais/TelaLoading/Telaloading.html') 
 
 
@@ -242,7 +242,6 @@ def logout():
 
 @app.route("/esqueci_senha", methods=['GET', 'POST'])
 def esqueci_senha():
-    # Caminho ajustado para consistência
     return render_template("telasHTML/RecuperarSenha/esqueci_senha.html")
 
 
@@ -250,7 +249,6 @@ def esqueci_senha():
 def pagina_chat(destinatario_id):
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    # Caminho ajustado para consistência
     return render_template("telasHTML/TelaChat/chat.html", destinatario_id=destinatario_id)
 
 
@@ -258,7 +256,6 @@ def pagina_chat(destinatario_id):
 def pagina_feed():
     if 'user_email' not in session:
         return redirect(url_for('login'))
-    # Caminho ajustado para consistência
     return render_template("telasHTML/TelaFeed/feed.html")
 
 

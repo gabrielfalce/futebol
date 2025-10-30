@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tela Inicial</title>
 
-    <link rel="stylesheet" href="{{ url_for('serve_static_files', filename='telasHTML/ArquivosGerais/TelaInicial/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('inicio_assets', filename='style.css') }}">
 
     <style>
         .toast {
@@ -30,7 +30,7 @@
     <main>
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Buscar usuários..." onkeyup="searchUsers()">
-            <img src="{{ url_for('serve_static_files', filename='telasHTML/ArquivosGerais/TelaInicial/lupa.png') }}" alt="Ícone de busca" class="search-icon">
+            <img src="{{ url_for('inicio_assets', filename='lupa.png') }}" alt="Ícone de busca" class="search-icon">
         </div>
 
         <div class="user-list" id="user-list">
@@ -38,7 +38,7 @@
                 <a href="{{ url_for('pagina_chat', destinatario_id=usuario.id) }}" class="user-card-link">
                     <div class="user-card">
                         <img id="user-foto" 
-                            src="{{ url_for('serve_static_files', filename=usuario.foto_perfil if usuario.foto_perfil else 'telasHTML/ArquivosGerais/TelaInicial/iconeUser.png') }}" 
+                            src="{% if usuario.foto_perfil %}{{ url_for('uploaded_files', path_and_filename=usuario.foto_perfil) }}{% else %}{{ url_for('inicio_assets', filename='iconeUser.png') }}{% endif %}" 
                             alt="Foto de perfil de {{ usuario.nome }}">
                         
                         <div class="user-info">
@@ -58,7 +58,7 @@
     <nav class="navigation-links">
         <a href="{{ url_for('pagina_feed') }}" class="nav-button feed-button">Ver Feed</a>
         <a href="{{ url_for('pagina_usuario') }}" class="nav-button profile-button">
-            <img src="{{ url_for('serve_static_files', filename='telasHTML/ArquivosGerais/TelaInicial/BotaoUsuario.ico') }}" alt="Ver Perfil">
+            <img src="{{ url_for('inicio_assets', filename='BotaoUsuario.ico') }}" alt="Ver Perfil">
         </a>
         <a href="{{ url_for('logout') }}" class="nav-button logout-button">Sair</a>
     </nav>
@@ -73,12 +73,10 @@
     <script>
         function searchUsers() {
             const input = document.getElementById('search-input').value.toLowerCase();
-            // Seleciona o link, não apenas o card, para ocultar o elemento pai
             const userLinks = document.querySelectorAll('.user-card-link'); 
             userLinks.forEach(link => {
                 const userCard = link.querySelector('.user-card');
                 const name = userCard.querySelector('.user-name').textContent.toLowerCase();
-                // Oculta/Mostra o link inteiro
                 link.style.display = name.includes(input) ? 'block' : 'none'; 
             });
         }
@@ -88,7 +86,6 @@
             if (toast && toast.dataset.message) {
                 toast.textContent = toast.dataset.message;
                 
-                // Define a cor de fundo baseado na categoria
                 const category = toast.dataset.category;
                 if (category === 'success') {
                     toast.style.backgroundColor = 'green';
