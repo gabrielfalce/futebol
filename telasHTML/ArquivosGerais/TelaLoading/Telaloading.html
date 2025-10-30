@@ -6,6 +6,7 @@
     <title>Carregando</title>
     <link rel="stylesheet" href="{{ url_for('loading_assets', filename='style.css') }}">
     <style>
+        /* Estilos do Loader (mantidos) */
         .loader {
             border: 8px solid #f3f3f3;
             border-top: 8px solid var(--cor-primaria);
@@ -19,6 +20,27 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        /* Estilos básicos para o Toast (supondo que 'show' o torna visível) */
+        .toast {
+            visibility: hidden; /* Oculto por padrão */
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #333; /* Cor padrão, será sobrescrita */
+            color: #fff;
+            text-align: center;
+            border-radius: 2px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            bottom: 30px;
+            font-size: 17px;
+        }
+        .toast.show {
+            visibility: visible;
+            -webkit-animation: fadein 0.5s, fadeout 0.5s 3.5s;
+            animation: fadein 0.5s, fadeout 0.5s 3.5s;
+        }
     </style>
 </head>
 <body data-tempo-loading="5000">
@@ -27,15 +49,20 @@
     <div class="loader"></div>
     <div id="toast-notification" class="toast"></div>
 
-    <script src="{{ url_for('loading_assets', filename='script.js') }}"></script>
+    <script src="{{ url_for('loading_assets', filename='script.js') }}"></script> 
 
     <script>
+        // Bloco de Mensagens Flasheadas e Toast
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 const message = "{{ messages[0][1] }}";
                 const toast = document.getElementById("toast-notification");
                 toast.textContent = message;
-                toast.style.backgroundColor = "{{ 'green' if messages[0][0] == 'success' else '#f44336' }}";
+                
+                // CORREÇÃO CRÍTICA: Sintaxe do Jinja2 dentro de aspas simples para ser um JS String válido.
+                // Isso garante que o JavaScript veja: toast.style.backgroundColor = 'green'; ou '#f44336';
+                toast.style.backgroundColor = '{{ "green" if messages[0][0] == "success" else "#f44336" }}';
+                
                 toast.classList.add("show");
                 setTimeout(() => toast.classList.remove("show"), 4000);
             {% endif %}
@@ -45,7 +72,8 @@
         const delay = parseInt(document.body.getAttribute('data-tempo-loading')) || 3000;
 
         setTimeout(() => {
-            window.location.href = "{{ url_for('pagina_inicial') }}";
+            // Garante que a URL é resolvida corretamente pelo Jinja2
+            window.location.href = "{{ url_for('pagina_inicial') }}"; 
         }, delay);
     </script>
 </body>
