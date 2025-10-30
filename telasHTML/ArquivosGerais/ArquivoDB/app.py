@@ -89,6 +89,8 @@ def login():
     # Renderiza a tela de login
     return render_template('telasHTML/ArquivosGerais/telaDeLogin/telaLogin.html')
 
+# app.py (Trecho da rota /cadastro)
+
 @app.route("/cadastro", methods=['GET', 'POST'])
 def cadastro():
     if request.method == 'POST':
@@ -97,8 +99,14 @@ def cadastro():
         senha = request.form['senha']
         cidade = request.form['cidade']
         posicao = request.form['posicao']
-        nascimento_str = request.form['nascimento']
-        numero = request.form['numero']
+        nascimento = request.form['nascimento']
+        numero = request.form['numero'] # <--- Coleta do campo 'numero' re-incluída
+        
+        # ... lógica de validação de nascimento ...
+
+        success, message = register_user(nome, email, senha, cidade, posicao, nascimento, numero)
+        
+        # ... (restante da rota)
         
         # Lógica de validação de data
         try:

@@ -60,7 +60,11 @@ def calculate_age(born):
 
 # === FUNÇÕES DO SUPABASE ===
 
-def register_user(nome, email, senha, cidade, posicao, nascimento, numero):
+# database.py (Trecho da função register_user)
+
+# ... (outras funções e imports)
+
+def register_user(nome, email, senha, cidade, posicao, nascimento, numero): # <--- Parâmetro 'numero' incluído
     """
     Cadastra um novo usuário no banco de dados.
     """
@@ -69,7 +73,7 @@ def register_user(nome, email, senha, cidade, posicao, nascimento, numero):
         hashed_password = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         
         # Insere o usuário no banco.
-        # CORREÇÃO CRÍTICA: Removido 'foto_perfil' para resolver o erro 'Could not find the 'foto_perfil' column'.
+        # CORREÇÃO CRÍTICA: O campo agora usa a chave 'numero', conforme solicitado.
         response = supabase.table('usuarios').insert({
             'nome': nome,
             'email': email,
@@ -77,11 +81,12 @@ def register_user(nome, email, senha, cidade, posicao, nascimento, numero):
             'cidade': cidade,
             'posicao': posicao,
             'nascimento': nascimento,
-            'numero_telefone': numero
+            'numero': numero # <--- CHAVE CORRIGIDA!
         }).execute()
         
         if response.data:
             return True, "Cadastro realizado com sucesso!"
+    
         else:
             # Tenta pegar a mensagem de erro detalhada do PostgREST
             error_details = response.error
