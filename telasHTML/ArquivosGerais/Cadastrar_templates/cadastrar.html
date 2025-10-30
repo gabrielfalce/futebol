@@ -48,7 +48,10 @@
         
         <input placeholder="Data de Nascimento (DD/MM/AAAA ou AAAA-MM-DD)" type="text" name="nascimento" required>
         
-        <input placeholder="Número de Telefone" type="tel" name="numero" required>
+        <!-- ALTERAÇÃO 1: Adicionado o campo para número da camisa -->
+        <input placeholder="Número da Camisa (Opcional)" type="number" name="numero_camisa" min="1" max="99">
+
+        <input placeholder="Número de Telefone" type="tel" name="numero_telefone" required>
 
         <button type="submit">Cadastrar</button>
         <a href="{{ url_for('login') }}">Voltar para Login</a>
@@ -60,8 +63,8 @@
             
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
-                    // Usando |safe para permitir caracteres especiais em mensagens, embora |tojson seja mais seguro
-                    const message = "{{ messages[0][1] | safe }}"; 
+                    // Usando |tojson para tratar caracteres especiais de forma segura
+                    const message = {{ messages[0][1] | tojson }}; 
                     const category = "{{ messages[0][0] }}";
                     
                     toast.textContent = message;

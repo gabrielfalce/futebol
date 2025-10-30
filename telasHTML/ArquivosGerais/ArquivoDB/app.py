@@ -122,20 +122,20 @@ def cadastro():
             senha = request.form['senha']
             cidade = request.form['cidade']
             posicao = request.form['posicao']
-            
             nascimento_str = request.form['nascimento']
-            numero = request.form['numero'] 
+            
+            # ALTERAÇÃO 2: Lendo os dois campos separadamente do formulário
+            numero_telefone = request.form.get('numero_telefone')
+            numero_camisa = request.form.get('numero_camisa')
 
             # Lógica de conversão de data (DD/MM/AAAA para AAAA-MM-DD)
-            # Tenta DD/MM/AAAA. Se falhar, assume que o Supabase/Formulario aceita AAAA-MM-DD
             try:
                 nascimento_formatado = datetime.strptime(nascimento_str, '%d/%m/%Y').strftime('%Y-%m-%d')
             except ValueError:
                 nascimento_formatado = nascimento_str
         
-            # Chamada à função register_user
-            # CORREÇÃO: Passando a variável 'numero' para o parâmetro 'numero_camisa' da função register_user
-            success, message = register_user(nome, email, senha, cidade, posicao, nascimento_formatado, numero)
+            # ALTERAÇÃO 3: Passando as variáveis corretas para a função register_user
+            success, message = register_user(nome, email, senha, cidade, posicao, nascimento_formatado, numero_camisa, numero_telefone)
             
             if success:
                 # Login automático
@@ -242,7 +242,6 @@ def editar_perfil():
         nome = request.form.get('nome')
         cidade = request.form.get('cidade')
         posicao = request.form.get('posicao')
-        # CORREÇÃO: Adicionando a captura do número para atualização
         numero = request.form.get('numero')
         
         if nome:
@@ -254,7 +253,6 @@ def editar_perfil():
         if posicao:
             update_data['posicao'] = posicao
 
-        # CORREÇÃO: Adicionando o campo 'numero_camisa' ao dicionário de atualização
         if numero:
             update_data['numero_camisa'] = numero
             
@@ -270,10 +268,8 @@ def editar_perfil():
                 
                 file.save(file_path)
                 
-                # Salva o caminho RELATIVO ao BASE_DIR para o banco de dados
                 db_path = os.path.join(UPLOAD_FOLDER_RELATIVE, filename).replace('\\', '/')
                 
-                # CORREÇÃO: O nome da chave no update_data DEVE ser 'profile_image_url'
                 update_data['profile_image_url'] = db_path
                 session['user_profile_image'] = db_path # Atualiza a sessão (se necessário)
 
@@ -303,7 +299,6 @@ def pagina_feed():
 @login_required
 def api_posts():
     mock_posts = [
-        # ... (seu mock de posts) ...
     ]
     return jsonify(mock_posts)
 
@@ -324,9 +319,8 @@ def chat_with_user(destinatario_id):
         flash('Usuário para chat não encontrado.', 'danger')
         return redirect(url_for('pagina_inicial'))
 
-    # ALTERAÇÃO: Passando as variáveis de ambiente para o template do chat
     supabase_url = os.environ.get("SUPABASE_URL")
-    supabase_anon_key = os.environ.get("SUPABASE_KEY") # A chave anon é usada no lado do cliente
+    supabase_anon_key = os.environ.get("SUPABASE_KEY")
 
     return render_template("telasHTML/ArquivosGerais/TelaChat/chat.html", 
                            remetente=remetente, 
