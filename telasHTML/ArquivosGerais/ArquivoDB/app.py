@@ -42,10 +42,10 @@ def loading_assets(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaLoading')
     return send_from_directory(dir_path, filename)
 
-# 3. Rota para os assets da tela de Cadastro (CORREÇÃO APLICADA)
+# 3. Rota para os assets da tela de Cadastro
 @app.route('/cadastro-assets/<path:filename>')
 def cadastro_assets(filename):
-    # O nome da função 'cadastro_assets' é o endpoint correto sugerido pelo Flask.
+    # O caminho deve apontar para o diretório que contém 'estilo.css'
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'Cadastrar_templates')
     return send_from_directory(dir_path, filename)
 
