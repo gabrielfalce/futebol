@@ -10,7 +10,7 @@ from database import (
 import bcrypt
 from datetime import datetime
 from werkzeug.utils import secure_filename
-from functools import wraps
+from functools import wraps  # <<< IMPORTAÇÃO ADICIONADA (era o erro de SyntaxError)
 
 load_dotenv()
 
@@ -28,7 +28,7 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "chave_padrao_para_dev")
 PROFILE_BUCKET = 'profile-images'   # Bucket existente para fotos de perfil
 POST_BUCKET = 'post-images'         # NOVO bucket para imagens de posts
 
-# Diretório local apenas para fotos de perfil (fallback ou dev)
+# Diretório local apenas para fallback (dev)
 UPLOAD_FOLDER_RELATIVE = 'telasHTML/ArquivosGerais/TelaDeUsuario/imagens/profile_pics'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -36,9 +36,9 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[-1].lower() in ALLOWED_EXTENSIONS
 
-# Decorador para exigir login
+# === DECORADOR DE LOGIN (agora com wraps importado) ===
 def login_required(f):
-    @wraps(f):
+    @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_email' not in session:
             flash('Você precisa estar logado para acessar esta página.', 'danger')
@@ -46,7 +46,7 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# === ROTAS DEDICADAS PARA ARQUIVOS ESTÁTICOS (ASSETS) ===
+# === ROTAS ESTÁTICAS ===
 @app.route('/login-assets/<path:filename>')
 def login_assets(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'telaDeLogin')
@@ -87,7 +87,6 @@ def recuperar_senha_assets(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'RecuperarSenha')
     return send_from_directory(dir_path, filename)
 
-# Rota genérica para arquivos estáticos dentro de 'telasHTML'
 @app.route('/serve_static_files/<path:filename>')
 def serve_static_files(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML')
@@ -261,7 +260,6 @@ def editar_perfil():
         if numero:
             update_data['numero_camisa'] = numero
             
-        # === UPLOAD DE FOTO DE PERFIL PARA SUPABASE ===
         if 'profile_image' in request.files:
             file = request.files['profile_image']
             if file and allowed_file(file.filename):
@@ -302,7 +300,6 @@ def pagina_feed():
     return render_template("telasHTML/ArquivosGerais/TelaFeed/feed.html", posts=posts)
 
 
-# === API PARA POSTS ===
 @app.route("/api/posts", methods=['GET', 'POST'])
 @login_required
 def api_posts():
@@ -315,7 +312,6 @@ def api_posts():
             autor_id = session.get('user_id')
             imagem_url = None
 
-            # === UPLOAD DE IMAGEM DO POST PARA SUPABASE ===
             if 'postImage' in request.files:
                 file = request.files['postImage']
                 if file and allowed_file(file.filename):
@@ -402,7 +398,6 @@ def redefinir_senha():
     return render_template("telasHTML/RecuperarSenha/redefinir_senha.html")
 
 
-# === FILTRO JINJA: FORMATA DATA ===
 @app.template_filter('strftime')
 def _jinja2_filter_strftime(date_str, fmt='%d/%m/%Y às %H:%M'):
     if not date_str:
@@ -415,6 +410,5 @@ def _jinja2_filter_strftime(date_str, fmt='%d/%m/%Y às %H:%M'):
 
 
 if __name__ == '__main__':
-    # Cria diretório local apenas para fallback (dev)
     os.makedirs(os.path.join(BASE_DIR, UPLOAD_FOLDER_RELATIVE), exist_ok=True)
     app.run(debug=True)
