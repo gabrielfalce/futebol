@@ -3,77 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro</title>
-    
-    <link rel="icon" href="{{url_for('cadastro_assets', filename='bolaverde.ico')}}" type="image/x-icon">
-    <link rel="stylesheet" href="{{ url_for('cadastro_assets', filename='estilo.css') }}">
-    <link rel="stylesheet" href="estilo.css">
-    <style>
-        .toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #f44336;
-            color: white;
-            text-align: center;
-            border-radius: 5px;
-            padding: 16px;
-            position: fixed;
-            z-index: 100;
-            right: 30px;
-            top: 30px;
-            font-size: 17px;
-            opacity: 0;
-            transition: opacity 0.5s, visibility 0.5s;
-        }
+    <title>Tela Inicial</title>
 
-        .toast.show {
-            visibility: visible;
-            opacity: 1;
-        }
-    </style>
+    <!-- ALTERAÇÃO 1: Adicionada a tag para o favicon -->
+    <link rel="icon" href="{{ url_for('inicio_assets', filename='BotaoUsuario.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" href="styleInicial.css">
+    <link rel="stylesheet" href="{{ url_for('inicio_assets', filename='styleInicial.css') }}">
+
+    
 </head>
 <body>
     
-    <img src="{{ url_for('login_assets', filename='logo.png') }}" alt="Logotipo">
+    <div id="toast-notification" class="toast"
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                data-message="{{ messages[0][1] }}" 
+                data-category="{{ messages[0][0] }}"
+            {% endif %}
+        {% endwith %}
+    ></div>
+
+    <header class="page-header">
+        </header>
+    <main>
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Buscar usuários..." onkeyup="searchUsers()">
+            <img src="{{ url_for('inicio_assets', filename='lupa.png') }}" alt="Ícone de busca" class="search-icon">
+        </div>
+
+        <div class="user-list" id="user-list">
+            {% if users %}
+                {% for user in users %}
+                    <a href="{{ url_for('chat_with_user', destinatario_id=user.id) }}" class="user-card-link">
+                        <div class="user-card">
+                            <img class="user-avatar" 
+                                 src="{{ url_for('serve_static_files', filename=user.profile_image_url) if user.profile_image_url else url_for('inicio_assets', filename='iconeUser.png') }}" 
+                                 alt="Avatar de {{ user.nome or 'Usuário' }}">
+                            <p class="user-name">{{ user.nome or 'Nome Desconhecido' }}</p>
+                            <div class="user-details">
+                                <p>{{ user.posicao or 'N/A' }} | {{ user.cidade or 'N/A' }}</p>
+                                <p>{{ user.idade or 'N/A' }} anos</p>
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center; color: #aaa; width: 100%;">Nenhum outro usuário encontrado.</p>
+            {% endif %}
+        </div>
+    </main>
     
-    <h1 class="titulo">Cadastro</h1>
-    
-    <div id="toast-notification" class="toast"></div>
-    
-    <form action="{{ url_for('cadastro') }}" method="post">
-        <!-- ALTERAÇÕES: Adicionado o atributo 'value' a todos os inputs -->
-        <input placeholder="Nome Completo" type="text" name="nome" value="{{ form_data.nome or '' }}" required>
-        <input placeholder="Email" type="email" name="email" value="{{ form_data.email or '' }}" required>
-        <input placeholder="Senha" type="password" name="senha" required minlength="8">
-        <input placeholder="Cidade" type="text" name="cidade" value="{{ form_data.cidade or '' }}" required>
-        <input placeholder="Posição em Campo" type="text" name="posicao" value="{{ form_data.posicao or '' }}" required>
+    <nav class="navigation-links">
+        <a href="{{ url_for('pagina_feed') }}" title="Feed de Posts" class="nav-button feed-button">
+            Feed
+        </a> 
         
-        <input placeholder="Data de Nascimento (DD/MM/AAAA ou AAAA-MM-DD)" type="text" name="nascimento" value="{{ form_data.nascimento or '' }}" required>
+        <a href="{{ url_for('pagina_usuario', user_id=session.user_id) }}" title="Meu Perfil" class="nav-button profile-button">
+             <!-- ALTERAÇÃO 2: Usando o 'BotaoUsuario.ico' e uma classe específica para o ícone -->
+             <img src="{{ url_for('inicio_assets', filename='BotaoUsuario.ico') }}" alt="Perfil" class="profile-button-icon">
+        </a>
         
-        <input placeholder="Número da Camisa (Opcional)" type="number" name="numero_camisa" value="{{ form_data.numero_camisa or '' }}" min="1" max="99">
-
-        <input placeholder="Número de Telefone" type="tel" name="numero_telefone" value="{{ form_data.numero_telefone or '' }}" required>
-
-        <button type="submit">Cadastrar</button>
-        <a class="linksNone" href="{{ url_for('login') }}">Ir para Login</a>
-    </form>
-
+        <a href="{{ url_for('logout') }}" title="Sair" class="nav-button logout-button">
+            Sair
+        </a>
+    </nav>
     <script>
-        document.addEventListener('DOMContentLoaded', (event) => {
-            const toast = document.getElementById("toast-notification");
+        // Função de busca de usuários (filtro local)
+        function searchUsers() {
+            const input = document.getElementById('search-input').value.toLowerCase();
+            const userLinks = document.querySelectorAll('.user-card-link'); 
             
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    const message = {{ messages[0][1] | tojson }}; 
-                    const category = "{{ messages[0][0] }}";
-                    
-                    toast.textContent = message;
-                    toast.style.backgroundColor = category === 'success' ? 'green' : '#f44336';
-                    
-                    toast.classList.add("show");
-                    setTimeout(() => toast.classList.remove("show"), 4000);
-                {% endif %}
-            {% endwith %}
+            userLinks.forEach(link => {
+                const userCard = link.querySelector('.user-card');
+                const name = userCard.querySelector('.user-name').textContent.toLowerCase();
+                link.style.display = name.includes(input) ? 'block' : 'none'; 
+            });
+        }
+
+        // Lógica do Toast: Corrigida para usar classes CSS
+        document.addEventListener('DOMContentLoaded', () => {
+            const toast = document.getElementById('toast-notification');
+            if (toast && toast.dataset.message) {
+                toast.textContent = toast.dataset.message;
+                
+                const category = toast.dataset.category;
+                
+                if (category === 'success') {
+                    toast.style.backgroundColor = 'green';
+                } else if (category === 'danger') {
+                    toast.style.backgroundColor = '#f44336';
+                } else {
+                    toast.style.backgroundColor = '#333';
+                }
+                
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            }
         });
     </script>
 </body>
