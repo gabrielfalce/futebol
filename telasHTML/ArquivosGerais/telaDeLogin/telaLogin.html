@@ -24,7 +24,11 @@
     ></div>
     
     <form action="{{ url_for('login') }}" method="post">
-        <input placeholder="Email" type="email" name="email" required>
+        <!-- 
+            ALTERAÇÃO: Adicionado o atributo 'value' ao campo de email.
+            - 'email or ""' garante que o campo fique vazio se a variável 'email' não for passada.
+        -->
+        <input placeholder="Email" type="email" name="email" value="{{ email or '' }}" required>
         <input placeholder="Senha" type="password" name="senha" required>
         
         <a class="esqueceuSenha" href="{{ url_for('esqueci_senha') }}">Esqueceu a senha?</a>

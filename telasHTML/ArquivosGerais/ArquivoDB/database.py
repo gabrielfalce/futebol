@@ -19,7 +19,7 @@ if not url or not key:
 
 try:
     # A inicialização agora usa a chave de serviço, que tem mais privilégios.
-    supabase: Client = create_client(url, key )
+    supabase: Client = create_client(url, key  )
     print("Sucesso: Cliente Supabase inicializado com chave de serviço.")
 except Exception as e:
     print(f"ERRO ao inicializar o Cliente Supabase: {e}")
@@ -67,19 +67,41 @@ def get_user_by_email(email):
         print(f"ERRO em get_user_by_email: {e}")
         return None
 
-# ALTERAÇÃO 1: Adicionado o parâmetro 'numero_telefone' para aceitar o oitavo argumento.
+# ALTERAÇÃO 1: Adicionada uma nova função para buscar usuário por telefone.
+def get_user_by_phone(phone_number):
+    """Busca um usuário pelo número de telefone."""
+    try:
+        # Verifica se o número de telefone não é nulo ou vazio antes de consultar
+        if not phone_number:
+            return None
+        response = supabase.table('usuarios').select('id').eq('numero', phone_number).limit(1).execute()
+        if response.data:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"ERRO em get_user_by_phone: {e}")
+        return None
+
 def register_user(nome, email, senha, cidade, posicao, nascimento, numero_camisa, numero_telefone):
     """
     Cadastra um novo usuário no banco de dados.
     """
     try:
-        existing_user = get_user_by_email(email)
-        if existing_user:
+        # 1. Verifica se o email já existe
+        existing_user_by_email = get_user_by_email(email)
+        if existing_user_by_email:
             return False, "Este e-mail já está cadastrado."
 
+        # ALTERAÇÃO 2: Adicionada a verificação para o número de telefone.
+        # 2. Verifica se o telefone já existe
+        existing_user_by_phone = get_user_by_phone(numero_telefone)
+        if existing_user_by_phone:
+            return False, "Este número de telefone já está em uso."
+
+        # 3. Hash da senha
         hashed_password = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         
-        # ALTERAÇÃO 2: Adicionado o campo 'numero' ao dicionário de inserção.
+        # 4. Insere o usuário no banco.
         response = supabase.table('usuarios').insert({
             'nome': nome,
             'email': email,
@@ -88,7 +110,7 @@ def register_user(nome, email, senha, cidade, posicao, nascimento, numero_camisa
             'posicao': posicao,
             'nascimento': nascimento, 
             'numero_camisa': numero_camisa,
-            'numero': numero_telefone  # A coluna 'numero' recebe o valor de 'numero_telefone'
+            'numero': numero_telefone
         }).execute()
         
         if response.data:
