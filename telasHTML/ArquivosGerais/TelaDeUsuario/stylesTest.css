@@ -1,18 +1,17 @@
 /* =======================
    VARIÁVEIS GLOBAIS
    ======================= */
-:root {
+   :root {
     --cor-primaria: #2BBF90; /* Unificado com o cadastro */
     --cor-secundaria: #128c7e;
     --cor-fundo: #1E1E1E;
     --cor-texto: #fff;
     --cor-borda: rgba(0, 0, 0, 0.1);
-    --cor-card: #2C2C2C; /* Adicionado para consistência com outras telas de formulário */
-    --cor-texto-card: #E0E0E0; /* Adicionado para consistência */
-    --cor-sucesso: #28a745; /* Adicionado para mensagens flash */
-    --cor-erro: #dc3545; /* Adicionado para mensagens flash */
-    --cor-info: #17a2b8; /* Adicionado para mensagens flash */
-
+    --cor-card: #2C2C2C; /* Fundo principal do perfil e posts */
+    --cor-texto-card: #E0E0E0;
+    --cor-sucesso: #28a745; 
+    --cor-erro: #dc3545; 
+    --cor-info: #17a2b8; 
 }
 
 /* =======================
@@ -24,570 +23,324 @@ body {
     margin: 0;
     padding: 0;
     color: var(--cor-texto);
-    overflow-x: hidden; /* Impede a rolagem horizontal, vertical é automática */
+    overflow-x: hidden; 
+    /* Adicionado padding inferior para a barra de botões flutuante */
+    padding-bottom: 120px; 
 }
-
 
 .Wallpaper {
     padding: 0;
     margin: 0;
     width: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 30vh; /* Altura responsiva (30% da altura da viewport) */
-    z-index: -1; /* Coloca a imagem atrás de outros conteúdos */
-    overflow: hidden; /* Garante que a imagem não ultrapasse a altura */
+    height: 30vh; /* Altura do wallpaper: 30% da altura da tela */
+    overflow: hidden;
+    position: relative;
 }
 
-.imagemWallpaper{
-    margin-top: 0;
+.imagemWallpaper {
     width: 100%;
-    height: 100%; /* Ocupa 100% da altura do container .Wallpaper */
+    height: 100%;
     object-fit: cover;
-    overflow: hidden;
+    display: block;
 }
 
 /* =======================
-   LAYOUT PRINCIPAL (TELA DE USUÁRIO)
+   AÇÕES DO CABEÇALHO (Botão de Edição)
    ======================= */
+.header-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 30;
+}
+
+.edit-button {
+    background: rgba(0, 0, 0, 0.4);
+    color: var(--cor-texto);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+}
+
+.edit-button:hover {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.edit-button svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* =======================
+   CONTEÚDO PRINCIPAL (Perfil e Posts)
+   ======================= */
+
 .main-content-wrapper {
-    position: relative;
-    z-index: 1;
-    margin-top: 25vh; /* Empurra o conteúdo para baixo do wallpaper (altura do wallpaper - um pouco) */
+    /* CORREÇÃO: Garante que o conteúdo comece acima do wallpaper */
+    margin-top: -10vh; /* Puxa o conteúdo para cima, sobrepondo o wallpaper */
     padding: 0 20px;
-    max-width: 1200px;
+    max-width: 1000px;
     margin-left: auto;
     margin-right: auto;
+    position: relative;
+    z-index: 20;
 }
 
-/* =======================
-   MODAL DE CORTE DE IMAGEM
-   ======================= */
-.modal {
-    display: none;
-    /* Mostrado com display: flex via JS */
-    align-items: center;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    right: 0px;
-    bottom: 0;
-    background: rgba(8, 4, 4, 0.7);
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background: var(--cor-fundo);
+/* -------------------------------------- */
+/* SEÇÃO DE PERFIL */
+/* -------------------------------------- */
+#profileContainer {
+    background-color: var(--cor-card);
     padding: 20px;
-    border-radius: 8px;
-    position: absolute;
-    width: 90%;
-    max-width: 200px; /* Reduzido para um preview de corte menor */
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    margin-bottom: 40px; /* Espaço entre o perfil e as publicações */
+    
+    /* CORREÇÃO: Novo Flexbox para alinhar a foto e o grupo de info */
+    display: flex;
+    flex-direction: column; /* No desktop, o perfil fica em coluna (foto em cima, info embaixo) */
+    align-items: center;
     text-align: center;
 }
 
-/* fechar modal  */
-.close-button {
-    position: absolute;
-    /* Corrigido: adicionado para que top/right funcionem */
-    top: 10px;
-    right: 10px;
-    background: transparent;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: var(--cor-primaria);
-    transition: color 0.2s, background 0.2s;
-    padding: 4px 8px;
-    border-radius: 40px;
-    background-color: #00000081;
+#perfilImagemGeralCaixa {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    overflow: hidden;
+    /* CORREÇÃO: Ajuste a borda para sobrepor o fundo se o container for puxado para cima */
+    border: 5px solid var(--cor-fundo); 
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    /* Posição da imagem para sobrepor a parte de baixo do wallpaper (Ajuste o -10vh acima) */
+    margin-top: -80px; 
+    margin-bottom: 20px;
 }
 
-
-#closeModalButton:hover {
-    color: var(--cor-primaria);
-    background: rgba(255, 255, 255, 0.1);
-}
-
-/* Input de arquivo no modal */
-
-input[type="file"] {
-    margin: 16px 0;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-input[type="file"]:hover {
-    opacity: 0.9;
-    /* Corrigido: color pode não afetar input file devido a estilos do browser; considere ::-webkit-file-upload-button para custom */
-}
-
-input[type="file"]::-webkit-file-upload-button {
-    background: var(--cor-primaria);
-    color: var(--cor-texto);
-    border: none;
-    padding: 8px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-input[type="file"]::-webkit-file-upload-button:hover {
-    background: var(--cor-secundaria);
-}
-
-#image {
-    display: none;
-    max-width: 100%;
-}
-
-/* Estilo genérico para imagens, para evitar problemas */
-.main-content-wrapper img, .container img {
-    position: relative;
-    display: block;
-    max-width: 100%;
-    /* Corrigido: 1000% era um erro grave */
-    max-height: 300px;
-    /* Ajustado para preview razoável; override em media query se necessário */
-    margin: 18px auto;
-}
-
-/* =======================
-   SEÇÃO DE PERFIL DO USUÁRIO (CABEÇALHO)
-   ======================= */
-#preview {
-    max-width: 100%;
+.profile-image {
+    width: 100%;
     height: 100%;
-    object-fit: cover; /* Garante que a imagem preencha o círculo */
-    border-radius: 50%; /* Garante que a imagem em si seja redonda */
-    margin: 0; /* Remove margens para controle total */
+    object-fit: cover;
 }
 
-/* Nome do usuário no perfil */
-.nomeUsuario {
-    font-size: 1.5rem;
-    font-weight: bold;
-}
-
-/* botão de cortar */
-
-.cortarImagem {
-    background: var(--cor-primaria);
-    color: black;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.2s;
-    margin-top: 10px;
-}
-
-.cortarImagem:hover {
-    background: var(--cor-secundaria);
-    color: var(--cor-texto);
-}
-
-/* =======================
-   BOTÃO FLUTUANTE (HOME)
-   BOTÕES FLUTUANTES (HOME E CRIAR PUBLICAÇÃO)
-   ======================= */
-/* O seletor .floating-button-container foi removido pois não é mais usado. */
-/* O código abaixo estava aninhado incorretamente e foi corrigido. */
- 
-/* Wrapper para agrupar todos os botões flutuantes */
-.floating-buttons-group {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 15px; /* Espaço entre os botões */
-    align-items: flex-end; /* Alinha os botões pela base, útil se tiverem alturas diferentes */
-    z-index: 99;
-}
-
-/* Wrapper para cada botão individual (incluindo a barra, se houver) */
-.floating-button-wrapper {
+/* Grupo de Informações (Nome, Posição, Cidade) */
+.profile-info-group {
+    /* CORREÇÃO: Transforma este grupo em coluna para empilhar as informações */
     display: flex;
     flex-direction: column;
     align-items: center;
-    z-index: 99;
+    gap: 5px; /* Espaço entre os itens de informação */
 }
 
-/* barra acima do botao home */
-/* Barra acima do botão home (mantida apenas para o botão home) */
-.floating-button-bar {
-    width: 150px;
-    height: 4px;
-    background-color: #000000;
-    border-radius: 20px;
-    margin-bottom: 10px;
-}
-
-/* ------ */
-/* Estilo base para todos os botões flutuantes */
-.floating-button {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background-color: var(--cor-primaria);
-    border: none;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 4px 8px rgba(255, 249, 249, 0.055);
-    transition: transform 0.3s ease;
-}
-
-.floating-button:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 12px rgba(43, 191, 144, 0.7); /* Usando cor primária */
-}
-
-/* Estilo para ícones SVG dentro dos botões flutuantes */
-.floating-button svg {
-    width: 60%; /* Ajusta o tamanho do ícone SVG */
-    height: 60%;
-    fill: var(--cor-texto); /* Define a cor do ícone SVG */
-}
-
-/* Estilo específico para o botão de criar/editar publicação */
-.create-post-button {
-    background-color: var(--cor-secundaria); /* Exemplo: usa a cor secundária para diferenciar */
-}
-
-.create-post-button:hover {
-    box-shadow: 0 6px 12px rgba(18, 140, 126, 0.7); /* Sombra com base na cor secundária */
-}
-
-.floating-button img {
-    width: 80%;
-    background-color: transparent;
-    display: block;
-    height: 80%;
-    object-fit: contain;
-}
-
-/* =======================
-   ESTILOS DO PERFIL (IMAGEM E INFO)
-   ======================= */
-
-#perfilImagemGeralCaixa {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 140px;
-    height: 140px;
-    background: #ccc; /* Cor de fundo para o caso de não haver imagem */
-    border-radius: 50%;
+.nomeUsuario {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--cor-primaria);
     margin: 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
-    border: 4px solid var(--cor-fundo); /* Borda para destacar da imagem de fundo */
 }
 
-#profileContainer {
-    position: relative;
-    display: flex; /* Mantém como flex container */
-    flex-direction: row; /* Alinha itens lado a lado por padrão */
-    justify-content: space-between; /* Empurra os itens para as extremidades */
-    align-items: center; /* Centraliza verticalmente */
-    gap: 15px;
+.posicaoUsuario {
+    font-size: 1.1rem;
+    color: var(--cor-texto-card);
+    margin: 0;
 }
 
-/* Grupo de informações do perfil (ícone e nome) */
-.profile-info-group {
+.cidadeUsuario {
+    font-size: 0.9rem;
+    color: #aaa;
+    margin: 0;
+}
+
+/* Botões de Ação do Perfil (Seguir/Mensagem) */
+.profile-actions {
+    margin-top: 15px;
     display: flex;
-    align-items: center;
     gap: 15px;
+    justify-content: center;
 }
 
-/* Botão "editar perfil" */
-.edit-profile-button {
-    text-decoration: none;
-    padding: 8px 20px;
-    background: var(--cor-primaria);
-    color: #fff;
+.action-button {
+    padding: 10px 20px;
     border: none;
-    border-radius: 20px;
-    font-size: 1rem;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.2s;
-}
-
-.edit-profile-button:hover {
-    background: var(--cor-secundaria);
-    transform: scale(1.05);
-}
-
-/* =======================
-   CAIXA DE PUBLICAÇÕES
-   ======================= */
-
-.BoxePublicacoes   {
-    background: var(--cor-fundo);
-    border: 2px solid var(--cor-borda);
-    border-radius: 12px;
-    padding: 15px; /* Aumentado para melhor espaçamento */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra mais neutra e consistente */
-    margin-left: 10px;
-    margin-right: 10px;
-    }
-
-
-.BoxePublicacoes H1{
-    color: var(--cor-texto);
-    font-size: 1.2rem; /* Aumentado para melhor legibilidade */
-
-}
-
-.publicacaoImagem {
-    width: 100%; /* Imagem ocupa toda a largura do card */
-    height: auto;
     border-radius: 8px;
-    margin: 15px 0 0; /* Margem superior, sem margem lateral pois já ocupa 100% */
-    background: none; /* Remove fundo branco desnecessário */
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
 }
 
-/* Container para as publicações */
-.posts-container {
+.follow-button {
+    background-color: var(--cor-primaria);
+    color: white;
+}
+
+.follow-button:hover {
+    background-color: var(--cor-secundaria);
+}
+
+.message-button {
+    background-color: #555;
+    color: white;
+}
+
+.message-button:hover {
+    background-color: #666;
+}
+
+/* -------------------------------------- */
+/* SEÇÃO DE PUBLICAÇÕES */
+/* -------------------------------------- */
+#publicacoesContainer {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
-/* Linha divisória para seções */
-.section-divider {
-    border: none;
-    height: 1px;
-    background-color: var(--cor-borda);
-    margin: 20px 0;
-}
-
-/* Título para a seção de publicações */
-.section-title {
-    font-size: 1.5rem;
-    color: var(--cor-texto-card);
-    margin-bottom: 20px;
-    padding-left: 10px; /* Alinha com o padding dos cards */
-}
-
-/* Estilos para o formulário dentro do modal de postagem */
-.modal-content form {
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.modal-content textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #444;
-    border-radius: 8px;
-    background-color: #3a3a3a;
-    color: var(--cor-texto);
-    font-size: 1rem;
-    resize: vertical;
-}
-
-/* =======================
-   ESTILOS PARA editar_perfil.html
-   ======================= */
-
-/* CONTAINER PRINCIPAL */
-.container {
+.BoxePublicacoes {
     background-color: var(--cor-card);
-    padding: 30px 40px;
     border-radius: 12px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    width: 100%;
-    max-width: 450px; /* Reduzido para deixar os inputs mais estreitos */
-    text-align: center;
-    margin: 50px auto; /* Centraliza o container na página, ajustado para consistência */
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.container h1 {
-    color: var(--cor-primaria);
-    margin-bottom: 10px;
-    font-size: 1.8rem;
-}
-
-.container p {
-    color: var(--cor-texto-card);
-    margin-bottom: 25px;
-    line-height: 1.5;
-}
-
-/* FORMULÁRIO */
-.container form {
+.post-header {
+    padding: 15px 20px;
     display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.container .form-group {
-    text-align: left;
-}
-
-.container .form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 500;
-    color: var(--cor-texto-card);
-}
-
-.container input[type="text"],
-.container input[type="tel"] {
-    width: 100%;
-    padding: 12px 15px;
-    border: 1px solid #444;
-    border-radius: 8px;
-    background-color: #3a3a3a;
-    color: var(--cor-texto);
-    font-size: 1rem;
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-.container input[type="text"]:focus,
-.container input[type="tel"]:focus {
-    outline: none;
-    border-color: var(--cor-primaria);
-    box-shadow: 0 0 0 3px rgba(43, 191, 144, 0.3);
-}
-
-/* LINKS E MENSAGENS */
-.container .back-link {
-    display: inline-block;
-    margin-top: 25px;
-    color: var(--cor-primaria);
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s;
-}
-
-.container .back-link:hover {
-    color: #50d9ad;
-    text-decoration: underline;
-}
-
-.container .submit-button {
-    background-color: var(--cor-primaria);
-    color: white;
-    border: none;
-    padding: 14px;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: transform 0.2s, background-color 0.2s;
-    margin-top: 10px;
-}
-.container .submit-button:hover {
-    transform: scale(1.03);
-    background-color: #25a880;
-}
-
-/* Estilos para a seção de imagem de perfil na página de edição */
-.profile-picture-section {
-    display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--cor-texto-card);
 }
 
-.edit-mode {
+.post-options-icon {
+    width: 20px;
+    height: 20px;
     cursor: pointer;
 }
 
-.edit-prompt {
-    font-size: 0.9rem;
-    color: var(--cor-texto-card);
-    margin-top: 10px;
+.publicacaoImagem {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    display: block;
 }
 
-#tituloPublicacao {
-    color: var(--cor-secundaria) ;
-    font-size: 2.9vh;
+.post-actions {
+    padding: 10px 20px 15px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: #aaa;
 }
 
 
 /* =======================
-   MEDIA QUERIES (RESPONSIVIDADE)
+   BOTÕES FLUTUANTES (Inferior Direito)
    ======================= */
-
-/* Telas de Tablet e Desktop */
-@media (min-width: 769px) {
-    .main-content-wrapper { /* Layout de duas colunas para a página de perfil */
-        display: flex;
-        align-items: flex-start; /* Alinha o topo do perfil com o topo das publicações */
-        gap: 40px;
-    }
-
-    #profileContainer { /* Coluna do perfil fixa */
-        /* Removemos as regras de coluna fixa para que o container ocupe a largura */
-        /* A organização em colunas será feita pelo .main-content-wrapper */
-        flex-direction: column; /* Voltamos para coluna no desktop */
-        align-items: flex-start; /* Alinhamos à esquerda */
-    }
-
-    .posts-container {
-        flex: 1; /* Ocupa o espaço restante */
-    }
+.floating-buttons-group {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 15px;
+    z-index: 100;
 }
 
-/* Telas de Celular */
+.floating-button-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.floating-button-bar {
+    width: 0; /* Inicialmente oculta */
+    height: 4px;
+    background-color: var(--cor-primaria);
+    border-radius: 2px;
+    position: absolute;
+    right: 50px; /* Posicionado à esquerda do botão */
+    transition: width 0.3s ease;
+}
+
+.floating-button-wrapper:hover .floating-button-bar {
+    width: 30px; /* Expande ao passar o mouse */
+}
+
+.floating-button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--cor-card);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.floating-button:hover {
+    transform: scale(1.1);
+}
+
+.floating-button img {
+    width: 60%;
+    height: 60%;
+    object-fit: contain;
+}
+
+.create-post-button {
+    background-color: var(--cor-primaria);
+}
+
+.create-post-button:hover {
+    background-color: var(--cor-secundaria);
+}
+
+.create-post-button svg {
+    width: 60%;
+    height: 60%;
+    fill: white;
+}
+
+/* =======================
+   RESPONSIVIDADE (Celular)
+   ======================= */
 @media (max-width: 768px) {
+    .Wallpaper {
+        height: 25vh; /* Reduz a altura do wallpaper no mobile */
+    }
+
     .main-content-wrapper {
-        margin-top: 20vh; /* Mantém a consistência com o valor base */
-        padding: 0 5px; /* Ajusta o padding lateral para 5px */
-        display: flex;
-        flex-direction: column;
-        gap: 40px; /* Aumenta o espaço entre o perfil e as publicações */
+        margin-top: -10vh; /* Puxa o conteúdo para cima do wallpaper */
+        padding: 0 15px; /* Reduz o padding lateral */
     }
     
-    #profileContainer {
-        /* As regras base já definem o layout de linha com space-between */
-    }
-
-    .profile-info-group {
-        display: flex;
-        flex-direction: column; /* Coloca o nome abaixo do ícone */
-        align-items: flex-start; /* Alinha o ícone e o nome à esquerda */
-        gap: 10px; /* Ajusta o espaço entre o ícone e o nome */
-    }
-
-    .edit-profile-button { 
-        margin-right: 10px; /* Mantém a margem direita */
-    }
-
     #perfilImagemGeralCaixa {
-        width: 100px; /* Reduz um pouco o tamanho do ícone */
-        height: 100px;
+        width: 120px; /* Ajusta o tamanho da foto no mobile */
+        height: 120px;
+        margin-top: -60px; /* Puxa um pouco menos para cima */
+        border-width: 4px;
     }
 
     .nomeUsuario {
-        font-size: 1.2rem; /* Ajusta o tamanho da fonte */
-        white-space: normal; /* Permite que o nome quebre a linha se for muito longo */
+        font-size: 1.5rem; /* Ajusta o tamanho da fonte */
     }
 
-    .modal-content {
-        width: 95%;
-        padding: 15px;
+    .posicaoUsuario {
+        font-size: 1rem;
     }
-
-    .container { /* Ajustes no container de formulários para mobile */
-        margin: 30px auto;
-        padding: 25px 20px;
-        max-width: 90%; /* Reduz a largura máxima para que os inputs não toquem as bordas */
-    }
-
-    .container h1 {
-        font-size: 1.6rem;
+    
+    .floating-buttons-group {
+        bottom: 15px;
+        right: 15px;
     }
 }
