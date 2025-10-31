@@ -14,6 +14,12 @@ body {
 input::placeholder {
     color: black;
 }
+
+.logo{
+border-radius: 100000px;
+
+}
+
 .toast{
 display: none;
 position: absolute;
