@@ -28,17 +28,20 @@ body {
     color: var(--cor-texto);
      line-height: 1.6;
     /* Aumenta o padding inferior para não esconder conteúdo atrás da navbar fixa */
-    padding-bottom: 80px;
+    padding-bottom: 80px; 
 }
 
 /* =======================
    CABEÇALHO
    ======================= */
-.page-header {
+/* INÍCIO DA MODIFICAÇÃO: Comentar o estilo do cabeçalho que agora está vazio */
+/* .page-header {
     text-align: center; 
-    padding: 0; /* Remove o padding superior e inferior */
-    margin-bottom: 0; /* Remove a margem inferior */
+    padding: 0; 
+    margin-bottom: 0; 
 }
+*/
+/* FIM DA MODIFICAÇÃO */
 
 .logo-container img {
     height: 60px;
@@ -213,6 +216,7 @@ body {
 }
 
 
+   /* ESTILO PARA A NOVA BARRA DE NAVEGAÇÃO INFERIOR FIXA */
    .navigation-links {
     position: fixed; /* Fixa a barra na parte inferior */
     bottom: 0;
@@ -245,7 +249,7 @@ body {
     box-shadow: #2BBF90 0px 0px 10px;
 }
 
-/* Estilo específico para o botão do Feed */
+/* Estilo específico para o botão do Feed (VERDE, como solicitado) */
 .feed-button {
     background-color: var(--cor-primaria);
     color: white;
@@ -254,7 +258,7 @@ body {
 /* Estilo para os outros botões */
 .profile-button, .logout-button {
     color: var(--cor-texto-card);
-    border: 1px solid var(--cor-borda);
+    border: 1px solid var(--cor-card); /* Corrigido para usar cor do card */
     background-color: var(--cor-card);
 }
 

@@ -99,13 +99,7 @@
     ></div>
 
     <header class="page-header">
-        <nav class="navigation">
-            <a href="{{ url_for('pagina_feed') }}" title="Feed de Posts">Feed</a>
-            <a href="{{ url_for('pagina_usuario', user_id=session.user_id) }}" title="Meu Perfil">Meu Perfil</a>
-            <a href="{{ url_for('logout') }}" title="Sair">Sair</a>
-        </nav>
-    </header>
-
+        </header>
     <main>
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Buscar usuários..." onkeyup="searchUsers()">
@@ -117,11 +111,6 @@
                 {% for user in users %}
                     <a href="{{ url_for('chat_with_user', destinatario_id=user.id) }}" class="user-card-link">
                         <div class="user-card">
-                            <!-- 
-                                ALTERAÇÃO: A lógica do 'src' foi modificada.
-                                Se 'user.profile_image_url' existir, usa a rota 'serve_static_files'.
-                                Se não, usa a rota 'inicio_assets' para carregar uma imagem padrão 'iconeUser.png'.
-                            -->
                             <img class="user-avatar" 
                                  src="{{ url_for('serve_static_files', filename=user.profile_image_url) if user.profile_image_url else url_for('inicio_assets', filename='iconeUser.png') }}" 
                                  alt="Avatar de {{ user.nome or 'Usuário' }}">
@@ -139,6 +128,19 @@
         </div>
     </main>
     
+    <nav class="navigation-links">
+        <a href="{{ url_for('pagina_feed') }}" title="Feed de Posts" class="nav-button feed-button">
+            Feed
+        </a>
+        
+        <a href="{{ url_for('pagina_usuario', user_id=session.user_id) }}" title="Meu Perfil" class="nav-button profile-button">
+             <img src="{{ url_for('inicio_assets', filename='iconeUser.png') }}" alt="Perfil" class="avatar-fallback">
+        </a>
+        
+        <a href="{{ url_for('logout') }}" title="Sair" class="nav-button logout-button">
+            Sair
+        </a>
+    </nav>
     <script>
         // Função de busca de usuários (filtro local)
         function searchUsers() {
