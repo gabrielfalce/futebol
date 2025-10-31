@@ -1,7 +1,7 @@
 /* =======================
    VARIÁVEIS GLOBAIS
    ======================= */
-:root {
+   :root {
     --cor-primaria: #2BBF90;
     --cor-secundaria: #128c7e;
     --cor-fundo: #1E1E1E;
@@ -24,7 +24,43 @@ body {
 }
 
 /* =======================
-   MODAL DE CORTE DE IMAGEM
+   ESTILOS DO CABEÇALHO (HEADER)
+   ======================= */
+header {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: #232323; /* Fundo levemente mais escuro para o cabeçalho */
+    border-bottom: 1px solid #333;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+header h1 {
+    flex-grow: 1; /* Permite que o título ocupe o espaço restante */
+    text-align: center;
+    color: var(--cor-primaria);
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+.back-button {
+    text-decoration: none;
+    color: var(--cor-texto-card);
+    font-size: 1rem;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: color 0.2s;
+}
+
+.back-button:hover {
+    color: var(--cor-primaria);
+}
+
+
+/* =======================
+   MODAL DE CORTE DE IMAGEM (Inalterado, apenas reposicionado para ordem)
    ======================= */
 .modal {
     display: none;
@@ -95,11 +131,11 @@ input[type="file"]::-webkit-file-upload-button:hover {
 }
 
 /* =======================
-   ESTILOS PARA editar_perfil.html
+   ESTILOS PARA editar_perfil.html (CORRIGIDOS)
    ======================= */
 
-/* CONTAINER PRINCIPAL */
-.container {
+/* CONTAINER PRINCIPAL: Alterado .container para .edit-container */
+.edit-container { 
     background-color: var(--cor-card);
     padding: 30px 40px;
     border-radius: 12px;
@@ -107,41 +143,31 @@ input[type="file"]::-webkit-file-upload-button:hover {
     width: 100%;
     max-width: 450px;
     text-align: center;
-    margin: 50px auto;
+    margin: 30px auto; /* Reduzida a margem superior */
 }
 
-.container h1 {
-    color: var(--cor-primaria);
-    margin-bottom: 10px;
-    font-size: 1.8rem;
-}
-
-.container p {
-    color: var(--cor-texto-card);
-    margin-bottom: 25px;
-    line-height: 1.5;
-}
-
-/* FORMULÁRIO */
-.container form {
+/* Formulário e Grupos: Alterado .container form para .edit-container .unified-form */
+.edit-container .unified-form {
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
 
-.container .form-group {
+.edit-container .form-group {
     text-align: left;
 }
 
-.container .form-group label {
+.edit-container .form-group label {
     display: block;
     margin-bottom: 5px;
     font-weight: 500;
     color: var(--cor-texto-card);
 }
 
-.container input[type="text"],
-.container input[type="tel"] {
+/* Inputs: Incluído input[type="number"] e input[type="text"] no seletor, e removido .container */
+input[type="text"],
+input[type="tel"],
+input[type="number"] {
     width: 100%;
     padding: 12px 15px;
     border: 1px solid #444;
@@ -152,29 +178,16 @@ input[type="file"]::-webkit-file-upload-button:hover {
     transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-.container input[type="text"]:focus,
-.container input[type="tel"]:focus {
+input[type="text"]:focus,
+input[type="tel"]:focus,
+input[type="number"]:focus {
     outline: none;
     border-color: var(--cor-primaria);
     box-shadow: 0 0 0 3px rgba(43, 191, 144, 0.3);
 }
 
-/* LINKS E BOTÕES */
-.container .back-link {
-    display: inline-block;
-    margin-top: 25px;
-    color: var(--cor-primaria);
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s;
-}
-
-.container .back-link:hover {
-    color: #50d9ad;
-    text-decoration: underline;
-}
-
-.container .submit-button {
+/* Botão de Submissão: Alterado .container .submit-button para .submit-data-button */
+.submit-data-button {
     background-color: var(--cor-primaria);
     color: white;
     border: none;
@@ -187,50 +200,71 @@ input[type="file"]::-webkit-file-upload-button:hover {
     margin-top: 10px;
 }
 
-.container .submit-button:hover {
+.submit-data-button:hover {
     transform: scale(1.03);
     background-color: #25a880;
 }
 
-/* SEÇÃO DE IMAGEM DE PERFIL */
-.profile-picture-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 20px;
-}
+/* ------------------------------------- */
+/* ESTILOS NOVOS PARA UPLOAD DA IMAGEM */
+/* ------------------------------------- */
 
-#perfilImagemGeralCaixa {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 140px;
-    height: 140px;
-    background: #ccc;
+.profile-image-upload-label {
+    display: block;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 20px auto;
     border-radius: 50%;
-    margin: 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     overflow: hidden;
-    border: 4px solid var(--cor-fundo);
+    position: relative;
+    cursor: pointer;
+    box-shadow: 0 0 0 4px var(--cor-card), 0 0 0 6px var(--cor-primaria);
+    transition: box-shadow 0.3s;
 }
 
-#preview {
-    max-width: 100%;
+.profile-image-upload-label:hover {
+    box-shadow: 0 0 0 4px var(--cor-card), 0 0 0 8px #50d9ad;
+}
+
+.profile-image-preview {
+    width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
+}
+
+.upload-icon {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: var(--cor-primaria);
+    color: white;
     border-radius: 50%;
-    margin: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translate(5px, 5px); /* Move ligeiramente para fora da borda */
 }
 
-.edit-mode {
-    cursor: pointer;
+.upload-icon svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
 }
 
-.edit-prompt {
-    font-size: 0.9rem;
-    color: var(--cor-texto-card);
-    margin-top: 10px;
-}
+
+/* =======================
+   REMOÇÃO DE ESTILOS OBSOLETOS (Substituídos por classes mais específicas)
+   ======================= */
+/* REMOVIDO: .profile-picture-section - Não é necessário com o novo layout */
+/* REMOVIDO: #perfilImagemGeralCaixa - Não é necessário com o novo layout */
+/* REMOVIDO: #preview - Substituído por .profile-image-preview */
+/* REMOVIDO: .container h1, .container p, .container form, .container .form-group, .container .form-group label */
+/* REMOVIDO: .container input[type="text"], .container input[type="tel"] */
+/* REMOVIDO: .container .back-link, .container .submit-button */
+
 
 /* =======================
    MEDIA QUERIES (RESPONSIVIDADE)
@@ -241,13 +275,17 @@ input[type="file"]::-webkit-file-upload-button:hover {
         padding: 15px;
     }
 
-    .container {
-        margin: 30px auto;
+    .edit-container { /* Alterado de .container para .edit-container */
+        margin: 20px auto;
         padding: 25px 20px;
-        max-width: 90%;
+        max-width: 95%;
     }
 
-    .container h1 {
-        font-size: 1.6rem;
+    header h1 {
+        font-size: 1.4rem;
+    }
+
+    .back-button {
+        font-size: 0.9rem;
     }
 }
