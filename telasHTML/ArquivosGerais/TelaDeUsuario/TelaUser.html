@@ -5,26 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil de {{ usuario.nome or 'Usuário' }}</title>
     
-    <!-- ALTERAÇÃO 1: Corrigido 'user-assets' para 'user_assets' -->
     <link rel="stylesheet" href="{{ url_for('user_assets', filename='stylesTest.css') }}">
 </head>
 <body>
     
     <div class="Wallpaper">
-        <!-- ALTERAÇÃO 2: Corrigido o carregamento da imagem de capa -->
         <img class="imagemWallpaper" 
              src="{{ url_for('serve_static_files', filename=usuario.foto_capa_url) if usuario.foto_capa_url else url_for('user_assets', filename='imagens/hM94BRC.jpeg') }}" 
              alt="Wallpaper de fundo">
     </div>
     
     <div class="header-actions">
-        <!-- Verifica se o usuário é o dono do perfil para mostrar o botão de editar -->
         {% if is_owner %}
         <a href="{{ url_for('editar_perfil') }}" class="edit-button" title="Editar Perfil">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
         </a>
         {% endif %}
-        <a href="{{ url_for('logout' ) }}" class="logout-button" title="Sair">
+        <a href="{{ url_for('logout'  ) }}" class="logout-button" title="Sair">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3h-2v10h2V3zm4.84 12.86l1.41 1.41c-1.39 1.39-3.23 2.14-5.18 2.14-1.95 0-3.79-.75-5.18-2.14l1.41-1.41c1.07 1.07 2.44 1.66 3.77 1.66s2.7-5 3.77-1.66z"/></svg>
         </a>
     </div>
@@ -33,9 +30,9 @@
         <div id="profileContainer">
             <div class="profile-info-group">
                 <div id="perfilImagemGeralCaixa">
-                    <!-- ALTERAÇÃO 3: Corrigido o carregamento da imagem de perfil -->
+                    <!-- ALTERAÇÃO: Trocado o placeholder inexistente por um que sabemos que existe ('BotaoUsuario.ico' ) -->
                     <img id="preview" 
-                         src="{{ url_for('serve_static_files', filename=usuario.profile_image_url ) if usuario.profile_image_url else url_for('user_assets', filename='imagens/user-icon-placeholder.png') }}" 
+                         src="{{ url_for('serve_static_files', filename=usuario.profile_image_url ) if usuario.profile_image_url else url_for('inicio_assets', filename='BotaoUsuario.ico') }}" 
                          alt="Imagem de perfil do usuário">
                 </div>
                 <p class="nomeUsuario">{{ usuario.nome or 'Nome de Usuário' }}</p>
@@ -73,10 +70,8 @@
             <div class="BoxePublicacoes">
                 <div class="post-header">
                     <span>Lembrança do Jogo</span>
-                    <!-- ALTERAÇÃO 4: Corrigido 'user-assets' para 'user_assets' -->
                     <img src="{{ url_for('user_assets', filename='imagens/TresPontos.png') }}" alt="Opções" class="post-options-icon">
                 </div>
-                <!-- ALTERAÇÃO 5: Corrigido 'user-assets' para 'user_assets' -->
                 <img class="publicacaoImagem" src="{{ url_for('user_assets', filename='imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
                 <div class="post-actions">
                     <span class="like-count">12 Likes</span>
@@ -91,7 +86,6 @@
             <div class="floating-button-bar"></div>
             <a href="{{ url_for('pagina_inicial') }}" title="Usuários">
                 <button class="floating-button">
-                    <!-- ALTERAÇÃO 6: Corrigido 'user-assets' para 'user_assets' -->
                     <img src="{{ url_for('user_assets', filename='imagens/bolaLogo.png') }}" alt="Ir para tela inicial">
                 </button>
             </a>

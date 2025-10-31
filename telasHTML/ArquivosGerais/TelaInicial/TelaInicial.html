@@ -137,8 +137,8 @@
         </a>
         
         <a href="{{ url_for('pagina_usuario', user_id=session.user_id) }}" title="Meu Perfil" class="nav-button profile-button">
-             <!-- ALTERAÇÃO 2: Usando o 'BotaoUsuario.ico' como ícone do botão de perfil -->
-             <img src="{{ url_for('inicio_assets', filename='BotaoUsuario.ico') }}" alt="Perfil" class="avatar-fallback">
+             <!-- ALTERAÇÃO 2: Usando o 'BotaoUsuario.ico' e uma classe específica para o ícone -->
+             <img src="{{ url_for('inicio_assets', filename='BotaoUsuario.ico') }}" alt="Perfil" class="profile-button-icon">
         </a>
         
         <a href="{{ url_for('logout') }}" title="Sair" class="nav-button logout-button">

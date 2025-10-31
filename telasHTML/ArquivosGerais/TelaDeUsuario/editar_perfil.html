@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Perfil</title>
     
-    <!-- ALTERAÇÃO 1: Corrigido 'user-assets' para 'user_assets' -->
-    <link rel="stylesheet" href="{{ url_for('user_assets', filename='editarStyle.css') }}">
+    <link rel="stylesheet" href="{{ url_for('user_assets', filename='editarStyle.css' ) }}">
     
     <style>
         .toast {
@@ -37,20 +36,18 @@
     <div id="toast-notification" class="toast"></div>
 
     <header>
-        <!-- ALTERAÇÃO 2: Adicionado user_id para a rota de voltar ao perfil -->
         <a href="{{ url_for('pagina_usuario', user_id=session.user_id) }}" class="back-button">&larr; Voltar</a>
         <h1>Editar Perfil</h1>
     </header>
 
     <main class="edit-container">
 
-        <!-- ALTERAÇÃO 3: Unificado os dois formulários em um só. -->
-        <!-- Agora, imagem e dados são enviados juntos para a rota 'editar_perfil'. -->
         <form action="{{ url_for('editar_perfil') }}" method="POST" enctype="multipart/form-data" class="unified-form">
             
             <label for="profile_image" class="profile-image-upload-label">
+                <!-- ALTERAÇÃO: Trocado o placeholder inexistente por um que sabemos que existe ('BotaoUsuario.ico') -->
                 <img id="image-preview" 
-                     src="{{ url_for('serve_static_files', filename=usuario.profile_image_url) if usuario.profile_image_url else url_for('user_assets', filename='imagens/user-icon-placeholder.png') }}"
+                     src="{{ url_for('serve_static_files', filename=usuario.profile_image_url) if usuario.profile_image_url else url_for('inicio_assets', filename='BotaoUsuario.ico') }}"
                      alt="Pré-visualização da Imagem de Perfil" 
                      class="profile-image-preview">
                 <div class="upload-icon">
@@ -58,7 +55,6 @@
                 </div>
             </label>
             
-            <!-- O nome do input de imagem é 'profile_image' para corresponder ao que o app.py espera -->
             <input type="file" id="profile_image" name="profile_image" accept="image/*" style="display: none;">
             
             <div class="form-group">
@@ -78,12 +74,11 @@
             
             <div class="form-group">
                 <label for="numero_camisa">Nº da Camisa</label>
-                <!-- O nome do input é 'numero' para corresponder ao que app.py espera -->
                 <input type="number" id="numero_camisa" name="numero" value="{{ usuario.numero_camisa or '' }}" min="1" max="99" placeholder="Opcional">
             </div>
 
             <div class="form-group">
-                <label for="nascimento">Data de Nascimento (DD/MM/AAAA )</label>
+                <label for="nascimento">Data de Nascimento (DD/MM/AAAA  )</label>
                 {% set data_nasc_formatted = "" %}
                 {% if usuario.nascimento %}
                     {% set data_nasc_formatted = usuario.nascimento %}
@@ -105,7 +100,6 @@
     </main>
 
     <script>
-        // Lógica de pré-visualização da imagem
         document.getElementById('profile_image').addEventListener('change', function() {
             const file = this.files[0];
             const imagePreview = document.getElementById('image-preview');
@@ -119,7 +113,6 @@
             }
         });
 
-        // Script para exibir mensagens flash (toast)
         document.addEventListener('DOMContentLoaded', () => {
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
