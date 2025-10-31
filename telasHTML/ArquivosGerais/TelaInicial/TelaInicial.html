@@ -101,7 +101,6 @@
     <header class="page-header">
         <nav class="navigation">
             <a href="{{ url_for('pagina_feed') }}" title="Feed de Posts">Feed</a>
-            <!-- ALTERAÇÃO NECESSÁRIA AQUI -->
             <a href="{{ url_for('pagina_usuario', user_id=session.user_id) }}" title="Meu Perfil">Meu Perfil</a>
             <a href="{{ url_for('logout') }}" title="Sair">Sair</a>
         </nav>
@@ -116,11 +115,15 @@
         <div class="user-list" id="user-list">
             {% if users %}
                 {% for user in users %}
-                    <!-- CORREÇÃO: O link aqui deve ser para 'chat_with_user' -->
                     <a href="{{ url_for('chat_with_user', destinatario_id=user.id) }}" class="user-card-link">
                         <div class="user-card">
+                            <!-- 
+                                ALTERAÇÃO: A lógica do 'src' foi modificada.
+                                Se 'user.profile_image_url' existir, usa a rota 'serve_static_files'.
+                                Se não, usa a rota 'inicio_assets' para carregar uma imagem padrão 'iconeUser.png'.
+                            -->
                             <img class="user-avatar" 
-                                 src="{{ url_for('serve_static_files', filename=user.profile_image_url) if user.profile_image_url else '' }}" 
+                                 src="{{ url_for('serve_static_files', filename=user.profile_image_url) if user.profile_image_url else url_for('inicio_assets', filename='iconeUser.png') }}" 
                                  alt="Avatar de {{ user.nome or 'Usuário' }}">
                             <p class="user-name">{{ user.nome or 'Nome Desconhecido' }}</p>
                             <div class="user-details">
@@ -140,14 +143,11 @@
         // Função de busca de usuários (filtro local)
         function searchUsers() {
             const input = document.getElementById('search-input').value.toLowerCase();
-            // Seleciona o link, não apenas o card, para ocultar o elemento pai
             const userLinks = document.querySelectorAll('.user-card-link'); 
             
             userLinks.forEach(link => {
-                // Assume que .user-card e .user-name sempre existem dentro de .user-card-link
                 const userCard = link.querySelector('.user-card');
                 const name = userCard.querySelector('.user-name').textContent.toLowerCase();
-                // Oculta/Mostra o link inteiro
                 link.style.display = name.includes(input) ? 'block' : 'none'; 
             });
         }
@@ -160,19 +160,15 @@
                 
                 const category = toast.dataset.category;
                 
-                // Define a cor de fundo com base na categoria
                 if (category === 'success') {
                     toast.style.backgroundColor = 'green';
                 } else if (category === 'danger') {
                     toast.style.backgroundColor = '#f44336';
                 } else {
-                    toast.style.backgroundColor = '#333'; // Padrão
+                    toast.style.backgroundColor = '#333';
                 }
                 
-                // Adiciona a classe 'show' para torná-lo visível (com transição)
                 toast.classList.add('show');
-                
-                // Remove a classe 'show' após 3 segundos
                 setTimeout(() => toast.classList.remove('show'), 3000);
             }
         });
