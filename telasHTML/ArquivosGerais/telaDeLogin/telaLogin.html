@@ -4,38 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="{{ url_for('login_assets', filename='style.css') }}">
 
-    <style>
-        .toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #f44336;
-            color: white;
-            text-align: center;
-            border-radius: 5px;
-            padding: 16px;
-            position: fixed;
-            z-index: 100;
-            right: 30px;
-            top: 30px;
-            font-size: 17px;
-            opacity: 0;
-            transition: opacity 0.5s, visibility 0.5s;
-        }
-
-        .toast.show {
-            visibility: visible;
-            opacity: 1;
-        }
-    </style>
 </head>
 <body>
     
     <img class="logo" src="{{ url_for('login_assets', filename='logo.png') }}" alt="Logotipo Geral da Aplicação">
 
-    
     <h1 class="titulo">Login</h1>
     
     <div id="toast-notification" class="toast"
