@@ -281,8 +281,9 @@ body {
     background-color: transparent;
     border: none;
 }
+/* INÍCIO DA CORREÇÃO */
 .avatar-fallback {
     object-fit: contain;  
-    background-color: #444; 
-    padding: 10px; /* Adiciona um pequeno preenchimento para a imagem não tocar as bordas */
+    background-color: transparent; /* CORREÇÃO: Remove o fundo escuro que ofuscava o ícone */
+    padding: 0px; /* CORREÇÃO: Remove o padding excessivo que distorcia o tamanho */
 }
