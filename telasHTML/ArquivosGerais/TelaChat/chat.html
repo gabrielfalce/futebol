@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat com {{ destinatario.nome }}</title>
     
-    <!-- ALTERAÇÃO: Corrigido 'user-assets' para 'user_assets' -->
-    <link rel="stylesheet" href="{{ url_for('user_assets', filename='chat.css') }}">
+    <!-- ALTERAÇÃO: A rota foi corrigida de 'user_assets' para 'chat_assets' -->
+    <link rel="stylesheet" href="{{ url_for('chat_assets', filename='chat.css') }}">
 </head>
 <body>
     <div class="chat-container">
@@ -45,7 +45,7 @@
         const SUPABASE_URL = {{ supabase_url | tojson }};
         const SUPABASE_ANON_KEY = {{ supabase_anon_key | tojson }};
 
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY  );
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY   );
         const chatBody = document.getElementById('chat-body');
         const messageForm = document.getElementById('message-form');
         const messageInput = document.getElementById('message-input');
