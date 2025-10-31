@@ -26,7 +26,7 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "chave_padrao_para_dev")
 
 # Diretório para uploads de fotos de perfil
 UPLOAD_FOLDER_RELATIVE = 'telasHTML/ArquivosGerais/TelaDeUsuario/imagens/profile_pics'
-# NOVO: Diretório para uploads de imagens de posts
+# Diretório para uploads de imagens de posts
 POST_UPLOAD_FOLDER_RELATIVE = 'telasHTML/ArquivosGerais/TelaFeed/imagens/post_pics'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -92,7 +92,7 @@ def serve_static_files(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML')
     return send_from_directory(dir_path, filename)
 
-# NOVA ROTA: Servir imagens de posts
+# ROTA PARA SERVIR IMAGENS DE POSTS
 @app.route('/post-assets/<path:filename>')
 def post_assets(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaFeed', 'imagens', 'post_pics')
@@ -221,7 +221,7 @@ def pagina_usuario(user_id=None):
         flash('Usuário não encontrado.', 'danger')
         return redirect(url_for('pagina_inicial'))
 
-    # NOVA LÓGICA: Carregar publicações do usuário
+    # BUSCA AS PUBLICAÇÕES DO USUÁRIO
     publicacoes = get_posts_by_user(usuario['id']) if usuario else []
 
     return render_template("telasHTML/ArquivosGerais/TelaDeUsuario/TelaUser.html", 
@@ -286,12 +286,11 @@ def editar_perfil():
 @app.route("/feed")
 @login_required
 def pagina_feed():
-    # NOVA LÓGICA: Carregar todos os posts para o feed
     posts = get_all_posts()
     return render_template("telasHTML/ArquivosGerais/TelaFeed/feed.html", posts=posts)
 
 
-# NOVA ROTA: Criar post (POST) e Listar posts (GET)
+# API PARA POSTS (CRIAR + LISTAR)
 @app.route("/api/posts", methods=['GET', 'POST'])
 @login_required
 def api_posts():
@@ -304,7 +303,6 @@ def api_posts():
             autor_id = session.get('user_id')
             imagem_url = None
 
-            # Upload de imagem (opcional)
             if 'postImage' in request.files:
                 file = request.files['postImage']
                 if file and allowed_file(file.filename):
@@ -325,7 +323,6 @@ def api_posts():
             return jsonify({'success': False, 'error': 'Erro interno do servidor.'}), 500
 
     elif request.method == 'GET':
-        # Lista todos os posts (usado pelo feed)
         posts = get_all_posts()
         return jsonify(posts)
 
@@ -384,7 +381,19 @@ def redefinir_senha():
     return render_template("telasHTML/RecuperarSenha/redefinir_senha.html")
 
 
+# FILTRO JINJA: FORMATA DATA NO TEMPLATE
+@app.template_filter('strftime')
+def _jinja2_filter_strftime(date_str, fmt='%d/%m/%Y às %H:%M'):
+    if not date_str:
+        return ''
+    try:
+        dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+        return dt.strftime(fmt)
+    except:
+        return date_str
+
+
 if __name__ == '__main__':
     os.makedirs(os.path.join(BASE_DIR, UPLOAD_FOLDER_RELATIVE), exist_ok=True)
-    os.makedirs(os.path.join(BASE_DIR, POST_UPLOAD_FOLDER_RELATIVE), exist_ok=True)  # CRIA DIRETÓRIO DE POSTS
+    os.makedirs(os.path.join(BASE_DIR, POST_UPLOAD_FOLDER_RELATIVE), exist_ok=True)
     app.run(debug=True)
