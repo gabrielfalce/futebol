@@ -128,17 +128,11 @@ body {
     transform: translateY(-5px);
 }
 
-.user-card img {
-    width: 90px;
-    height: 90px;
-    border-radius: 50%; /* Deixa a imagem redonda */
-    object-fit: cover; /* Garante que a imagem preencha o círculo sem distorcer */
-    flex-shrink: 0; /* Impede que a imagem seja espremida */
-    margin-right: 15px; /* Adiciona mais espaço entre a imagem e o bloco de texto */
-    /* border: 3px solid var(--cor-primaria); */
-    /* background-color: #8f2d2d; Cor de fundo caso a imagem não carregue */
-    background-image: url(iconeUser.png);
-}
+/*
+   ALTERAÇÃO: A regra '.user-card img' foi removida.
+   Ela era desnecessária e estava causando o conflito que escondia o botão de perfil.
+   A lógica de imagem padrão agora é controlada apenas pelo HTML.
+*/
 
 .user-info {
     display: flex; /* Transforma em flex container */
