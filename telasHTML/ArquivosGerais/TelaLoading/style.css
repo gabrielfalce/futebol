@@ -1,12 +1,23 @@
 /* Localização: telasHTML/ArquivosGerais/TelaLoading/style.css */
 
 /*
-  Importando variáveis de outro arquivo.
-  NOTA: A funcionalidade @import pode ter implicações de performance em projetos muito grandes,
-  mas é adequada aqui para manter a consistência de estilo.
-  Uma alternativa seria duplicar as variáveis :root aqui.
+  ALTERAÇÃO: A linha @import foi removida.
+  As variáveis globais foram copiadas aqui para manter a consistência do estilo
+  sem causar requisições de rede adicionais e quebradas.
 */
-@import url('../TelaInicial/style.css');
+
+/* =======================
+   VARIÁVEIS CSS GLOBAIS
+   ======================= */
+   :root {
+    --cor-primaria: #2BBF90;
+    --cor-fundo: #1E1E1E;
+    /* A segunda definição de --cor-fundo foi removida para evitar ambiguidade, usando a primeira. */
+    --cor-texto: #FFFFFF;
+    --cor-card: #2C2C2C;
+    --cor-texto-card: #E0E0E0;
+    --sombra: -8px 8px 0px var(--cor-primaria);
+}
 
 /* =======================
    ESTILOS BASE
