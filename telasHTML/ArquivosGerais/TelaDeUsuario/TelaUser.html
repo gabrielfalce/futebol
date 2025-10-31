@@ -46,36 +46,13 @@
 
         </div>
         <div id="publicacoesContainer">
-            <div class="BoxePublicacoes">
-                <div class="post-header">
-                    <span>Lembrança do Jogo</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="post-options-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
-                    </svg>
-                    </div>
-                <img class="publicacaoImagem" src="{{ url_for('user_assets', filename='imagens/WallpaperTest.jpg') }}" alt="Imagem de publicação">
-                <div class="post-actions">
-                    <span class="like-count">12 Likes</span>
-                    <span class="comment-count">3 Comentários</span>
-                </div>
-            </div>
             
-             <div class="BoxePublicacoes">
-                <div class="post-header">
-                    <span>Treino de Hoje</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="post-options-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
-                    </svg>
-                </div>
-                <img class="publicacaoImagem" src="{{ url_for('user_assets', filename='imagens/hM94BRC.jpeg') }}" alt="Imagem de publicação">
-                <div class="post-actions">
-                    <span class="like-count">25 Likes</span>
-                    <span class="comment-count">5 Comentários</span>
-                </div>
-            </div>
-            
+            {% if not publicacoes %}
+                <p style="text-align: center; color: #aaa; padding-top: 30px;">Nenhuma publicação encontrada.</p>
+            {% endif %}
+
         </div>
-    </div>
+        </div>
 
     <div class="floating-buttons-group">
         <div class="floating-button-wrapper">

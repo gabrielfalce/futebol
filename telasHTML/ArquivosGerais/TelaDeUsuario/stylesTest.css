@@ -2,13 +2,13 @@
    VARIÁVEIS GLOBAIS
    ======================= */
    :root {
-    --cor-primaria: #2BBF90; /* Unificado com o cadastro */
-    --cor-secundaria: #128c7e;
-    --cor-fundo: #1E1E1E;
-    --cor-texto: #fff;
+    --cor-primaria: #2BBF90; /* Verde principal para botões e destaque */
+    --cor-secundaria: #128c7e; /* Verde escuro para hover */
+    --cor-fundo: #1E1E1E; /* Fundo principal escuro */
+    --cor-texto: #fff; /* Cor do texto principal */
     --cor-borda: rgba(0, 0, 0, 0.1);
     --cor-card: #2C2C2C; /* Fundo principal do perfil e posts */
-    --cor-texto-card: #E0E0E0;
+    --cor-texto-card: #E0E0E0; /* Texto secundário claro */
     --cor-sucesso: #28a745; 
     --cor-erro: #dc3545; 
     --cor-info: #17a2b8; 
@@ -17,6 +17,10 @@
 /* =======================
    ESTILOS BASE E WALLPAPER
    ======================= */
+* {
+    box-sizing: border-box;
+}
+
 body {
     font-family: Arial, sans-serif;
     background-color: var(--cor-fundo);
@@ -55,6 +59,7 @@ body {
 }
 
 .edit-button {
+    /* Usando 'a' como botão */
     background: rgba(0, 0, 0, 0.4);
     color: var(--cor-texto);
     border: none;
@@ -74,6 +79,7 @@ body {
 .edit-button svg {
     width: 20px;
     height: 20px;
+    fill: currentColor; /* Garante que o SVG use a cor do texto do botão */
 }
 
 /* =======================
@@ -81,8 +87,8 @@ body {
    ======================= */
 
 .main-content-wrapper {
-    /* CORREÇÃO: Garante que o conteúdo comece acima do wallpaper */
-    margin-top: -10vh; /* Puxa o conteúdo para cima, sobrepondo o wallpaper */
+    /* Puxa o conteúdo para cima, sobrepondo o wallpaper */
+    margin-top: -10vh; 
     padding: 0 20px;
     max-width: 1000px;
     margin-left: auto;
@@ -92,7 +98,7 @@ body {
 }
 
 /* -------------------------------------- */
-/* SEÇÃO DE PERFIL */
+/* SEÇÃO DE PERFIL (#profileContainer) */
 /* -------------------------------------- */
 #profileContainer {
     background-color: var(--cor-card);
@@ -101,9 +107,9 @@ body {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
     margin-bottom: 40px; /* Espaço entre o perfil e as publicações */
     
-    /* CORREÇÃO: Novo Flexbox para alinhar a foto e o grupo de info */
+    /* Layout para centralizar o conteúdo do perfil */
     display: flex;
-    flex-direction: column; /* No desktop, o perfil fica em coluna (foto em cima, info embaixo) */
+    flex-direction: column; 
     align-items: center;
     text-align: center;
 }
@@ -113,10 +119,10 @@ body {
     height: 140px;
     border-radius: 50%;
     overflow: hidden;
-    /* CORREÇÃO: Ajuste a borda para sobrepor o fundo se o container for puxado para cima */
+    /* Ajuste a borda para sobrepor o fundo do profileContainer */
     border: 5px solid var(--cor-fundo); 
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    /* Posição da imagem para sobrepor a parte de baixo do wallpaper (Ajuste o -10vh acima) */
+    /* Posiciona a imagem para sobrepor a parte de baixo do wallpaper */
     margin-top: -80px; 
     margin-bottom: 20px;
 }
@@ -129,11 +135,10 @@ body {
 
 /* Grupo de Informações (Nome, Posição, Cidade) */
 .profile-info-group {
-    /* CORREÇÃO: Transforma este grupo em coluna para empilhar as informações */
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px; /* Espaço entre os itens de informação */
+    gap: 5px; 
 }
 
 .nomeUsuario {
@@ -169,6 +174,7 @@ body {
     border-radius: 8px;
     font-weight: bold;
     cursor: pointer;
+    text-decoration: none; /* Para o link de mensagem */
     transition: background-color 0.2s, transform 0.2s;
 }
 
@@ -191,7 +197,7 @@ body {
 }
 
 /* -------------------------------------- */
-/* SEÇÃO DE PUBLICAÇÕES */
+/* SEÇÃO DE PUBLICAÇÕES (#publicacoesContainer) */
 /* -------------------------------------- */
 #publicacoesContainer {
     display: flex;
@@ -199,6 +205,7 @@ body {
     gap: 20px;
 }
 
+/* Estilos para o Box de Post (pronto para ser injetado pelo backend) */
 .BoxePublicacoes {
     background-color: var(--cor-card);
     border-radius: 12px;
@@ -216,10 +223,12 @@ body {
     color: var(--cor-texto-card);
 }
 
+/* Estilo para o ícone SVG de opções de post */
 .post-options-icon {
     width: 20px;
     height: 20px;
     cursor: pointer;
+    fill: var(--cor-texto-card); /* Garante que o ícone seja claro */
 }
 
 .publicacaoImagem {
@@ -260,17 +269,17 @@ body {
 }
 
 .floating-button-bar {
-    width: 0; /* Inicialmente oculta */
+    width: 0; 
     height: 4px;
     background-color: var(--cor-primaria);
     border-radius: 2px;
     position: absolute;
-    right: 50px; /* Posicionado à esquerda do botão */
+    right: 50px; 
     transition: width 0.3s ease;
 }
 
 .floating-button-wrapper:hover .floating-button-bar {
-    width: 30px; /* Expande ao passar o mouse */
+    width: 30px; 
 }
 
 .floating-button {
@@ -311,28 +320,120 @@ body {
     fill: white;
 }
 
+/* -------------------------------------- */
+/* MODAL DE CRIAÇÃO DE POST */
+/* -------------------------------------- */
+.modal {
+    display: none; /* Controlado pelo JS */
+    position: fixed;
+    z-index: 200;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: var(--cor-card);
+    margin: auto;
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+.modal-content h2 {
+    color: var(--cor-primaria);
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.close-button {
+    color: var(--cor-texto-card);
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    background: none;
+    border: none;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    transition: color 0.2s;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: var(--cor-primaria);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#postForm textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #444;
+    border-radius: 8px;
+    background-color: #3a3a3a;
+    color: var(--cor-texto);
+    font-size: 1rem;
+    resize: vertical;
+}
+
+#postForm input[type="file"] {
+    display: block;
+    margin-bottom: 15px;
+    color: var(--cor-texto-card);
+}
+
+#postForm button[type="submit"] {
+    width: 100%;
+    background-color: var(--cor-primaria);
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+#postForm button[type="submit"]:hover {
+    background-color: var(--cor-secundaria);
+}
+
 /* =======================
    RESPONSIVIDADE (Celular)
    ======================= */
 @media (max-width: 768px) {
     .Wallpaper {
-        height: 25vh; /* Reduz a altura do wallpaper no mobile */
+        height: 25vh; 
     }
 
     .main-content-wrapper {
-        margin-top: -10vh; /* Puxa o conteúdo para cima do wallpaper */
-        padding: 0 15px; /* Reduz o padding lateral */
+        margin-top: -10vh; 
+        padding: 0 15px; 
     }
     
     #perfilImagemGeralCaixa {
-        width: 120px; /* Ajusta o tamanho da foto no mobile */
+        width: 120px; 
         height: 120px;
-        margin-top: -60px; /* Puxa um pouco menos para cima */
+        margin-top: -60px; 
         border-width: 4px;
     }
 
     .nomeUsuario {
-        font-size: 1.5rem; /* Ajusta o tamanho da fonte */
+        font-size: 1.5rem; 
     }
 
     .posicaoUsuario {
@@ -342,5 +443,15 @@ body {
     .floating-buttons-group {
         bottom: 15px;
         right: 15px;
+        gap: 10px;
+    }
+
+    .floating-button {
+        width: 45px;
+        height: 45px;
+    }
+
+    .floating-button-wrapper:hover .floating-button-bar {
+        width: 20px; /* Reduz a barra no mobile */
     }
 }
