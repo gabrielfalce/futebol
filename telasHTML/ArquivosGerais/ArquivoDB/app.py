@@ -14,9 +14,13 @@ APP_DIR = os.path.dirname(os.path.abspath(__file__))
 # Ajuste o BASE_DIR para apontar para a raiz do projeto se 'telasHTML' estiver em um nível acima.
 BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..', '..', '..')) 
 
+# ALTERAÇÃO 1: Definindo a pasta de templates de forma explícita
+TEMPLATE_DIR = os.path.join(BASE_DIR, 'telasHTML')
+
 app = Flask(
     __name__,
-    template_folder=BASE_DIR
+    # ALTERAÇÃO 2: Apontando o template_folder para o diretório correto
+    template_folder=TEMPLATE_DIR
 )
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "chave_padrao_para_dev")
 
@@ -39,7 +43,7 @@ def login_required(f):
     return decorated_function
 
 # === ROTAS DEDICADAS PARA ARQUIVOS ESTÁTICOS (ASSETS) ===
-
+# Nenhuma alteração aqui, pois elas já usam BASE_DIR que está correto.
 @app.route('/login-assets/<path:filename>')
 def login_assets(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'telaDeLogin')
@@ -110,7 +114,8 @@ def login():
             flash('Email ou senha incorretos.', 'danger')
             return redirect(url_for('login'))
             
-    return render_template("telasHTML/ArquivosGerais/telaDeLogin/telaLogin.html")
+    # ALTERAÇÃO 3: Removido 'telasHTML/' do caminho, pois o template_folder já aponta para lá.
+    return render_template("ArquivosGerais/telaDeLogin/telaLogin.html")
 
 
 @app.route("/cadastro", methods=['GET', 'POST'])
@@ -124,21 +129,17 @@ def cadastro():
             posicao = request.form['posicao']
             nascimento_str = request.form['nascimento']
             
-            # ALTERAÇÃO 2: Lendo os dois campos separadamente do formulário
             numero_telefone = request.form.get('numero_telefone')
             numero_camisa = request.form.get('numero_camisa')
 
-            # Lógica de conversão de data (DD/MM/AAAA para AAAA-MM-DD)
             try:
                 nascimento_formatado = datetime.strptime(nascimento_str, '%d/%m/%Y').strftime('%Y-%m-%d')
             except ValueError:
                 nascimento_formatado = nascimento_str
         
-            # ALTERAÇÃO 3: Passando as variáveis corretas para a função register_user
             success, message = register_user(nome, email, senha, cidade, posicao, nascimento_formatado, numero_camisa, numero_telefone)
             
             if success:
-                # Login automático
                 user_data = check_user(email, senha)
                 if user_data:
                     session['user_email'] = email
@@ -154,17 +155,16 @@ def cadastro():
                 return redirect(url_for('cadastro'))
 
         except ValueError:
-            # Captura erro se o formato da data estiver incorreto e a conversão falhar.
             flash('Formato de data de nascimento inválido. Use DD/MM/AAAA.', 'danger')
             return redirect(url_for('cadastro'))
         
         except Exception as e:
-            # Exceções gerais (inclui erros do banco de dados não capturados dentro de register_user)
             print(f"ERRO geral no cadastro: {e}")
             flash('Ocorreu um erro inesperado ao tentar cadastrar o usuário.', 'danger')
             return redirect(url_for('cadastro'))
 
-    return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html")
+    # ALTERAÇÃO 3 (cont.): Caminho ajustado
+    return render_template("ArquivosGerais/Cadastrar_templates/cadastrar.html")
 
 
 @app.route("/loading/<next_page>")
@@ -177,7 +177,8 @@ def tela_loading(next_page):
 
     next_url = url_for(next_page)
     
-    return render_template("telasHTML/ArquivosGerais/TelaLoading/Telaloading.html", 
+    # ALTERAÇÃO 3 (cont.): Caminho ajustado
+    return render_template("ArquivosGerais/TelaLoading/Telaloading.html", 
                            next_url=next_url, 
                            tempo_loading=2500)
 
@@ -195,14 +196,13 @@ def logout():
 @app.route("/inicio")
 @login_required
 def pagina_inicial():
-    # Obtém todos os usuários para exibição
     users = get_all_users()
     
-    # Filtra o próprio usuário da lista
     current_user_email = session.get('user_email')
     users = [user for user in users if user.get('email') != current_user_email]
     
-    return render_template("telasHTML/ArquivosGerais/TelaInicial/TelaInicial.html", users=users)
+    # ALTERAÇÃO 3 (cont.): Caminho ajustado
+    return render_template("ArquivosGerais/TelaInicial/TelaInicial.html", users=users)
 
 
 @app.route("/perfil/<int:user_id>")
@@ -220,7 +220,8 @@ def pagina_usuario(user_id=None):
         flash('Usuário não encontrado.', 'danger')
         return redirect(url_for('pagina_inicial'))
 
-    return render_template("telasHTML/ArquivosGerais/TelaDeUsuario/TelaUser.html", 
+    # ALTERAÇÃO 3 (cont.): Caminho ajustado
+    return render_template("ArquivosGerais/TelaDeUsuario/TelaUser.html", 
                            usuario=usuario, 
                            is_owner=is_owner)
 
@@ -238,7 +239,6 @@ def editar_perfil():
     if request.method == 'POST':
         update_data = {}
         
-        # Campos de texto
         nome = request.form.get('nome')
         cidade = request.form.get('cidade')
         posicao = request.form.get('posicao')
@@ -256,7 +256,6 @@ def editar_perfil():
         if numero:
             update_data['numero_camisa'] = numero
             
-        # Tratamento do upload de arquivo (Foto de Perfil)
         if 'profile_image' in request.files:
             file = request.files['profile_image']
             if file and allowed_file(file.filename):
@@ -271,9 +270,8 @@ def editar_perfil():
                 db_path = os.path.join(UPLOAD_FOLDER_RELATIVE, filename).replace('\\', '/')
                 
                 update_data['profile_image_url'] = db_path
-                session['user_profile_image'] = db_path # Atualiza a sessão (se necessário)
+                session['user_profile_image'] = db_path
 
-        # Atualiza os dados no banco
         if update_data:
             success = update_user_profile(user_email, **update_data)
             if success:
@@ -285,21 +283,21 @@ def editar_perfil():
              
         return redirect(url_for('editar_perfil'))
 
-    # Rota GET
-    return render_template("telasHTML/ArquivosGerais/TelaDeUsuario/editar_perfil.html", usuario=usuario)
+    # ALTERAÇÃO 3 (cont.): Caminho ajustado
+    return render_template("ArquivosGerais/TelaDeUsuario/editar_perfil.html", usuario=usuario)
 
 
 @app.route("/feed")
 @login_required
 def pagina_feed():
-    return render_template("telasHTML/ArquivosGerais/TelaFeed/feed.html")
+    # ALTERAÇÃO 3 (cont.): Caminho ajustado
+    return render_template("ArquivosGerais/TelaFeed/feed.html")
 
 
 @app.route("/api/posts", methods=['GET'])
 @login_required
 def api_posts():
-    mock_posts = [
-    ]
+    mock_posts = []
     return jsonify(mock_posts)
 
 
@@ -322,7 +320,8 @@ def chat_with_user(destinatario_id):
     supabase_url = os.environ.get("SUPABASE_URL")
     supabase_anon_key = os.environ.get("SUPABASE_KEY")
 
-    return render_template("telasHTML/ArquivosGerais/TelaChat/chat.html", 
+    # ALTERAÇÃO 3 (cont.): Caminho ajustado
+    return render_template("ArquivosGerais/TelaChat/chat.html", 
                            remetente=remetente, 
                            destinatario=destinatario,
                            supabase_url=supabase_url,
@@ -336,7 +335,8 @@ def esqueci_senha():
         flash(f'Se o e-mail {email} estiver cadastrado, um link de redefinição de senha foi enviado.', 'success')
         return redirect(url_for('login'))
         
-    return render_template("telasHTML/RecuperarSenha/esqueci_senha.html")
+    # ALTERAÇÃO 3 (cont.): Caminho ajustado
+    return render_template("RecuperarSenha/esqueci_senha.html")
 
 
 @app.route("/redefinir_senha", methods=['GET', 'POST'])
@@ -354,10 +354,11 @@ def redefinir_senha():
         else:
             flash('Senha inválida ou falta de informações.', 'danger')
 
-    return render_template("telasHTML/RecuperarSenha/redefinir_senha.html")
+    # ALTERAÇÃO 3 (cont.): Caminho ajustado
+    return render_template("RecuperarSenha/redefinir_senha.html")
 
 
 if __name__ == '__main__':
-    # O comando 'gunicorn' do Render já faz isso, mas é bom ter para local.
     os.makedirs(os.path.join(BASE_DIR, UPLOAD_FOLDER_RELATIVE), exist_ok=True)
     app.run(debug=True)
+
