@@ -1,11 +1,10 @@
-# <DOCUMENT filename="app.py">
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory, jsonify
 from dotenv import load_dotenv
 from database import (
     register_user, check_user, get_all_users, get_user_by_email,
     update_user_profile_image, update_user_profile, get_user_by_id, update_password,
-    create_post, get_posts_by_user, get_all_posts  # NOVAS IMPORTAÇÕES
+    create_post, get_posts_by_user, get_all_posts
 )
 import bcrypt
 from datetime import datetime
@@ -127,27 +126,38 @@ def login():
 def cadastro():
     if request.method == 'POST':
         try:
-            nome = request.form['nome']
-            email = request.form['email']
-            senha = request.form['senha']
-            cidade = request.form['cidade']
-            posicao = request.form['posicao']
-            nascimento_str = request.form['nascimento']
-            
-            numero_telefone = request.form.get('numero_telefone')
-            numero_camisa = request.form.get('numero_camisa')
+            # Coleta todos os dados do formulário em um dicionário
+            form_data = {
+                "nome": request.form.get('nome'),
+                "email": request.form.get('email'),
+                "senha": request.form.get('senha'),
+                "cidade": request.form.get('cidade'),
+                "posicao": request.form.get('posicao'),
+                "nascimento": request.form.get('nascimento'),
+                "numero_telefone": request.form.get('numero_telefone'),
+                "numero_camisa": request.form.get('numero_camisa')
+            }
 
             try:
-                nascimento_formatado = datetime.strptime(nascimento_str, '%d/%m/%Y').strftime('%Y-%m-%d')
-            except ValueError:
-                nascimento_formatado = nascimento_str
+                nascimento_formatado = datetime.strptime(form_data['nascimento'], '%d/%m/%Y').strftime('%Y-%m-%d')
+            except (ValueError, TypeError):
+                nascimento_formatado = form_data['nascimento']
         
-            success, message = register_user(nome, email, senha, cidade, posicao, nascimento_formatado, numero_camisa, numero_telefone)
+            success, message = register_user(
+                form_data['nome'], 
+                form_data['email'], 
+                form_data['senha'], 
+                form_data['cidade'], 
+                form_data['posicao'], 
+                nascimento_formatado, 
+                form_data['numero_camisa'], 
+                form_data['numero_telefone']
+            )
             
             if success:
-                user_data = check_user(email, senha)
+                user_data = check_user(form_data['email'], form_data['senha'])
                 if user_data:
-                    session['user_email'] = email
+                    session['user_email'] = form_data['email']
                     session['user_id'] = user_data.get('id')
                     session['user_name'] = user_data.get('nome')
                     flash(message, 'success')
@@ -157,18 +167,22 @@ def cadastro():
                     return redirect(url_for('tela_loading', next_page='login', message_category='warning'))
             else:
                 flash(message, 'danger')
-                return redirect(url_for('cadastro'))
+                # Se a falha for por telefone, limpa o campo de telefone
+                if "telefone" in message:
+                    form_data['numero_telefone'] = ""
+                return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data=form_data)
 
         except ValueError:
             flash('Formato de data de nascimento inválido. Use DD/MM/AAAA.', 'danger')
-            return redirect(url_for('cadastro'))
+            return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data=request.form)
         
         except Exception as e:
             print(f"ERRO geral no cadastro: {e}")
             flash('Ocorreu um erro inesperado ao tentar cadastrar o usuário.', 'danger')
             return redirect(url_for('cadastro'))
 
-    return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html")
+    # ALTERAÇÃO 1: Passando um dicionário 'form_data' vazio para a requisição GET.
+    return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data={})
 
 
 @app.route("/loading/<next_page>")
@@ -221,13 +235,12 @@ def pagina_usuario(user_id=None):
         flash('Usuário não encontrado.', 'danger')
         return redirect(url_for('pagina_inicial'))
 
-    # BUSCA AS PUBLICAÇÕES DO USUÁRIO
     publicacoes = get_posts_by_user(usuario['id']) if usuario else []
 
     return render_template("telasHTML/ArquivosGerais/TelaDeUsuario/TelaUser.html", 
                            usuario=usuario, 
                            is_owner=is_owner,
-                           publicacoes=publicacoes)  # PASSA AS PUBLICAÇÕES
+                           publicacoes=publicacoes)
 
 
 @app.route("/editar_perfil", methods=['GET', 'POST'])
@@ -290,7 +303,6 @@ def pagina_feed():
     return render_template("telasHTML/ArquivosGerais/TelaFeed/feed.html", posts=posts)
 
 
-# API PARA POSTS (CRIAR + LISTAR)
 @app.route("/api/posts", methods=['GET', 'POST'])
 @login_required
 def api_posts():
@@ -381,7 +393,6 @@ def redefinir_senha():
     return render_template("telasHTML/RecuperarSenha/redefinir_senha.html")
 
 
-# FILTRO JINJA: FORMATA DATA NO TEMPLATE
 @app.template_filter('strftime')
 def _jinja2_filter_strftime(date_str, fmt='%d/%m/%Y às %H:%M'):
     if not date_str:

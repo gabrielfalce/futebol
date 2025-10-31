@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link rel="icon" href="{{url_for('login_assets', filename='bolaverde.ico')}}" type="image/x-icon">
-    <link rel="stylesheet" href="style.css">
+    <!-- ALTERAÇÃO 2: Corrigido o caminho do favicon -->
+    <link rel="icon" href="{{url_for('inicio_assets', filename='BotaoUsuario.ico')}}" type="image/x-icon">
+    <!-- ALTERAÇÃO 3: Removida a linha de CSS duplicada e incorreta -->
     <link rel="stylesheet" href="{{ url_for('login_assets', filename='style.css') }}">
 
 </head>
@@ -25,10 +26,6 @@
     ></div>
     
     <form action="{{ url_for('login') }}" method="post">
-        <!-- 
-            ALTERAÇÃO: Adicionado o atributo 'value' ao campo de email.
-            - 'email or ""' garante que o campo fique vazio se a variável 'email' não for passada.
-        -->
         <input placeholder="Email" type="email" name="email" value="{{ email or '' }}" required>
         <input placeholder="Senha" type="password" name="senha" required>
         
@@ -50,7 +47,6 @@
                 const category = toast.dataset.category;
                 
                 toast.textContent = message;
-                // Define a cor de fundo baseado na categoria
                 toast.style.backgroundColor = category === 'success' ? 'green' : '#f44336';
                 
                 toast.classList.add("show");
