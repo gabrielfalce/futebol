@@ -108,8 +108,6 @@ def login():
             return redirect(url_for('tela_loading', next_page='pagina_inicial'))
         else:
             flash('Email ou senha incorretos.', 'danger')
-            # ALTERAÇÃO: Em vez de redirecionar, renderiza o template novamente,
-            # passando o email de volta para o formulário.
             return render_template("telasHTML/ArquivosGerais/telaDeLogin/telaLogin.html", email=email)
             
     return render_template("telasHTML/ArquivosGerais/telaDeLogin/telaLogin.html")
@@ -119,29 +117,40 @@ def login():
 def cadastro():
     if request.method == 'POST':
         try:
-            nome = request.form['nome']
-            email = request.form['email']
-            senha = request.form['senha']
-            cidade = request.form['cidade']
-            posicao = request.form['posicao']
-            nascimento_str = request.form['nascimento']
-            
-            numero_telefone = request.form.get('numero_telefone')
-            numero_camisa = request.form.get('numero_camisa')
+            # Coleta todos os dados do formulário
+            form_data = {
+                "nome": request.form.get('nome'),
+                "email": request.form.get('email'),
+                "senha": request.form.get('senha'),
+                "cidade": request.form.get('cidade'),
+                "posicao": request.form.get('posicao'),
+                "nascimento": request.form.get('nascimento'),
+                "numero_telefone": request.form.get('numero_telefone'),
+                "numero_camisa": request.form.get('numero_camisa')
+            }
 
             # Lógica de conversão de data (DD/MM/AAAA para AAAA-MM-DD)
             try:
-                nascimento_formatado = datetime.strptime(nascimento_str, '%d/%m/%Y').strftime('%Y-%m-%d')
-            except ValueError:
-                nascimento_formatado = nascimento_str
+                nascimento_formatado = datetime.strptime(form_data['nascimento'], '%d/%m/%Y').strftime('%Y-%m-%d')
+            except (ValueError, TypeError):
+                nascimento_formatado = form_data['nascimento']
         
-            success, message = register_user(nome, email, senha, cidade, posicao, nascimento_formatado, numero_camisa, numero_telefone)
+            success, message = register_user(
+                form_data['nome'], 
+                form_data['email'], 
+                form_data['senha'], 
+                form_data['cidade'], 
+                form_data['posicao'], 
+                nascimento_formatado, 
+                form_data['numero_camisa'], 
+                form_data['numero_telefone']
+            )
             
             if success:
                 # Login automático
-                user_data = check_user(email, senha)
+                user_data = check_user(form_data['email'], form_data['senha'])
                 if user_data:
-                    session['user_email'] = email
+                    session['user_email'] = form_data['email']
                     session['user_id'] = user_data.get('id')
                     session['user_name'] = user_data.get('nome')
                     flash(message, 'success')
@@ -151,15 +160,19 @@ def cadastro():
                     return redirect(url_for('tela_loading', next_page='login', message_category='warning'))
             else:
                 flash(message, 'danger')
-                return redirect(url_for('cadastro'))
+                # ALTERAÇÃO: Em caso de falha, renderiza o template novamente,
+                # passando os dados do formulário de volta para preenchimento.
+                # O campo de telefone é limpo intencionalmente.
+                if "telefone" in message:
+                    form_data['numero_telefone'] = ""
+                return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data=form_data)
 
         except ValueError:
-            # Captura erro se o formato da data estiver incorreto e a conversão falhar.
             flash('Formato de data de nascimento inválido. Use DD/MM/AAAA.', 'danger')
-            return redirect(url_for('cadastro'))
+            # Aqui também precisamos passar os dados de volta
+            return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data=request.form)
         
         except Exception as e:
-            # Exceções gerais (inclui erros do banco de dados não capturados dentro de register_user)
             print(f"ERRO geral no cadastro: {e}")
             flash('Ocorreu um erro inesperado ao tentar cadastrar o usuário.', 'danger')
             return redirect(url_for('cadastro'))
@@ -195,10 +208,8 @@ def logout():
 @app.route("/inicio")
 @login_required
 def pagina_inicial():
-    # Obtém todos os usuários para exibição
     users = get_all_users()
     
-    # Filtra o próprio usuário da lista
     current_user_email = session.get('user_email')
     users = [user for user in users if user.get('email') != current_user_email]
     
@@ -238,7 +249,6 @@ def editar_perfil():
     if request.method == 'POST':
         update_data = {}
         
-        # Campos de texto
         nome = request.form.get('nome')
         cidade = request.form.get('cidade')
         posicao = request.form.get('posicao')
@@ -256,7 +266,6 @@ def editar_perfil():
         if numero:
             update_data['numero_camisa'] = numero
             
-        # Tratamento do upload de arquivo (Foto de Perfil)
         if 'profile_image' in request.files:
             file = request.files['profile_image']
             if file and allowed_file(file.filename):
@@ -271,9 +280,8 @@ def editar_perfil():
                 db_path = os.path.join(UPLOAD_FOLDER_RELATIVE, filename).replace('\\', '/')
                 
                 update_data['profile_image_url'] = db_path
-                session['user_profile_image'] = db_path # Atualiza a sessão (se necessário)
+                session['user_profile_image'] = db_path
 
-        # Atualiza os dados no banco
         if update_data:
             success = update_user_profile(user_email, **update_data)
             if success:
@@ -285,7 +293,6 @@ def editar_perfil():
              
         return redirect(url_for('editar_perfil'))
 
-    # Rota GET
     return render_template("telasHTML/ArquivosGerais/TelaDeUsuario/editar_perfil.html", usuario=usuario)
 
 
@@ -298,8 +305,7 @@ def pagina_feed():
 @app.route("/api/posts", methods=['GET'])
 @login_required
 def api_posts():
-    mock_posts = [
-    ]
+    mock_posts = []
     return jsonify(mock_posts)
 
 
@@ -358,6 +364,5 @@ def redefinir_senha():
 
 
 if __name__ == '__main__':
-    # O comando 'gunicorn' do Render já faz isso, mas é bom ter para local.
     os.makedirs(os.path.join(BASE_DIR, UPLOAD_FOLDER_RELATIVE), exist_ok=True)
     app.run(debug=True)

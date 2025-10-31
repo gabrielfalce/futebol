@@ -40,18 +40,18 @@
     <div id="toast-notification" class="toast"></div>
     
     <form action="{{ url_for('cadastro') }}" method="post">
-        <input placeholder="Nome Completo" type="text" name="nome" required>
-        <input placeholder="Email" type="email" name="email" required>
+        <!-- ALTERAÇÕES: Adicionado o atributo 'value' a todos os inputs -->
+        <input placeholder="Nome Completo" type="text" name="nome" value="{{ form_data.nome or '' }}" required>
+        <input placeholder="Email" type="email" name="email" value="{{ form_data.email or '' }}" required>
         <input placeholder="Senha" type="password" name="senha" required minlength="8">
-        <input placeholder="Cidade" type="text" name="cidade" required>
-        <input placeholder="Posição em Campo" type="text" name="posicao" required>
+        <input placeholder="Cidade" type="text" name="cidade" value="{{ form_data.cidade or '' }}" required>
+        <input placeholder="Posição em Campo" type="text" name="posicao" value="{{ form_data.posicao or '' }}" required>
         
-        <input placeholder="Data de Nascimento (DD/MM/AAAA ou AAAA-MM-DD)" type="text" name="nascimento" required>
+        <input placeholder="Data de Nascimento (DD/MM/AAAA ou AAAA-MM-DD)" type="text" name="nascimento" value="{{ form_data.nascimento or '' }}" required>
         
-        <!-- ALTERAÇÃO 1: Adicionado o campo para número da camisa -->
-        <input placeholder="Número da Camisa (Opcional)" type="number" name="numero_camisa" min="1" max="99">
+        <input placeholder="Número da Camisa (Opcional)" type="number" name="numero_camisa" value="{{ form_data.numero_camisa or '' }}" min="1" max="99">
 
-        <input placeholder="Número de Telefone" type="tel" name="numero_telefone" required>
+        <input placeholder="Número de Telefone" type="tel" name="numero_telefone" value="{{ form_data.numero_telefone or '' }}" required>
 
         <button type="submit">Cadastrar</button>
         <a href="{{ url_for('login') }}">Voltar para Login</a>
@@ -63,7 +63,6 @@
             
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
-                    // Usando |tojson para tratar caracteres especiais de forma segura
                     const message = {{ messages[0][1] | tojson }}; 
                     const category = "{{ messages[0][0] }}";
                     
