@@ -1,3 +1,4 @@
+# <DOCUMENT filename="database.py">
 import os
 from supabase import create_client, Client
 import bcrypt
@@ -206,3 +207,99 @@ def update_password(email, new_password):
     except Exception as e:
         print(f"ERRO em update_password: {e}")
         return False
+
+# ====================== NOVAS FUNÇÕES PARA POSTS ======================
+
+def create_post(autor_id: int, legenda: str, imagem_url: str = None):
+    """
+    Insere um novo post na tabela `posts`.
+    Retorna (True, post_id) em caso de sucesso ou (False, mensagem_de_erro).
+    """
+    try:
+        payload = {
+            'autor_id': autor_id,
+            'legenda': legenda,
+        }
+        if imagem_url:
+            payload['imagem_url'] = imagem_url
+
+        response = supabase.table('posts').insert(payload).execute()
+        if response.data:
+            post_id = response.data[0]['id']
+            return True, post_id
+        else:
+            return False, "Nenhuma linha inserida (verifique RLS)."
+    except Exception as e:
+        error_msg = str(e)
+        print(f"ERRO em create_post: {error_msg}")
+        return False, error_msg
+
+
+def get_posts_by_user(user_id: int):
+    """
+    Retorna todos os posts de um usuário específico, ordenados por data (mais recente primeiro).
+    Inclui dados do autor (nome, profile_image_url) via join.
+    """
+    try:
+        response = (
+            supabase.table('posts')
+            .select('id, created_at, legenda, imagem_url, autor_id, usuarios(nome, profile_image_url)')
+            .eq('autor_id', user_id)
+            .order('created_at', desc=True)
+            .execute()
+        )
+        if response.data:
+            # O Supabase devolve o join dentro da chave 'usuarios'
+            posts = []
+            for p in response.data:
+                post = {
+                    'id': p['id'],
+                    'created_at': p['created_at'],
+                    'legenda': p['legenda'],
+                    'imagem_url': p['imagem_url'],
+                    'autor': {
+                        'nome': p['usuarios']['nome'],
+                        'profile_image_url': p['usuarios']['profile_image_url']
+                    }
+                }
+                posts.append(post)
+            return posts
+        return []
+    except Exception as e:
+        print(f"ERRO em get_posts_by_user: {e}")
+        return []
+
+
+def get_all_posts():
+    """
+    Retorna todos os posts (feed global), com informações do autor.
+    Ordenados do mais recente para o mais antigo.
+    """
+    try:
+        response = (
+            supabase.table('posts')
+            .select('id, created_at, legenda, imagem_url, autor_id, usuarios(nome, profile_image_url)')
+            .order('created_at', desc=True)
+            .execute()
+        )
+        if response.data:
+            posts = []
+            for p in response.data:
+                post = {
+                    'id': p['id'],
+                    'created_at': p['created_at'],
+                    'legenda': p['legenda'],
+                    'imagem_url': p['imagem_url'],
+                    'autor': {
+                        'nome': p['usuarios']['nome'],
+                        'profile_image_url': p['usuarios']['profile_image_url']
+                    }
+                }
+                posts.append(post)
+            return posts
+        return []
+    except Exception as e:
+        print(f"ERRO em get_all_posts: {e}")
+        return []
+
+# ====================== FIM DAS NOVAS FUNÇÕES ======================

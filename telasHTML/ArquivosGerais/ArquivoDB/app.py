@@ -1,7 +1,12 @@
+# <DOCUMENT filename="app.py">
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory, jsonify
 from dotenv import load_dotenv
-from database import register_user, check_user, get_all_users, get_user_by_email, update_user_profile_image, update_user_profile, get_user_by_id, update_password
+from database import (
+    register_user, check_user, get_all_users, get_user_by_email,
+    update_user_profile_image, update_user_profile, get_user_by_id, update_password,
+    create_post, get_posts_by_user, get_all_posts  # NOVAS IMPORTAÇÕES
+)
 import bcrypt
 from datetime import datetime
 from werkzeug.utils import secure_filename
@@ -11,7 +16,6 @@ load_dotenv()
 
 # === CONFIGURAÇÃO DE DIRETÓRIOS ===
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
-# Ajuste o BASE_DIR para apontar para a raiz do projeto se 'telasHTML' estiver em um nível acima.
 BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..', '..', '..')) 
 
 app = Flask(
@@ -20,8 +24,10 @@ app = Flask(
 )
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "chave_padrao_para_dev")
 
-# Diretório para uploads de fotos de perfil (relativo ao BASE_DIR)
+# Diretório para uploads de fotos de perfil
 UPLOAD_FOLDER_RELATIVE = 'telasHTML/ArquivosGerais/TelaDeUsuario/imagens/profile_pics'
+# NOVO: Diretório para uploads de imagens de posts
+POST_UPLOAD_FOLDER_RELATIVE = 'telasHTML/ArquivosGerais/TelaFeed/imagens/post_pics'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 def allowed_file(filename):
@@ -81,11 +87,15 @@ def recuperar_senha_assets(filename):
     return send_from_directory(dir_path, filename)
 
 # Rota genérica para servir arquivos estáticos de dentro do diretório 'telasHTML'
-# Usado por algumas telas para imagens de perfil, etc.
 @app.route('/serve_static_files/<path:filename>')
 def serve_static_files(filename):
-    # O diretório raiz para esta rota será 'telasHTML/'
     dir_path = os.path.join(BASE_DIR, 'telasHTML')
+    return send_from_directory(dir_path, filename)
+
+# NOVA ROTA: Servir imagens de posts
+@app.route('/post-assets/<path:filename>')
+def post_assets(filename):
+    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaFeed', 'imagens', 'post_pics')
     return send_from_directory(dir_path, filename)
 
 
@@ -117,40 +127,27 @@ def login():
 def cadastro():
     if request.method == 'POST':
         try:
-            # Coleta todos os dados do formulário
-            form_data = {
-                "nome": request.form.get('nome'),
-                "email": request.form.get('email'),
-                "senha": request.form.get('senha'),
-                "cidade": request.form.get('cidade'),
-                "posicao": request.form.get('posicao'),
-                "nascimento": request.form.get('nascimento'),
-                "numero_telefone": request.form.get('numero_telefone'),
-                "numero_camisa": request.form.get('numero_camisa')
-            }
+            nome = request.form['nome']
+            email = request.form['email']
+            senha = request.form['senha']
+            cidade = request.form['cidade']
+            posicao = request.form['posicao']
+            nascimento_str = request.form['nascimento']
+            
+            numero_telefone = request.form.get('numero_telefone')
+            numero_camisa = request.form.get('numero_camisa')
 
-            # Lógica de conversão de data (DD/MM/AAAA para AAAA-MM-DD)
             try:
-                nascimento_formatado = datetime.strptime(form_data['nascimento'], '%d/%m/%Y').strftime('%Y-%m-%d')
-            except (ValueError, TypeError):
-                nascimento_formatado = form_data['nascimento']
+                nascimento_formatado = datetime.strptime(nascimento_str, '%d/%m/%Y').strftime('%Y-%m-%d')
+            except ValueError:
+                nascimento_formatado = nascimento_str
         
-            success, message = register_user(
-                form_data['nome'], 
-                form_data['email'], 
-                form_data['senha'], 
-                form_data['cidade'], 
-                form_data['posicao'], 
-                nascimento_formatado, 
-                form_data['numero_camisa'], 
-                form_data['numero_telefone']
-            )
+            success, message = register_user(nome, email, senha, cidade, posicao, nascimento_formatado, numero_camisa, numero_telefone)
             
             if success:
-                # Login automático
-                user_data = check_user(form_data['email'], form_data['senha'])
+                user_data = check_user(email, senha)
                 if user_data:
-                    session['user_email'] = form_data['email']
+                    session['user_email'] = email
                     session['user_id'] = user_data.get('id')
                     session['user_name'] = user_data.get('nome')
                     flash(message, 'success')
@@ -160,21 +157,18 @@ def cadastro():
                     return redirect(url_for('tela_loading', next_page='login', message_category='warning'))
             else:
                 flash(message, 'danger')
-                if "telefone" in message:
-                    form_data['numero_telefone'] = ""
-                return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data=form_data)
+                return redirect(url_for('cadastro'))
 
         except ValueError:
             flash('Formato de data de nascimento inválido. Use DD/MM/AAAA.', 'danger')
-            return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data=request.form)
+            return redirect(url_for('cadastro'))
         
         except Exception as e:
             print(f"ERRO geral no cadastro: {e}")
             flash('Ocorreu um erro inesperado ao tentar cadastrar o usuário.', 'danger')
             return redirect(url_for('cadastro'))
 
-    # ALTERAÇÃO: Passando um dicionário 'form_data' vazio para a requisição GET.
-    return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data={})
+    return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html")
 
 
 @app.route("/loading/<next_page>")
@@ -206,7 +200,6 @@ def logout():
 @login_required
 def pagina_inicial():
     users = get_all_users()
-    
     current_user_email = session.get('user_email')
     users = [user for user in users if user.get('email') != current_user_email]
     
@@ -228,9 +221,13 @@ def pagina_usuario(user_id=None):
         flash('Usuário não encontrado.', 'danger')
         return redirect(url_for('pagina_inicial'))
 
+    # NOVA LÓGICA: Carregar publicações do usuário
+    publicacoes = get_posts_by_user(usuario['id']) if usuario else []
+
     return render_template("telasHTML/ArquivosGerais/TelaDeUsuario/TelaUser.html", 
                            usuario=usuario, 
-                           is_owner=is_owner)
+                           is_owner=is_owner,
+                           publicacoes=publicacoes)  # PASSA AS PUBLICAÇÕES
 
 
 @app.route("/editar_perfil", methods=['GET', 'POST'])
@@ -253,13 +250,10 @@ def editar_perfil():
         
         if nome:
             update_data['nome'] = nome
-            
         if cidade:
             update_data['cidade'] = cidade
-            
         if posicao:
             update_data['posicao'] = posicao
-
         if numero:
             update_data['numero_camisa'] = numero
             
@@ -267,15 +261,11 @@ def editar_perfil():
             file = request.files['profile_image']
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
-                
                 full_upload_dir = os.path.join(BASE_DIR, UPLOAD_FOLDER_RELATIVE)
                 os.makedirs(full_upload_dir, exist_ok=True)
                 file_path = os.path.join(full_upload_dir, filename)
-                
                 file.save(file_path)
-                
                 db_path = os.path.join(UPLOAD_FOLDER_RELATIVE, filename).replace('\\', '/')
-                
                 update_data['profile_image_url'] = db_path
                 session['user_profile_image'] = db_path
 
@@ -296,14 +286,48 @@ def editar_perfil():
 @app.route("/feed")
 @login_required
 def pagina_feed():
-    return render_template("telasHTML/ArquivosGerais/TelaFeed/feed.html")
+    # NOVA LÓGICA: Carregar todos os posts para o feed
+    posts = get_all_posts()
+    return render_template("telasHTML/ArquivosGerais/TelaFeed/feed.html", posts=posts)
 
 
-@app.route("/api/posts", methods=['GET'])
+# NOVA ROTA: Criar post (POST) e Listar posts (GET)
+@app.route("/api/posts", methods=['GET', 'POST'])
 @login_required
 def api_posts():
-    mock_posts = []
-    return jsonify(mock_posts)
+    if request.method == 'POST':
+        try:
+            legenda = request.form.get('legenda', '').strip()
+            if not legenda:
+                return jsonify({'success': False, 'error': 'Legenda é obrigatória.'}), 400
+
+            autor_id = session.get('user_id')
+            imagem_url = None
+
+            # Upload de imagem (opcional)
+            if 'postImage' in request.files:
+                file = request.files['postImage']
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    full_upload_dir = os.path.join(BASE_DIR, POST_UPLOAD_FOLDER_RELATIVE)
+                    os.makedirs(full_upload_dir, exist_ok=True)
+                    file_path = os.path.join(full_upload_dir, filename)
+                    file.save(file_path)
+                    imagem_url = os.path.join(POST_UPLOAD_FOLDER_RELATIVE, filename).replace('\\', '/')
+
+            success, result = create_post(autor_id, legenda, imagem_url)
+            if success:
+                return jsonify({'success': True, 'post_id': result}), 201
+            else:
+                return jsonify({'success': False, 'error': result}), 500
+        except Exception as e:
+            print(f"ERRO ao criar post: {e}")
+            return jsonify({'success': False, 'error': 'Erro interno do servidor.'}), 500
+
+    elif request.method == 'GET':
+        # Lista todos os posts (usado pelo feed)
+        posts = get_all_posts()
+        return jsonify(posts)
 
 
 @app.route("/chat/<int:destinatario_id>")
@@ -362,4 +386,5 @@ def redefinir_senha():
 
 if __name__ == '__main__':
     os.makedirs(os.path.join(BASE_DIR, UPLOAD_FOLDER_RELATIVE), exist_ok=True)
+    os.makedirs(os.path.join(BASE_DIR, POST_UPLOAD_FOLDER_RELATIVE), exist_ok=True)  # CRIA DIRETÓRIO DE POSTS
     app.run(debug=True)

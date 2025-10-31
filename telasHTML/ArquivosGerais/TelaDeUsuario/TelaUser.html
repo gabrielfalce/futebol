@@ -43,17 +43,40 @@
                     <a href="{{ url_for('chat_with_user', destinatario_id=usuario.id) }}" class="action-button message-button" style="text-decoration: none; color: white;">Mensagem</a>
                 {% endif %}
             </div>
-
         </div>
+
+        <!-- ===== SEÇÃO DE PUBLICAÇÕES ===== -->
         <div id="publicacoesContainer">
-            
             {% if not publicacoes %}
                 <p style="text-align: center; color: #aaa; padding-top: 30px;">Nenhuma publicação encontrada.</p>
+            {% else %}
+                {% for post in publicacoes %}
+                <div class="post-card">
+                    <div class="post-header">
+                        <img class="post-author-img" 
+                             src="{{ url_for('serve_static_files', filename=post.autor.profile_image_url) if post.autor.profile_image_url else url_for('inicio_assets', filename='iconeUser.png') }}" 
+                             alt="Foto de {{ post.autor.nome }}">
+                        <div class="post-author-info">
+                            <strong>{{ post.autor.nome }}</strong>
+                            <small>{{ post.created_at | strftime('%d/%m/%Y às %H:%M') }}</small>
+                        </div>
+                    </div>
+
+                    <div class="post-content">
+                        <p>{{ post.legenda }}</p>
+                        {% if post.imagem_url %}
+                        <img class="post-image" 
+                             src="{{ url_for('post_assets', filename=post.imagem_url) }}" 
+                             alt="Imagem da publicação">
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
             {% endif %}
-
         </div>
-        </div>
+    </div>
 
+    <!-- ===== BOTÕES FLUTUANTES ===== -->
     <div class="floating-buttons-group">
         <div class="floating-button-wrapper">
             <div class="floating-button-bar"></div>
@@ -71,6 +94,7 @@
         </div>
     </div>
     
+    <!-- ===== MODAL DE CRIAR POST ===== -->
     <div id="postModal" class="modal">
         <div class="modal-content">
             <button id="closePostModalBtn" class="close-button">&times;</button>
@@ -83,6 +107,13 @@
         </div>
     </div>
 
+    <!-- Filtro Jinja para formatar data -->
+    {% raw %}
+    {% filter lower %}
+    {% endfilter %}
+    {% endraw %}
+
+    <!-- Script atualizado -->
     <script src="{{ url_for('user_assets', filename='script.js') }}"></script>
 </body>
 </html>
