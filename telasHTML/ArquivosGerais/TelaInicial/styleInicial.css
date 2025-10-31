@@ -299,3 +299,85 @@ body .navigation-links .profile-button img.avatar-fallback {
     height: 28px !important;
     background-image: none !important;
 }
+
+
+/* parte que o augusto modificou e eu estou sem paciencia de arrumar  */
+
+        /* Estilos do Toast aprimorados, utilizando a classe 'show' */
+        .toast {
+            visibility: hidden; /* Inicialmente oculto */
+            opacity: 0;
+            min-width: 250px;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            z-index: 1000;
+            transition: opacity 0.5s, visibility 0.5s; /* Para uma transição suave */
+            text-align: center; /* Centraliza o texto */
+        }
+        
+        /* Classe que torna o toast visível */
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Estilo para a lista de usuários para melhor usabilidade */
+        .user-list {
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        /* Estilo para o link do card */
+        .user-card-link {
+            text-decoration: none; /* Remove o sublinhado */
+            color: inherit; /* Mantém a cor do texto */
+            display: block; /* Garante que o link ocupe o espaço do card */
+            width: 100%; /* Ocupa a largura total do item do grid/flex */
+            max-width: 300px; /* Limita a largura para melhor visualização */
+        }
+
+        /* Estilo do Card do Usuário */
+        .user-card {
+            background-color: #23272f; /* Cor de fundo escura */
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .user-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+            border: 3px solid #2BBF90; /* Cor primária */
+        }
+
+        .user-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .user-details {
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+    
