@@ -160,16 +160,12 @@ def cadastro():
                     return redirect(url_for('tela_loading', next_page='login', message_category='warning'))
             else:
                 flash(message, 'danger')
-                # ALTERAÇÃO: Em caso de falha, renderiza o template novamente,
-                # passando os dados do formulário de volta para preenchimento.
-                # O campo de telefone é limpo intencionalmente.
                 if "telefone" in message:
                     form_data['numero_telefone'] = ""
                 return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data=form_data)
 
         except ValueError:
             flash('Formato de data de nascimento inválido. Use DD/MM/AAAA.', 'danger')
-            # Aqui também precisamos passar os dados de volta
             return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data=request.form)
         
         except Exception as e:
@@ -177,7 +173,8 @@ def cadastro():
             flash('Ocorreu um erro inesperado ao tentar cadastrar o usuário.', 'danger')
             return redirect(url_for('cadastro'))
 
-    return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html")
+    # ALTERAÇÃO: Passando um dicionário 'form_data' vazio para a requisição GET.
+    return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data={})
 
 
 @app.route("/loading/<next_page>")
