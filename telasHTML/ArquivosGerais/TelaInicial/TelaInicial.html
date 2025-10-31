@@ -54,9 +54,9 @@
     </main>
     
     <nav class="navigation-links">
-        <a href="{{ url_for('pagina_feed') }}" title="Feed de Posts" class="nav-button feed-button">
+        <a href="{{ url_for('feed_posts') }}" title="Feed de Posts" class="nav-button feed-button">
             Feed
-        </a>
+        </a> 
         
         <a href="{{ url_for('pagina_usuario', user_id=session.user_id) }}" title="Meu Perfil" class="nav-button profile-button">
              <!-- ALTERAÇÃO 2: Usando o 'BotaoUsuario.ico' e uma classe específica para o ícone -->
