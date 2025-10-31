@@ -1,3 +1,4 @@
+# <DOCUMENT filename="app.py">
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory, jsonify
 from dotenv import load_dotenv
@@ -23,10 +24,12 @@ app = Flask(
 )
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "chave_padrao_para_dev")
 
-# Diretório para uploads de fotos de perfil
+# === BUCKETS DO SUPABASE ===
+PROFILE_BUCKET = 'profile-images'   # Bucket existente para fotos de perfil
+POST_BUCKET = 'post-images'         # NOVO bucket para imagens de posts
+
+# Diretório local apenas para fotos de perfil (fallback ou dev)
 UPLOAD_FOLDER_RELATIVE = 'telasHTML/ArquivosGerais/TelaDeUsuario/imagens/profile_pics'
-# Diretório para uploads de imagens de posts
-POST_UPLOAD_FOLDER_RELATIVE = 'telasHTML/ArquivosGerais/TelaFeed/imagens/post_pics'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 def allowed_file(filename):
@@ -35,7 +38,7 @@ def allowed_file(filename):
 
 # Decorador para exigir login
 def login_required(f):
-    @wraps(f)
+    @wraps(f):
     def decorated_function(*args, **kwargs):
         if 'user_email' not in session:
             flash('Você precisa estar logado para acessar esta página.', 'danger')
@@ -44,7 +47,6 @@ def login_required(f):
     return decorated_function
 
 # === ROTAS DEDICADAS PARA ARQUIVOS ESTÁTICOS (ASSETS) ===
-
 @app.route('/login-assets/<path:filename>')
 def login_assets(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'telaDeLogin')
@@ -85,18 +87,11 @@ def recuperar_senha_assets(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'RecuperarSenha')
     return send_from_directory(dir_path, filename)
 
-# Rota genérica para servir arquivos estáticos de dentro do diretório 'telasHTML'
+# Rota genérica para arquivos estáticos dentro de 'telasHTML'
 @app.route('/serve_static_files/<path:filename>')
 def serve_static_files(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML')
     return send_from_directory(dir_path, filename)
-
-# ROTA PARA SERVIR IMAGENS DE POSTS
-@app.route('/post-assets/<path:filename>')
-def post_assets(filename):
-    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaFeed', 'imagens', 'post_pics')
-    return send_from_directory(dir_path, filename)
-
 
 # === ROTAS DO APLICATIVO ===
 
@@ -126,38 +121,27 @@ def login():
 def cadastro():
     if request.method == 'POST':
         try:
-            # Coleta todos os dados do formulário em um dicionário
-            form_data = {
-                "nome": request.form.get('nome'),
-                "email": request.form.get('email'),
-                "senha": request.form.get('senha'),
-                "cidade": request.form.get('cidade'),
-                "posicao": request.form.get('posicao'),
-                "nascimento": request.form.get('nascimento'),
-                "numero_telefone": request.form.get('numero_telefone'),
-                "numero_camisa": request.form.get('numero_camisa')
-            }
+            nome = request.form['nome']
+            email = request.form['email']
+            senha = request.form['senha']
+            cidade = request.form['cidade']
+            posicao = request.form['posicao']
+            nascimento_str = request.form['nascimento']
+            
+            numero_telefone = request.form.get('numero_telefone')
+            numero_camisa = request.form.get('numero_camisa')
 
             try:
-                nascimento_formatado = datetime.strptime(form_data['nascimento'], '%d/%m/%Y').strftime('%Y-%m-%d')
-            except (ValueError, TypeError):
-                nascimento_formatado = form_data['nascimento']
+                nascimento_formatado = datetime.strptime(nascimento_str, '%d/%m/%Y').strftime('%Y-%m-%d')
+            except ValueError:
+                nascimento_formatado = nascimento_str
         
-            success, message = register_user(
-                form_data['nome'], 
-                form_data['email'], 
-                form_data['senha'], 
-                form_data['cidade'], 
-                form_data['posicao'], 
-                nascimento_formatado, 
-                form_data['numero_camisa'], 
-                form_data['numero_telefone']
-            )
+            success, message = register_user(nome, email, senha, cidade, posicao, nascimento_formatado, numero_camisa, numero_telefone)
             
             if success:
-                user_data = check_user(form_data['email'], form_data['senha'])
+                user_data = check_user(email, senha)
                 if user_data:
-                    session['user_email'] = form_data['email']
+                    session['user_email'] = email
                     session['user_id'] = user_data.get('id')
                     session['user_name'] = user_data.get('nome')
                     flash(message, 'success')
@@ -167,21 +151,28 @@ def cadastro():
                     return redirect(url_for('tela_loading', next_page='login', message_category='warning'))
             else:
                 flash(message, 'danger')
-                # Se a falha for por telefone, limpa o campo de telefone
-                if "telefone" in message:
-                    form_data['numero_telefone'] = ""
+                form_data = {
+                    'nome': nome,
+                    'email': email,
+                    'cidade': cidade,
+                    'posicao': posicao,
+                    'nascimento': nascimento_str,
+                    'numero_telefone': numero_telefone,
+                    'numero_camisa': numero_camisa
+                }
                 return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data=form_data)
 
         except ValueError:
             flash('Formato de data de nascimento inválido. Use DD/MM/AAAA.', 'danger')
-            return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data=request.form)
+            form_data = request.form.to_dict() if request.form else {}
+            return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data=form_data)
         
         except Exception as e:
             print(f"ERRO geral no cadastro: {e}")
             flash('Ocorreu um erro inesperado ao tentar cadastrar o usuário.', 'danger')
-            return redirect(url_for('cadastro'))
+            form_data = request.form.to_dict() if request.form else {}
+            return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data=form_data)
 
-    # ALTERAÇÃO 1: Passando um dicionário 'form_data' vazio para a requisição GET.
     return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data={})
 
 
@@ -270,17 +261,25 @@ def editar_perfil():
         if numero:
             update_data['numero_camisa'] = numero
             
+        # === UPLOAD DE FOTO DE PERFIL PARA SUPABASE ===
         if 'profile_image' in request.files:
             file = request.files['profile_image']
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
-                full_upload_dir = os.path.join(BASE_DIR, UPLOAD_FOLDER_RELATIVE)
-                os.makedirs(full_upload_dir, exist_ok=True)
-                file_path = os.path.join(full_upload_dir, filename)
-                file.save(file_path)
-                db_path = os.path.join(UPLOAD_FOLDER_RELATIVE, filename).replace('\\', '/')
-                update_data['profile_image_url'] = db_path
-                session['user_profile_image'] = db_path
+                file_bytes = file.read()
+                try:
+                    bucket_path = f"users/{session['user_id']}/{filename}"
+                    supabase.storage.from_(PROFILE_BUCKET).upload(
+                        path=bucket_path,
+                        file=file_bytes,
+                        file_options={"content-type": file.content_type}
+                    )
+                    public_url = supabase.storage.from_(PROFILE_BUCKET).get_public_url(bucket_path)
+                    update_data['profile_image_url'] = public_url
+                    session['user_profile_image'] = public_url
+                except Exception as e:
+                    print(f"ERRO no upload de perfil: {e}")
+                    flash('Falha ao fazer upload da foto de perfil.', 'danger')
 
         if update_data:
             success = update_user_profile(user_email, **update_data)
@@ -303,6 +302,7 @@ def pagina_feed():
     return render_template("telasHTML/ArquivosGerais/TelaFeed/feed.html", posts=posts)
 
 
+# === API PARA POSTS ===
 @app.route("/api/posts", methods=['GET', 'POST'])
 @login_required
 def api_posts():
@@ -315,15 +315,24 @@ def api_posts():
             autor_id = session.get('user_id')
             imagem_url = None
 
+            # === UPLOAD DE IMAGEM DO POST PARA SUPABASE ===
             if 'postImage' in request.files:
                 file = request.files['postImage']
                 if file and allowed_file(file.filename):
                     filename = secure_filename(file.filename)
-                    full_upload_dir = os.path.join(BASE_DIR, POST_UPLOAD_FOLDER_RELATIVE)
-                    os.makedirs(full_upload_dir, exist_ok=True)
-                    file_path = os.path.join(full_upload_dir, filename)
-                    file.save(file_path)
-                    imagem_url = os.path.join(POST_UPLOAD_FOLDER_RELATIVE, filename).replace('\\', '/')
+                    file_bytes = file.read()
+                    try:
+                        bucket_path = f"posts/{autor_id}/{filename}"
+                        supabase.storage.from_(POST_BUCKET).upload(
+                            path=bucket_path,
+                            file=file_bytes,
+                            file_options={"content-type": file.content_type}
+                        )
+                        public_url = supabase.storage.from_(POST_BUCKET).get_public_url(bucket_path)
+                        imagem_url = public_url
+                    except Exception as e:
+                        print(f"ERRO no upload do post: {e}")
+                        return jsonify({'success': False, 'error': 'Falha no upload da imagem.'}), 500
 
             success, result = create_post(autor_id, legenda, imagem_url)
             if success:
@@ -393,6 +402,7 @@ def redefinir_senha():
     return render_template("telasHTML/RecuperarSenha/redefinir_senha.html")
 
 
+# === FILTRO JINJA: FORMATA DATA ===
 @app.template_filter('strftime')
 def _jinja2_filter_strftime(date_str, fmt='%d/%m/%Y às %H:%M'):
     if not date_str:
@@ -405,6 +415,6 @@ def _jinja2_filter_strftime(date_str, fmt='%d/%m/%Y às %H:%M'):
 
 
 if __name__ == '__main__':
+    # Cria diretório local apenas para fallback (dev)
     os.makedirs(os.path.join(BASE_DIR, UPLOAD_FOLDER_RELATIVE), exist_ok=True)
-    os.makedirs(os.path.join(BASE_DIR, POST_UPLOAD_FOLDER_RELATIVE), exist_ok=True)
     app.run(debug=True)
