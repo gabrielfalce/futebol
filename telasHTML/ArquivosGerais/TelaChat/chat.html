@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat com {{ destinatario.nome }}</title>
     
-    <!-- ALTERAÇÃO 1: Corrigido 'user-assets' para 'user_assets' -->
+    <!-- ALTERAÇÃO: Corrigido 'user-assets' para 'user_assets' -->
     <link rel="stylesheet" href="{{ url_for('user_assets', filename='chat.css') }}">
 </head>
 <body>
@@ -13,7 +13,6 @@
         <header class="chat-header">
             <a href="{{ url_for('pagina_inicial') }}" class="back-button" aria-label="Voltar para a página anterior">&larr;</a>
             
-            <!-- ALTERAÇÃO 2: Corrigido o carregamento da imagem de perfil -->
             <img src="{{ url_for('serve_static_files', filename=destinatario.profile_image_url) if destinatario.profile_image_url else '' }}" alt="Avatar de {{ destinatario.nome }}" class="avatar">
             
             <div class="user-info">
@@ -40,14 +39,13 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
-        // ALTERAÇÃO 3: Variáveis de ambiente agora são passadas corretamente pelo app.py
         const REMETENTE_ID = {{ remetente.id | tojson }};
         const DESTINATARIO_ID = {{ destinatario.id | tojson }};
         
         const SUPABASE_URL = {{ supabase_url | tojson }};
         const SUPABASE_ANON_KEY = {{ supabase_anon_key | tojson }};
 
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY );
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY  );
         const chatBody = document.getElementById('chat-body');
         const messageForm = document.getElementById('message-form');
         const messageInput = document.getElementById('message-input');
