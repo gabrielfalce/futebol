@@ -128,11 +128,17 @@ body {
     transform: translateY(-5px);
 }
 
-/*
-   ALTERAÇÃO: A regra '.user-card img' foi removida.
-   Ela era desnecessária e estava causando o conflito que escondia o botão de perfil.
-   A lógica de imagem padrão agora é controlada apenas pelo HTML.
-*/
+.user-card img {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%; /* Deixa a imagem redonda */
+    object-fit: cover; /* Garante que a imagem preencha o círculo sem distorcer */
+    flex-shrink: 0; /* Impede que a imagem seja espremida */
+    margin-right: 15px; /* Adiciona mais espaço entre a imagem e o bloco de texto */
+    /* border: 3px solid var(--cor-primaria); */
+    /* background-color: #8f2d2d; Cor de fundo caso a imagem não carregue */
+    background-image: url(iconeUser.png);
+}
 
 .user-info {
     display: flex; /* Transforma em flex container */
@@ -275,9 +281,21 @@ body {
     background-color: transparent;
     border: none;
 }
-/* INÍCIO DA CORREÇÃO */
+
 .avatar-fallback {
     object-fit: contain;  
     background-color: transparent; /* CORREÇÃO: Remove o fundo escuro que ofuscava o ícone */
     padding: 0px; /* CORREÇÃO: Remove o padding excessivo que distorcia o tamanho */
+}
+
+/* 
+   ALTERAÇÃO: Adicionada uma regra de alta especificidade para forçar a exibição do ícone do botão de perfil.
+   Isso resolve o conflito com outras regras de imagem.
+*/
+body .navigation-links .profile-button img.avatar-fallback {
+    display: inline-block !important;
+    visibility: visible !important;
+    width: 28px !important;
+    height: 28px !important;
+    background-image: none !important;
 }
