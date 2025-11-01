@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from database import (
     register_user, check_user, get_all_users, get_user_by_email,
     update_user_profile_image, update_user_profile, get_user_by_id, update_password,
-    create_post, get_posts_by_user, get_all_posts, get_post_by_id # ALTERAÇÃO: Importada a nova função
+    create_post, get_posts_by_user, get_all_posts, get_post_by_id, supabase
 )
 import bcrypt
 from datetime import datetime
@@ -29,9 +29,9 @@ UPLOAD_FOLDER_RELATIVE = 'telasHTML/ArquivosGerais/TelaDeUsuario/imagens/profile
 POST_UPLOAD_FOLDER_RELATIVE = 'telasHTML/ArquivosGerais/TelaFeed/imagens/post_pics'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-# Variáveis para os nomes dos buckets do Supabase
-PROFILE_BUCKET = 'profile-pics'
-POST_BUCKET = 'post-pics'
+# ALTERAÇÃO: Corrigindo os nomes dos buckets para corresponder ao seu Supabase.
+PROFILE_BUCKET = 'profile_images'
+POST_BUCKET = 'post-images'
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -334,21 +334,17 @@ def api_posts():
 
             success, result = create_post(autor_id, legenda, imagem_url)
             
-            # ALTERAÇÃO: Modificado o retorno em caso de sucesso.
             if success:
-                # 'result' agora é o post_id
                 post_id = result
-                # Busca os dados completos do post recém-criado
                 new_post_data = get_post_by_id(post_id)
                 if new_post_data:
                     return jsonify({'success': True, 'post': new_post_data}), 201
                 else:
-                    # Caso raro onde o post é criado mas não pode ser encontrado imediatamente
                     return jsonify({'success': False, 'error': 'Post criado, mas não pôde ser recuperado.'}), 500
             else:
                 return jsonify({'success': False, 'error': result}), 500
         except Exception as e:
-            print(f"ERRO ao criar post: {e}")
+            print(f"ERRO GERAL ao criar post: {e}")
             return jsonify({'success': False, 'error': 'Erro interno do servidor.'}), 500
 
     elif request.method == 'GET':
@@ -423,6 +419,5 @@ def _jinja2_filter_strftime(date_str, fmt='%d/%m/%Y às %H:%M'):
 
 if __name__ == '__main__':
     os.makedirs(os.path.join(BASE_DIR, UPLOAD_FOLDER_RELATIVE), exist_ok=True)
-    # Garante que o diretório de posts também seja criado
     os.makedirs(os.path.join(BASE_DIR, POST_UPLOAD_FOLDER_RELATIVE), exist_ok=True)
     app.run(debug=True)

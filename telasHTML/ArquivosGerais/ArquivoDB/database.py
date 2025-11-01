@@ -19,7 +19,7 @@ if not url or not key:
 
 try:
     # A inicialização agora usa a chave de serviço, que tem mais privilégios.
-    supabase: Client = create_client(url, key   )
+    supabase: Client = create_client(url, key    )
     print("Sucesso: Cliente Supabase inicializado com chave de serviço.")
 except Exception as e:
     print(f"ERRO ao inicializar o Cliente Supabase: {e}")
@@ -211,8 +211,6 @@ def create_post(autor_id: int, legenda: str, imagem_url: str = None):
             'autor_id': autor_id,
             'legenda': legenda,
         }
-        # ALTERAÇÃO: Apenas adiciona a imagem_url se ela não for nula.
-        # Isso corrige o erro de 'not-null constraint' se o banco exigir.
         if imagem_url:
             payload['imagem_url'] = imagem_url
 
@@ -227,13 +225,13 @@ def create_post(autor_id: int, legenda: str, imagem_url: str = None):
         print(f"ERRO em create_post: {error_msg}")
         return False, error_msg
 
-# ALTERAÇÃO: Adicionada nova função para buscar um post específico por ID.
 def get_post_by_id(post_id: int):
     """Busca um único post pelo seu ID, incluindo dados do autor."""
     try:
+        # ALTERAÇÃO: Usando a sintaxe explícita para desambiguar o relacionamento.
         response = (
             supabase.table('posts')
-            .select('*, usuarios(nome, profile_image_url)')
+            .select('*, usuarios!inner(nome, profile_image_url)')
             .eq('id', post_id)
             .limit(1)
             .execute()
@@ -262,9 +260,10 @@ def get_posts_by_user(user_id: int):
     Inclui dados do autor (nome, profile_image_url) via join.
     """
     try:
+        # ALTERAÇÃO: Usando a sintaxe explícita para desambiguar o relacionamento.
         response = (
             supabase.table('posts')
-            .select('*, usuarios(nome, profile_image_url)')
+            .select('*, usuarios!inner(nome, profile_image_url)')
             .eq('autor_id', user_id)
             .order('created_at', desc=True)
             .execute()
@@ -296,9 +295,10 @@ def get_all_posts():
     Ordenados do mais recente para o mais antigo.
     """
     try:
+        # ALTERAÇÃO: Usando a sintaxe explícita para desambiguar o relacionamento.
         response = (
             supabase.table('posts')
-            .select('*, usuarios(nome, profile_image_url)')
+            .select('*, usuarios!inner(nome, profile_image_url)')
             .order('created_at', desc=True)
             .execute()
         )
