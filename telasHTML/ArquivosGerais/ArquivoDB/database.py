@@ -1,4 +1,3 @@
-# <DOCUMENT filename="database.py">
 import os
 from supabase import create_client, Client
 import bcrypt
@@ -20,7 +19,7 @@ if not url or not key:
 
 try:
     # A inicialização agora usa a chave de serviço, que tem mais privilégios.
-    supabase: Client = create_client(url, key  )
+    supabase: Client = create_client(url, key   )
     print("Sucesso: Cliente Supabase inicializado com chave de serviço.")
 except Exception as e:
     print(f"ERRO ao inicializar o Cliente Supabase: {e}")
@@ -68,11 +67,9 @@ def get_user_by_email(email):
         print(f"ERRO em get_user_by_email: {e}")
         return None
 
-# ALTERAÇÃO 1: Adicionada uma nova função para buscar usuário por telefone.
 def get_user_by_phone(phone_number):
     """Busca um usuário pelo número de telefone."""
     try:
-        # Verifica se o número de telefone não é nulo ou vazio antes de consultar
         if not phone_number:
             return None
         response = supabase.table('usuarios').select('id').eq('numero', phone_number).limit(1).execute()
@@ -88,21 +85,16 @@ def register_user(nome, email, senha, cidade, posicao, nascimento, numero_camisa
     Cadastra um novo usuário no banco de dados.
     """
     try:
-        # 1. Verifica se o email já existe
         existing_user_by_email = get_user_by_email(email)
         if existing_user_by_email:
             return False, "Este e-mail já está cadastrado."
 
-        # ALTERAÇÃO 2: Adicionada a verificação para o número de telefone.
-        # 2. Verifica se o telefone já existe
         existing_user_by_phone = get_user_by_phone(numero_telefone)
         if existing_user_by_phone:
             return False, "Este número de telefone já está em uso."
 
-        # 3. Hash da senha
         hashed_password = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         
-        # 4. Insere o usuário no banco.
         response = supabase.table('usuarios').insert({
             'nome': nome,
             'email': email,
@@ -143,7 +135,6 @@ def check_user(email, senha):
 def get_all_users():
     """Retorna a lista de todos os usuários."""
     try:
-        # Garantindo que 'email' e 'numero' também são selecionados.
         response = supabase.table('usuarios').select('id, nome, email, cidade, posicao, profile_image_url, nascimento, numero_camisa, numero').execute()
         if response.data:
             users = response.data
@@ -220,6 +211,8 @@ def create_post(autor_id: int, legenda: str, imagem_url: str = None):
             'autor_id': autor_id,
             'legenda': legenda,
         }
+        # ALTERAÇÃO: Apenas adiciona a imagem_url se ela não for nula.
+        # Isso corrige o erro de 'not-null constraint' se o banco exigir.
         if imagem_url:
             payload['imagem_url'] = imagem_url
 
@@ -234,6 +227,34 @@ def create_post(autor_id: int, legenda: str, imagem_url: str = None):
         print(f"ERRO em create_post: {error_msg}")
         return False, error_msg
 
+# ALTERAÇÃO: Adicionada nova função para buscar um post específico por ID.
+def get_post_by_id(post_id: int):
+    """Busca um único post pelo seu ID, incluindo dados do autor."""
+    try:
+        response = (
+            supabase.table('posts')
+            .select('*, usuarios(nome, profile_image_url)')
+            .eq('id', post_id)
+            .limit(1)
+            .execute()
+        )
+        if response.data:
+            p = response.data[0]
+            post = {
+                'id': p['id'],
+                'created_at': p['created_at'],
+                'legenda': p['legenda'],
+                'imagem_url': p['imagem_url'],
+                'autor': {
+                    'nome': p['usuarios']['nome'],
+                    'profile_image_url': p['usuarios']['profile_image_url']
+                }
+            }
+            return post
+        return None
+    except Exception as e:
+        print(f"ERRO em get_post_by_id: {e}")
+        return None
 
 def get_posts_by_user(user_id: int):
     """
@@ -243,13 +264,12 @@ def get_posts_by_user(user_id: int):
     try:
         response = (
             supabase.table('posts')
-            .select('id, created_at, legenda, imagem_url, autor_id, usuarios(nome, profile_image_url)')
+            .select('*, usuarios(nome, profile_image_url)')
             .eq('autor_id', user_id)
             .order('created_at', desc=True)
             .execute()
         )
         if response.data:
-            # O Supabase devolve o join dentro da chave 'usuarios'
             posts = []
             for p in response.data:
                 post = {
@@ -278,7 +298,7 @@ def get_all_posts():
     try:
         response = (
             supabase.table('posts')
-            .select('id, created_at, legenda, imagem_url, autor_id, usuarios(nome, profile_image_url)')
+            .select('*, usuarios(nome, profile_image_url)')
             .order('created_at', desc=True)
             .execute()
         )

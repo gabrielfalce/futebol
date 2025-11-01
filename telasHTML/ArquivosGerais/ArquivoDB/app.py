@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from database import (
     register_user, check_user, get_all_users, get_user_by_email,
     update_user_profile_image, update_user_profile, get_user_by_id, update_password,
-    create_post, get_posts_by_user, get_all_posts
+    create_post, get_posts_by_user, get_all_posts, get_post_by_id # ALTERAÇÃO: Importada a nova função
 )
 import bcrypt
 from datetime import datetime
@@ -94,7 +94,6 @@ def serve_static_files(filename):
 # ROTA PARA SERVIR IMAGENS DE POSTS
 @app.route('/post-assets/<path:filename>')
 def post_assets(filename):
-    # O path aqui precisa ser relativo à pasta onde as imagens são salvas
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaFeed', 'imagens', 'post_pics')
     return send_from_directory(dir_path, filename)
 
@@ -126,7 +125,6 @@ def login():
 @app.route("/cadastro", methods=['GET', 'POST'])
 def cadastro():
     if request.method == 'POST':
-        # Bloco try...except restaurado para manter a estrutura original
         try:
             nome = request.form['nome']
             email = request.form['email']
@@ -158,7 +156,6 @@ def cadastro():
                     return redirect(url_for('tela_loading', next_page='login', message_category='warning'))
             else:
                 flash(message, 'danger')
-                # Lógica para reenviar dados ao formulário em caso de erro
                 form_data = request.form.to_dict()
                 if "telefone" in message:
                     form_data['numero_telefone'] = ""
@@ -265,7 +262,6 @@ def editar_perfil():
             file = request.files['profile_image']
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
-                # Lógica de upload para Supabase Storage (exemplo)
                 try:
                     file_bytes = file.read()
                     bucket_path = f"users/{session['user_id']}/{filename}"
@@ -333,8 +329,18 @@ def api_posts():
                         return jsonify({'success': False, 'error': 'Falha no upload da imagem.'}), 500
 
             success, result = create_post(autor_id, legenda, imagem_url)
+            
+            # ALTERAÇÃO: Modificado o retorno em caso de sucesso.
             if success:
-                return jsonify({'success': True, 'post_id': result}), 201
+                # 'result' agora é o post_id
+                post_id = result
+                # Busca os dados completos do post recém-criado
+                new_post_data = get_post_by_id(post_id)
+                if new_post_data:
+                    return jsonify({'success': True, 'post': new_post_data}), 201
+                else:
+                    # Caso raro onde o post é criado mas não pode ser encontrado imediatamente
+                    return jsonify({'success': False, 'error': 'Post criado, mas não pôde ser recuperado.'}), 500
             else:
                 return jsonify({'success': False, 'error': result}), 500
         except Exception as e:
