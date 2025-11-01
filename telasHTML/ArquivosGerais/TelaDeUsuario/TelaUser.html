@@ -27,7 +27,7 @@
         <div id="profileContainer">
             <div id="perfilImagemGeralCaixa">
                 <img class="profile-image" 
-                     src="{{ url_for('serve_static_files', filename=usuario.profile_image_url) if usuario.profile_image_url else url_for('inicio_assets', filename='iconeUser.png') }}" 
+                     src="{{ usuario.profile_image_url if usuario.profile_image_url else url_for('inicio_assets', filename='iconeUser.png' ) }}" 
                      alt="Foto de Perfil">
             </div>
 
@@ -54,19 +54,20 @@
                 <div class="post-card">
                     <div class="post-header">
                         <img class="post-author-img" 
-                             src="{{ url_for('serve_static_files', filename=post.autor.profile_image_url) if post.autor.profile_image_url else url_for('inicio_assets', filename='iconeUser.png') }}" 
+                             src="{{ post.autor.profile_image_url if post.autor.profile_image_url else url_for('inicio_assets', filename='iconeUser.png') }}" 
                              alt="Foto de {{ post.autor.nome }}">
                         <div class="post-author-info">
                             <strong>{{ post.autor.nome }}</strong>
-                            <small>{{ post.created_at | strftime('%d/%m/%Y às %H:%M') }}</small>
+                            <small>{{ post.created_at | strftime }}</small>
                         </div>
                     </div>
 
                     <div class="post-content">
                         <p>{{ post.legenda }}</p>
                         {% if post.imagem_url %}
+                        <!-- ALTERAÇÃO: A URL da imagem do post agora vem diretamente do banco de dados -->
                         <img class="post-image" 
-                             src="{{ url_for('post_assets', filename=post.imagem_url) }}" 
+                             src="{{ post.imagem_url }}" 
                              alt="Imagem da publicação">
                         {% endif %}
                     </div>
@@ -87,11 +88,14 @@
             </a>
         </div>
 
+        <!-- ALTERAÇÃO: O botão de criar post só aparece se o usuário for o dono do perfil -->
+        {% if is_owner %}
         <div class="floating-button-wrapper">
             <button id="createPostBtn" class="floating-button create-post-button" title="Criar nova publicação">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
             </button>
         </div>
+        {% endif %}
     </div>
     
     <!-- ===== MODAL DE CRIAR POST ===== -->
@@ -100,20 +104,16 @@
             <button id="closePostModalBtn" class="close-button">&times;</button>
             <h2>Criar Publicação</h2>
             <form id="postForm" enctype="multipart/form-data">
-                <textarea id="postContent" placeholder="O que você está pensando?" required></textarea>
-                <input type="file" id="postImage" accept="image/*">
+                <textarea id="postContent" name="legenda" placeholder="O que você está pensando?" required></textarea>
+                <input type="file" id="postImage" name="postImage" accept="image/*">
                 <button type="submit">Publicar</button>
             </form>
         </div>
     </div>
 
-    <!-- Filtro Jinja para formatar data -->
-    {% raw %}
-    {% filter lower %}
-    {% endfilter %}
-    {% endraw %}
+    <!-- O bloco raw/filter foi removido pois o filtro strftime foi definido no app.py -->
 
     <!-- Script atualizado -->
-    <script src="{{ url_for('user_assets', filename='script.js') }}"></script>
+    <script src="{{ url_for('user_assets', filename='script.js' ) }}"></script>
 </body>
 </html>

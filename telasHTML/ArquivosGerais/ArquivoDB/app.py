@@ -1,4 +1,3 @@
-# <DOCUMENT filename="app.py">
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory, jsonify
 from dotenv import load_dotenv
@@ -10,7 +9,7 @@ from database import (
 import bcrypt
 from datetime import datetime
 from werkzeug.utils import secure_filename
-from functools import wraps  # <<< IMPORTAÇÃO ADICIONADA (era o erro de SyntaxError)
+from functools import wraps
 
 load_dotenv()
 
@@ -24,19 +23,17 @@ app = Flask(
 )
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "chave_padrao_para_dev")
 
-# === BUCKETS DO SUPABASE ===
-PROFILE_BUCKET = 'profile-images'   # Bucket existente para fotos de perfil
-POST_BUCKET = 'post-images'         # NOVO bucket para imagens de posts
-
-# Diretório local apenas para fallback (dev)
+# Diretório para uploads de fotos de perfil
 UPLOAD_FOLDER_RELATIVE = 'telasHTML/ArquivosGerais/TelaDeUsuario/imagens/profile_pics'
+# Diretório para uploads de imagens de posts
+POST_UPLOAD_FOLDER_RELATIVE = 'telasHTML/ArquivosGerais/TelaFeed/imagens/post_pics'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[-1].lower() in ALLOWED_EXTENSIONS
 
-# === DECORADOR DE LOGIN (agora com wraps importado) ===
+# Decorador para exigir login
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -46,7 +43,8 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# === ROTAS ESTÁTICAS ===
+# === ROTAS DEDICADAS PARA ARQUIVOS ESTÁTICOS (ASSETS) ===
+
 @app.route('/login-assets/<path:filename>')
 def login_assets(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'telaDeLogin')
@@ -87,10 +85,19 @@ def recuperar_senha_assets(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'RecuperarSenha')
     return send_from_directory(dir_path, filename)
 
+# Rota genérica para servir arquivos estáticos de dentro do diretório 'telasHTML'
 @app.route('/serve_static_files/<path:filename>')
 def serve_static_files(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML')
     return send_from_directory(dir_path, filename)
+
+# ROTA PARA SERVIR IMAGENS DE POSTS
+@app.route('/post-assets/<path:filename>')
+def post_assets(filename):
+    # O path aqui precisa ser relativo à pasta onde as imagens são salvas
+    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaFeed', 'imagens', 'post_pics')
+    return send_from_directory(dir_path, filename)
+
 
 # === ROTAS DO APLICATIVO ===
 
@@ -119,6 +126,7 @@ def login():
 @app.route("/cadastro", methods=['GET', 'POST'])
 def cadastro():
     if request.method == 'POST':
+        # Bloco try...except restaurado para manter a estrutura original
         try:
             nome = request.form['nome']
             email = request.form['email']
@@ -150,27 +158,20 @@ def cadastro():
                     return redirect(url_for('tela_loading', next_page='login', message_category='warning'))
             else:
                 flash(message, 'danger')
-                form_data = {
-                    'nome': nome,
-                    'email': email,
-                    'cidade': cidade,
-                    'posicao': posicao,
-                    'nascimento': nascimento_str,
-                    'numero_telefone': numero_telefone,
-                    'numero_camisa': numero_camisa
-                }
+                # Lógica para reenviar dados ao formulário em caso de erro
+                form_data = request.form.to_dict()
+                if "telefone" in message:
+                    form_data['numero_telefone'] = ""
                 return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data=form_data)
 
         except ValueError:
             flash('Formato de data de nascimento inválido. Use DD/MM/AAAA.', 'danger')
-            form_data = request.form.to_dict() if request.form else {}
-            return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data=form_data)
+            return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data=request.form)
         
         except Exception as e:
             print(f"ERRO geral no cadastro: {e}")
             flash('Ocorreu um erro inesperado ao tentar cadastrar o usuário.', 'danger')
-            form_data = request.form.to_dict() if request.form else {}
-            return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data=form_data)
+            return redirect(url_for('cadastro'))
 
     return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data={})
 
@@ -264,13 +265,14 @@ def editar_perfil():
             file = request.files['profile_image']
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
-                file_bytes = file.read()
+                # Lógica de upload para Supabase Storage (exemplo)
                 try:
+                    file_bytes = file.read()
                     bucket_path = f"users/{session['user_id']}/{filename}"
                     supabase.storage.from_(PROFILE_BUCKET).upload(
                         path=bucket_path,
                         file=file_bytes,
-                        file_options={"content-type": file.content_type}
+                        file_options={"content-type": file.content_type, "upsert": "true"}
                     )
                     public_url = supabase.storage.from_(PROFILE_BUCKET).get_public_url(bucket_path)
                     update_data['profile_image_url'] = public_url
@@ -316,9 +318,9 @@ def api_posts():
                 file = request.files['postImage']
                 if file and allowed_file(file.filename):
                     filename = secure_filename(file.filename)
-                    file_bytes = file.read()
                     try:
-                        bucket_path = f"posts/{autor_id}/{filename}"
+                        file_bytes = file.read()
+                        bucket_path = f"posts/{autor_id}/{datetime.now().timestamp()}_{filename}"
                         supabase.storage.from_(POST_BUCKET).upload(
                             path=bucket_path,
                             file=file_bytes,
@@ -411,4 +413,6 @@ def _jinja2_filter_strftime(date_str, fmt='%d/%m/%Y às %H:%M'):
 
 if __name__ == '__main__':
     os.makedirs(os.path.join(BASE_DIR, UPLOAD_FOLDER_RELATIVE), exist_ok=True)
+    # Garante que o diretório de posts também seja criado
+    os.makedirs(os.path.join(BASE_DIR, POST_UPLOAD_FOLDER_RELATIVE), exist_ok=True)
     app.run(debug=True)
