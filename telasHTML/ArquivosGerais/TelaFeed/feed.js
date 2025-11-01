@@ -5,11 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const feedContainer = document.getElementById('feed-container');
     const loadingSpinner = document.getElementById('loading-spinner');
 
-    // Variáveis para controlar a paginação e o carregamento
-    let currentPage = 1;
-    let isLoading = false;
-    const postsPerPage = 10; // Quantos posts carregar por vez
-
     // Função para formatar a data (ex: "19 de Outubro de 2025, 23:05")
     function formatarData(isoString) {
         if (!isoString) return '';
@@ -26,7 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Função para criar o HTML de um único card de post
     function criarPostCard(post) {
         // Define uma imagem padrão caso o autor não tenha foto de perfil
-        const avatarUrl = post.autor.profile_image_url || '/TelaDeUsuario/imagens/user-icon-placeholder.png';
+        // O backend já garante que 'post.autor' existe.
+        const avatarUrl = post.autor.profile_image_url || '{{ url_for("inicio_assets", filename="iconeUser.png") }}'; // Usando url_for para uma imagem padrão segura
 
         // Cria o elemento do card
         const card = document.createElement('div');
@@ -42,7 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
             <div class="post-content">
-                <p>${post.conteudo}</p>
+                <!-- ALTERAÇÃO: Trocado 'post.conteudo' por 'post.legenda' para corresponder ao backend -->
+                <p>${post.legenda}</p>
             </div>
             ${post.imagem_url ? `<img src="${post.imagem_url}" alt="Imagem do post" class="post-image">` : ''}
         `;
@@ -53,14 +50,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Função principal para carregar os posts da API
     async function carregarPosts() {
-        // Previne múltiplos carregamentos ao mesmo tempo
-        if (isLoading) return;
-        isLoading = true;
         loadingSpinner.style.display = 'block'; // Mostra o spinner
 
         try {
-            // Faz a requisição para a nossa API, passando a página e o limite
-            const response = await fetch(`/api/posts?page=${currentPage}&limit=${postsPerPage}`);
+            // ALTERAÇÃO: Simplificado o fetch para buscar todos os posts de uma vez, sem paginação,
+            // que é o que o backend atual suporta.
+            const response = await fetch('/api/posts'); 
             
             if (!response.ok) {
                 throw new Error(`Erro na requisição: ${response.statusText}`);
@@ -68,10 +63,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const posts = await response.json();
 
-            // Se a API não retornar mais posts, para de tentar carregar
+            // Esconde o spinner depois que os dados chegam
+            loadingSpinner.style.display = 'none';
+
+            // Se a API não retornar posts, mostra uma mensagem.
             if (posts.length === 0) {
-                loadingSpinner.style.display = 'none'; // Esconde o spinner
-                window.removeEventListener('scroll', handleScroll); // Para de ouvir o scroll
+                feedContainer.innerHTML = '<p style="text-align: center; color: #aaa;">Nenhum post no feed ainda. Seja o primeiro a publicar!</p>';
                 return;
             }
 
@@ -81,31 +78,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 feedContainer.appendChild(postCard);
             });
 
-            // Incrementa a página para a próxima requisição
-            currentPage++;
-
         } catch (error) {
             console.error("Falha ao carregar posts:", error);
-            // Poderíamos mostrar uma mensagem de erro na tela aqui
-        } finally {
-            // Garante que o estado de carregamento seja resetado e o spinner escondido
-            isLoading = false;
-            loadingSpinner.style.display = 'none';
+            loadingSpinner.style.display = 'none'; // Esconde o spinner em caso de erro
+            feedContainer.innerHTML = '<p style="text-align: center; color: #f44336;">Erro ao carregar o feed. Tente novamente mais tarde.</p>';
         }
     }
 
-    // Função para lidar com a rolagem infinita
-    function handleScroll() {
-        // Verifica se o usuário chegou perto do final da página
-        const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
-        if (scrollTop + clientHeight >= scrollHeight - 200) {
-            carregarPosts();
-        }
-    }
-
-    // Adiciona o "ouvinte" de scroll na janela
-    window.addEventListener('scroll', handleScroll);
-
-    // Carrega o primeiro lote de posts assim que a página abre
+    // Carrega os posts assim que a página abre
     carregarPosts();
 });
