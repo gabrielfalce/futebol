@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro</title>
     
-    <link rel="icon" href="./assets/bolaverde.ico" type="image/x-icon">
-    <link rel="stylesheet" href="./css/estilo.css">
+    <link rel="icon" href="/Cadastrar_templates/bolaverde.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/Cadastrar_templates/estilo.css">
+
     <style>
         .toast {
             visibility: hidden; min-width: 250px; background-color: #f44336; color: white;
@@ -19,7 +20,7 @@
 </head>
 <body>
     
-    <img src="./assets/logo.png" alt="Logotipo">
+    <img src="/TelaInicial/logo.png" alt="Logotipo">
     
     <h1 class="titulo">Cadastro</h1>
     
@@ -36,7 +37,7 @@
         <input placeholder="Número de Telefone" type="tel" name="numero_telefone" required>
 
         <button type="submit">Cadastrar</button>
-        <a class="linksNone" href="./login.html">Ir para Login</a>
+        <a class="linksNone" href="/telaDeLogin/login.html">Ir para Login</a>
     </form>
 
     <script>
@@ -52,7 +53,6 @@
 
         document.getElementById('cadastro-form').addEventListener('submit', async (event) => {
             event.preventDefault();
-
             const form = event.target;
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
@@ -66,19 +66,12 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-
                 const result = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(result.error || 'Ocorreu um erro ao cadastrar.');
-                }
+                if (!response.ok) { throw new Error(result.error || 'Ocorreu um erro ao cadastrar.'); }
 
                 showToast(result.message || 'Cadastro realizado com sucesso!', true);
                 form.reset();
-
-                setTimeout(() => {
-                    window.location.href = './login.html';
-                }, 2000);
+                setTimeout(() => { window.location.href = '/telaDeLogin/login.html'; }, 2000);
 
             } catch (error) {
                 showToast(error.message, false);

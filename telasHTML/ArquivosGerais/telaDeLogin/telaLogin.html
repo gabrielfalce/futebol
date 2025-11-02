@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <!-- Caminhos estáticos para os assets. Organize-os em pastas /assets e /css -->
-    <link rel="icon" href="./assets/BotaoUsuario.ico" type="image/x-icon">
-    <link rel="stylesheet" href="./css/style.css">
+    
+    <!-- Caminho relativo a partir da raiz do projeto -->
+    <link rel="icon" href="/TelaDeUsuario/imagens/BotaoUsuario.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/telaDeLogin/style.css"> <!-- Assumindo que o CSS está na mesma pasta -->
+
     <style>
-        /* Estilo do Toast para notificações */
         .toast {
             visibility: hidden; min-width: 250px; background-color: #f44336; color: white;
             text-align: center; border-radius: 5px; padding: 16px; position: fixed;
@@ -20,36 +21,33 @@
 </head>
 <body>
     
-    <img class="logo" src="./assets/logo.png" alt="Logotipo Geral da Aplicação">
+    <!-- Caminho relativo para a logo -->
+    <img class="logo" src="/TelaInicial/logo.png" alt="Logotipo Geral da Aplicação">
 
     <h1 class="titulo">Login</h1>
     
     <div id="toast-notification" class="toast"></div>
     
-    <!-- O formulário agora tem um ID para ser capturado pelo JavaScript -->
     <form id="login-form">
         <input placeholder="Email" type="email" name="email" required>
         <input placeholder="Senha" type="password" name="senha" required>
         
-        <!-- Link estático para a página de cadastro -->
-        <a class="esqueceuSenha" href="#">Esqueceu a senha?</a>
+        <a class="esqueceuSenha" href="/RecuperarSenha/recuperar.html">Esqueceu a senha?</a>
         <button class="login" type="submit">Login</button>
         <p class="ou">ou</p>
-        <a class="criarNovaConta" href="./cadastro.html">Criar nova conta</a>
+        <!-- Link para a página de cadastro -->
+        <a class="criarNovaConta" href="/Cadastrar_templates/cadastro.html">Criar nova conta</a>
     </form>
 
-    <!-- Importa o cliente Supabase via CDN -->
     <script type="module">
         import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-        // Suas chaves e URLs já estão configuradas!
         const SUPABASE_URL = 'https://ulbaklykimxpsdrtkqet.supabase.co'
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVsYmFrbHlraW14cHNkcnRrcWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMjc0MjcsImV4cCI6MjA3MzkwMzQyN30.A3_WLF3cNstQtXcOr2Q3OJCvTYqBQe7wmmXHc_WCqAk'
         const LOGIN_FUNCTION_URL = 'https://ulbaklykimxpsdrtkqet.supabase.co/functions/v1/login'
 
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY )
 
-        // Função para exibir notificações
         function showToast(message, isSuccess = false) {
             const toast = document.getElementById("toast-notification");
             toast.textContent = message;
@@ -58,10 +56,8 @@
             setTimeout(() => toast.classList.remove("show"), 4000);
         }
 
-        // Captura o envio do formulário
         document.getElementById('login-form').addEventListener('submit', async (event) => {
-            event.preventDefault(); // Impede o recarregamento da página
-
+            event.preventDefault();
             const form = event.target;
             const email = form.email.value;
             const senha = form.senha.value;
@@ -70,28 +66,19 @@
             submitButton.textContent = 'Entrando...';
 
             try {
-                // Chama a Edge Function de login
                 const response = await fetch(LOGIN_FUNCTION_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, senha })
                 });
-
                 const result = await response.json();
+                if (!response.ok) { throw new Error(result.error || 'Email ou senha inválidos.'); }
 
-                if (!response.ok) {
-                    throw new Error(result.error || 'Email ou senha inválidos.');
-                }
-
-                // Se o login for bem-sucedido, salva a sessão no navegador
                 await supabase.auth.setSession(result.session);
-
                 showToast('Login realizado com sucesso!', true);
                 
-                // Redireciona para uma página de dashboard (crie este arquivo depois)
-                setTimeout(() => {
-                    window.location.href = '/dashboard.html';
-                }, 1000);
+                // Redireciona para o Feed
+                setTimeout(() => { window.location.href = '/TelaFeed/feed.html'; }, 1000);
 
             } catch (error) {
                 showToast(error.message, false);
