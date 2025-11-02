@@ -1,79 +1,61 @@
-// Forçando o redeploy em 02/11/2025 - v2
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+<script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+    const SUPABASE_URL = 'https://ulbaklykimxpsdrtkqet.supabase.co'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVsYmFrbHlraW14cHNkcnRrcWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMjc0MjcsImV4cCI6MjA3MzkwMzQyN30.A3_WLF3cNstQtXcOr2Q3OJCvTYqBQe7wmmXHc_WCqAk'
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY )
 
-Deno.serve(async (req ) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
+    const CADASTRO_FUNCTION_URL = 'https://ulbaklykimxpsdrtkqet.supabase.co/functions/v1/cadastro';
 
-  try {
-    // Pega a chave de serviço do cabeçalho da requisição
-    const serviceKey = req.headers.get('Authorization')?.replace('Bearer ', '');
-    if (!serviceKey) {
-      throw new Error('Chave de serviço não fornecida.');
+    function showToast(message, isSuccess = false ) {
+        const toast = document.getElementById("toast-notification");
+        toast.textContent = message;
+        toast.style.backgroundColor = isSuccess ? '#28a745' : '#dc3545';
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 4000);
     }
 
-    const { nome, email, senha, cidade, posicao, nascimento, numero_camisa, numero_telefone } = await req.json();
+    document.getElementById('cadastro-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form = event.target;
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        const submitButton = form.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Cadastrando...';
 
-    if (!email || !senha || !nome) {
-      throw new Error("Nome, email e senha são obrigatórios.");
-    }
+        try {
+            // ETAPA 1: Criar o usuário com supabase.auth.signUp
+            const { data: authData, error: authError } = await supabase.auth.signUp({
+                email: data.email,
+                password: data.senha,
+            });
 
-    // Cria um cliente Supabase NORMAL (sem admin)
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-    );
+            if (authError) throw authError;
+            if (!authData.session) throw new Error("Falha ao criar sessão. Verifique seu email para confirmação.");
 
-    // 1. Cria o usuário
-    const { data: { user }, error: authError } = await supabase.auth.admin.createUser({
-      email: email,
-      password: senha,
-      email_confirm: true,
+            // ETAPA 2: Chamar a Edge Function para criar o perfil
+            // O token da sessão é enviado automaticamente pelo cliente Supabase
+            const response = await fetch(CADASTRO_FUNCTION_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authData.session.access_token}` // Envia o token do novo usuário
+                },
+                body: JSON.stringify(data) // Envia os dados extras (nome, cidade, etc.)
+            });
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error);
+
+            showToast('Cadastro realizado com sucesso! Verifique seu email para confirmar.', true);
+            form.reset();
+            setTimeout(() => { window.location.href = '/index.html'; }, 3000);
+
+        } catch (error) {
+            showToast(error.message, false);
+            submitButton.disabled = false;
+            submitButton.textContent = 'Cadastrar';
+        }
     });
-
-    if (authError) throw authError;
-    if (!user) throw new Error("Falha ao criar o usuário na autenticação.");
-
-    // 2. Insere o perfil, passando a chave de serviço no cabeçalho
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .insert({
-        id: user.id,
-        nome_completo: nome,
-        cidade: cidade,
-        posicao: posicao,
-        nascimento: nascimento,
-        numero_camisa: numero_camisa,
-        numero_telefone: numero_telefone,
-      })
-      // Passa a autorização explicitamente
-      .rpc('service_role', {}, { headers: { Authorization: `Bearer ${serviceKey}` } });
-
-
-    if (profileError) {
-      await supabase.auth.admin.deleteUser(user.id, { headers: { Authorization: `Bearer ${serviceKey}` } });
-      throw profileError;
-    }
-
-    return new Response(JSON.stringify({
-      message: 'Cadastro realizado com sucesso! Verifique seu email.'
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 201,
-    });
-
-  } catch (error) {
-    return new Response(JSON.stringify({
-      error: error.message
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
-    });
-  }
-});
+</script>
