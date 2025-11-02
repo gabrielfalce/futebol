@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    
+    <!-- Caminhos corrigidos a partir da raiz do projeto -->
+    <link rel="icon" href="/TelaInicial/BotaoUsuario.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/telaDeLogin/style.css">
+
+    <style>
+        .toast {
+            visibility: hidden; min-width: 250px; background-color: #f44336; color: white;
+            text-align: center; border-radius: 5px; padding: 16px; position: fixed;
+            z-index: 100; right: 30px; top: 30px; font-size: 17px; opacity: 0;
+            transition: opacity 0.5s, visibility 0.5s; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .toast.show { visibility: visible; opacity: 1; }
+    </style>
+</head>
+<body>
+    
+    <img class="logo" src="/telaDeLogin/logo.png" alt="Logotipo Geral da Aplicação">
+
+    <h1 class="titulo">Login</h1>
+    
+    <div id="toast-notification" class="toast"></div>
+    
+    <form id="login-form">
+        <input placeholder="Email" type="email" name="email" required>
+        <input placeholder="Senha" type="password" name="senha" required>
+        
+        <a class="esqueceuSenha" href="/RecuperarSenha/esqueci_senha.html">Esqueceu a senha?</a>
+        <button class="login" type="submit">Login</button>
+        <p class="ou">ou</p>
+        <a class="criarNovaConta" href="/Cadastrar_templates/cadastrar.html">Criar nova conta</a>
+    </form>
+
+    <script type="module">
+        import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+        const SUPABASE_URL = 'https://ulbaklykimxpsdrtkqet.supabase.co'
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVsYmFrbHlraW14cHNkcnRrcWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMjc0MjcsImV4cCI6MjA3MzkwMzQyN30.A3_WLF3cNstQtXcOr2Q3OJCvTYqBQe7wmmXHc_WCqAk'
+        const LOGIN_FUNCTION_URL = 'https://ulbaklykimxpsdrtkqet.supabase.co/functions/v1/login'
+
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY )
+
+        function showToast(message, isSuccess = false) {
+            const toast = document.getElementById("toast-notification");
+            toast.textContent = message;
+            toast.style.backgroundColor = isSuccess ? '#28a745' : '#dc3545';
+            toast.classList.add("show");
+            setTimeout(() => toast.classList.remove("show"), 4000);
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const form = event.target;
+            const email = form.email.value;
+            const senha = form.senha.value;
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Entrando...';
+
+            try {
+                const response = await fetch(LOGIN_FUNCTION_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, senha })
+                });
+                const result = await response.json();
+                if (!response.ok) { throw new Error(result.error || 'Email ou senha inválidos.'); }
+
+                await supabase.auth.setSession(result.session);
+                showToast('Login realizado com sucesso!', true);
+                
+                setTimeout(() => { window.location.href = '/TelaFeed/feed.html'; }, 1000);
+
+            } catch (error) {
+                showToast(error.message, false);
+                submitButton.disabled = false;
+                submitButton.textContent = 'Login';
+            }
+        });
+    </script>
+</body>
+</html>
