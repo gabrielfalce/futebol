@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     
-    <!-- Caminho relativo a partir da raiz do projeto -->
-    <link rel="icon" href="/TelaDeUsuario/imagens/BotaoUsuario.ico" type="image/x-icon">
-    <link rel="stylesheet" href="/telaDeLogin/style.css"> <!-- Assumindo que o CSS está na mesma pasta -->
+    <!-- Caminhos corrigidos a partir da raiz do projeto -->
+    <link rel="icon" href="/TelaInicial/BotaoUsuario.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/telaDeLogin/style.css">
 
     <style>
         .toast {
@@ -21,8 +21,7 @@
 </head>
 <body>
     
-    <!-- Caminho relativo para a logo -->
-    <img class="logo" src="/TelaInicial/logo.png" alt="Logotipo Geral da Aplicação">
+    <img class="logo" src="/telaDeLogin/logo.png" alt="Logotipo Geral da Aplicação">
 
     <h1 class="titulo">Login</h1>
     
@@ -32,11 +31,10 @@
         <input placeholder="Email" type="email" name="email" required>
         <input placeholder="Senha" type="password" name="senha" required>
         
-        <a class="esqueceuSenha" href="/RecuperarSenha/recuperar.html">Esqueceu a senha?</a>
+        <a class="esqueceuSenha" href="/RecuperarSenha/esqueci_senha.html">Esqueceu a senha?</a>
         <button class="login" type="submit">Login</button>
         <p class="ou">ou</p>
-        <!-- Link para a página de cadastro -->
-        <a class="criarNovaConta" href="/Cadastrar_templates/cadastro.html">Criar nova conta</a>
+        <a class="criarNovaConta" href="/Cadastrar_templates/cadastrar.html">Criar nova conta</a>
     </form>
 
     <script type="module">
@@ -77,7 +75,6 @@
                 await supabase.auth.setSession(result.session);
                 showToast('Login realizado com sucesso!', true);
                 
-                // Redireciona para o Feed
                 setTimeout(() => { window.location.href = '/TelaFeed/feed.html'; }, 1000);
 
             } catch (error) {

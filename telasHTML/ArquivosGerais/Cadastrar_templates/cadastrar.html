@@ -20,7 +20,7 @@
 </head>
 <body>
     
-    <img src="/TelaInicial/logo.png" alt="Logotipo">
+    <img src="/telaDeLogin/logo.png" alt="Logotipo">
     
     <h1 class="titulo">Cadastro</h1>
     
@@ -37,7 +37,7 @@
         <input placeholder="Número de Telefone" type="tel" name="numero_telefone" required>
 
         <button type="submit">Cadastrar</button>
-        <a class="linksNone" href="/telaDeLogin/login.html">Ir para Login</a>
+        <a class="linksNone" href="/telaDeLogin/telaLogin.html">Ir para Login</a>
     </form>
 
     <script>
@@ -71,7 +71,7 @@
 
                 showToast(result.message || 'Cadastro realizado com sucesso!', true);
                 form.reset();
-                setTimeout(() => { window.location.href = '/telaDeLogin/login.html'; }, 2000);
+                setTimeout(() => { window.location.href = '/telaDeLogin/telaLogin.html'; }, 2000);
 
             } catch (error) {
                 showToast(error.message, false);
