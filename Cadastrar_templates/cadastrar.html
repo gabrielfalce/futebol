@@ -8,6 +8,7 @@
     <link rel="icon" href="/Cadastrar_templates/bolaverde.ico" type="image/x-icon">
     <link rel="stylesheet" href="/Cadastrar_templates/estilo.css">
 
+    <!-- Estilos para a notificação (toast) -->
     <style>
         .toast {
             visibility: hidden; min-width: 250px; background-color: #f44336; color: white;
@@ -20,13 +21,15 @@
 </head>
 <body>
     
-    <!-- Corrigido: A logo agora está na raiz do projeto, dentro da pasta telaDeLogin -->
+    <!-- Imagem do logo -->
     <img src="/telaDeLogin/logo.png" alt="Logotipo">
     
     <h1 class="titulo">Cadastro</h1>
     
+    <!-- Elemento para mostrar notificações -->
     <div id="toast-notification" class="toast"></div>
     
+    <!-- Formulário de Cadastro -->
     <form id="cadastro-form">
         <input placeholder="Nome Completo" type="text" name="nome" required>
         <input placeholder="Email" type="email" name="email" required>
@@ -38,52 +41,10 @@
         <input placeholder="Número de Telefone" type="tel" name="numero_telefone" required>
 
         <button type="submit">Cadastrar</button>
-        <!-- ⬇️ ===== CORREÇÃO PRINCIPAL AQUI ===== ⬇️ -->
         <a class="linksNone" href="/index.html">Ir para Login</a>
     </form>
 
-    <script>
-        const CADASTRO_FUNCTION_URL = 'https://ulbaklykimxpsdrtkqet.supabase.co/functions/v1/cadastro';
+    <script type="module" src="/Cadastrar_templates/script.js"></script>
 
-        function showToast(message, isSuccess = false  ) {
-            const toast = document.getElementById("toast-notification");
-            toast.textContent = message;
-            toast.style.backgroundColor = isSuccess ? '#28a745' : '#dc3545';
-            toast.classList.add("show");
-            setTimeout(() => toast.classList.remove("show"), 4000);
-        }
-
-        document.getElementById('cadastro-form').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const form = event.target;
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
-            const submitButton = form.querySelector('button[type="submit"]');
-            submitButton.disabled = true;
-            submitButton.textContent = 'Cadastrando...';
-
-            try {
-                const response = await fetch(CADASTRO_FUNCTION_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                const result = await response.json();
-                if (!response.ok) { throw new Error(result.error || 'Ocorreu um erro ao cadastrar.'); }
-
-                showToast(result.message || 'Cadastro realizado com sucesso!', true);
-                form.reset();
-                
-                // ⬇️ ===== CORREÇÃO PRINCIPAL AQUI ===== ⬇️
-                // Redireciona para a página de login correta (index.html)
-                setTimeout(() => { window.location.href = '/index.html'; }, 2000);
-
-            } catch (error) {
-                showToast(error.message, false);
-                submitButton.disabled = false;
-                submitButton.textContent = 'Cadastrar';
-            }
-        });
-    </script>
 </body>
 </html>
