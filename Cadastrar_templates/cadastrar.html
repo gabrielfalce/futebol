@@ -20,6 +20,7 @@
 </head>
 <body>
     
+    <!-- Corrigido: A logo agora está na raiz do projeto, dentro da pasta telaDeLogin -->
     <img src="/telaDeLogin/logo.png" alt="Logotipo">
     
     <h1 class="titulo">Cadastro</h1>
@@ -37,13 +38,14 @@
         <input placeholder="Número de Telefone" type="tel" name="numero_telefone" required>
 
         <button type="submit">Cadastrar</button>
-        <a class="linksNone" href="/telaDeLogin/telaLogin.html">Ir para Login</a>
+        <!-- ⬇️ ===== CORREÇÃO PRINCIPAL AQUI ===== ⬇️ -->
+        <a class="linksNone" href="/index.html">Ir para Login</a>
     </form>
 
     <script>
         const CADASTRO_FUNCTION_URL = 'https://ulbaklykimxpsdrtkqet.supabase.co/functions/v1/cadastro';
 
-        function showToast(message, isSuccess = false ) {
+        function showToast(message, isSuccess = false  ) {
             const toast = document.getElementById("toast-notification");
             toast.textContent = message;
             toast.style.backgroundColor = isSuccess ? '#28a745' : '#dc3545';
@@ -71,7 +73,10 @@
 
                 showToast(result.message || 'Cadastro realizado com sucesso!', true);
                 form.reset();
-                setTimeout(() => { window.location.href = '/telaDeLogin/telaLogin.html'; }, 2000);
+                
+                // ⬇️ ===== CORREÇÃO PRINCIPAL AQUI ===== ⬇️
+                // Redireciona para a página de login correta (index.html)
+                setTimeout(() => { window.location.href = '/index.html'; }, 2000);
 
             } catch (error) {
                 showToast(error.message, false);

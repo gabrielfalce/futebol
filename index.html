@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    
-    <!-- Caminhos corrigidos a partir da raiz do projeto -->
     <link rel="icon" href="/TelaInicial/BotaoUsuario.ico" type="image/x-icon">
     <link rel="stylesheet" href="/telaDeLogin/style.css">
-
     <style>
         .toast {
             visibility: hidden; min-width: 250px; background-color: #f44336; color: white;
@@ -22,9 +19,7 @@
 <body>
     
     <img class="logo" src="/telaDeLogin/logo.png" alt="Logotipo Geral da Aplicação">
-
     <h1 class="titulo">Login</h1>
-    
     <div id="toast-notification" class="toast"></div>
     
     <form id="login-form">
@@ -37,13 +32,13 @@
         <a class="criarNovaConta" href="/Cadastrar_templates/cadastrar.html">Criar nova conta</a>
     </form>
 
+    <!-- Importa o cliente Supabase via CDN -->
     <script type="module">
         import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
         const SUPABASE_URL = 'https://ulbaklykimxpsdrtkqet.supabase.co'
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVsYmFrbHlraW14cHNkcnRrcWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMjc0MjcsImV4cCI6MjA3MzkwMzQyN30.A3_WLF3cNstQtXcOr2Q3OJCvTYqBQe7wmmXHc_WCqAk'
-        const LOGIN_FUNCTION_URL = 'https://ulbaklykimxpsdrtkqet.supabase.co/functions/v1/login'
-
+        
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY )
 
         function showToast(message, isSuccess = false) {
@@ -64,21 +59,28 @@
             submitButton.textContent = 'Entrando...';
 
             try {
-                const response = await fetch(LOGIN_FUNCTION_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, senha })
+                // ⬇️ ===== MUDANÇA PRINCIPAL AQUI ===== ⬇️
+                // Usando a função nativa do Supabase Auth em vez da Edge Function
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: senha,
                 });
-                const result = await response.json();
-                if (!response.ok) { throw new Error(result.error || 'Email ou senha inválidos.'); }
 
-                await supabase.auth.setSession(result.session);
+                if (error) {
+                    // Se houver um erro, lança para o bloco catch
+                    throw error;
+                }
+
                 showToast('Login realizado com sucesso!', true);
                 
-                setTimeout(() => { window.location.href = '/TelaFeed/feed.html'; }, 1000);
+                // Redireciona para a página de feed
+                setTimeout(() => {
+                    window.location.href = '/TelaFeed/feed.html';
+                }, 1000);
 
             } catch (error) {
-                showToast(error.message, false);
+                // A mensagem de erro da Supabase é mais clara
+                showToast(error.message || 'Email ou senha inválidos.', false);
                 submitButton.disabled = false;
                 submitButton.textContent = 'Login';
             }
