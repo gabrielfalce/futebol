@@ -5,75 +5,86 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro</title>
     
-    <link rel="icon" href="{{url_for('cadastro_assets', filename='bolaverde.ico')}}" type="image/x-icon">
-    <link rel="stylesheet" href="{{ url_for('cadastro_assets', filename='estilo.css') }}">
-    <link rel="stylesheet" href="estilo.css">
+    <link rel="icon" href="./assets/bolaverde.ico" type="image/x-icon">
+    <link rel="stylesheet" href="./css/estilo.css">
     <style>
         .toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #f44336;
-            color: white;
-            text-align: center;
-            border-radius: 5px;
-            padding: 16px;
-            position: fixed;
-            z-index: 100;
-            right: 30px;
-            top: 30px;
-            font-size: 17px;
-            opacity: 0;
-            transition: opacity 0.5s, visibility 0.5s;
+            visibility: hidden; min-width: 250px; background-color: #f44336; color: white;
+            text-align: center; border-radius: 5px; padding: 16px; position: fixed;
+            z-index: 100; right: 30px; top: 30px; font-size: 17px; opacity: 0;
+            transition: opacity 0.5s, visibility 0.5s; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
-
-        .toast.show {
-            visibility: visible;
-            opacity: 1;
-        }
+        .toast.show { visibility: visible; opacity: 1; }
     </style>
 </head>
 <body>
     
-    <img src="{{ url_for('login_assets', filename='logo.png') }}" alt="Logotipo">
+    <img src="./assets/logo.png" alt="Logotipo">
     
     <h1 class="titulo">Cadastro</h1>
     
     <div id="toast-notification" class="toast"></div>
     
-    <form action="{{ url_for('cadastro') }}" method="post">
-        <!-- ALTERAÇÕES: Adicionado o atributo 'value' a todos os inputs -->
-        <input placeholder="Nome Completo" type="text" name="nome" value="{{ form_data.nome or '' }}" required>
-        <input placeholder="Email" type="email" name="email" value="{{ form_data.email or '' }}" required>
+    <form id="cadastro-form">
+        <input placeholder="Nome Completo" type="text" name="nome" required>
+        <input placeholder="Email" type="email" name="email" required>
         <input placeholder="Senha" type="password" name="senha" required minlength="8">
-        <input placeholder="Cidade" type="text" name="cidade" value="{{ form_data.cidade or '' }}" required>
-        <input placeholder="Posição em Campo" type="text" name="posicao" value="{{ form_data.posicao or '' }}" required>
-        
-        <input placeholder="Data de Nascimento (DD/MM/AAAA ou AAAA-MM-DD)" type="text" name="nascimento" value="{{ form_data.nascimento or '' }}" required>
-        
-        <input placeholder="Número da Camisa (Opcional)" type="number" name="numero_camisa" value="{{ form_data.numero_camisa or '' }}" min="1" max="99">
-
-        <input placeholder="Número de Telefone" type="tel" name="numero_telefone" value="{{ form_data.numero_telefone or '' }}" required>
+        <input placeholder="Cidade" type="text" name="cidade" required>
+        <input placeholder="Posição em Campo" type="text" name="posicao" required>
+        <input placeholder="Data de Nascimento (AAAA-MM-DD)" type="date" name="nascimento" required>
+        <input placeholder="Número da Camisa (Opcional)" type="number" name="numero_camisa" min="1" max="99">
+        <input placeholder="Número de Telefone" type="tel" name="numero_telefone" required>
 
         <button type="submit">Cadastrar</button>
-        <a class="linksNone" href="{{ url_for('login') }}">Ir para Login</a>
+        <a class="linksNone" href="./login.html">Ir para Login</a>
     </form>
 
     <script>
-        document.addEventListener('DOMContentLoaded', (event) => {
+        const CADASTRO_FUNCTION_URL = 'https://ulbaklykimxpsdrtkqet.supabase.co/functions/v1/cadastro';
+
+        function showToast(message, isSuccess = false ) {
             const toast = document.getElementById("toast-notification");
-            
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    const message = {{ messages[0][1] | tojson }}; 
-                    const category = "{{ messages[0][0] }}";
-                    
-                    toast.textContent = message;
-                    toast.style.backgroundColor = category === 'success' ? 'green' : '#f44336';
-                    
-                    toast.classList.add("show");
-                    setTimeout(() => toast.classList.remove("show"), 4000);
-                {% endif %}
-            {% endwith %}
+            toast.textContent = message;
+            toast.style.backgroundColor = isSuccess ? '#28a745' : '#dc3545';
+            toast.classList.add("show");
+            setTimeout(() => toast.classList.remove("show"), 4000);
+        }
+
+        document.getElementById('cadastro-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Cadastrando...';
+
+            try {
+                const response = await fetch(CADASTRO_FUNCTION_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'Ocorreu um erro ao cadastrar.');
+                }
+
+                showToast(result.message || 'Cadastro realizado com sucesso!', true);
+                form.reset();
+
+                setTimeout(() => {
+                    window.location.href = './login.html';
+                }, 2000);
+
+            } catch (error) {
+                showToast(error.message, false);
+                submitButton.disabled = false;
+                submitButton.textContent = 'Cadastrar';
+            }
         });
     </script>
 </body>

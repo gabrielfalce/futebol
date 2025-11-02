@@ -4,53 +4,99 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <!-- ALTERAÇÃO 2: Corrigido o caminho do favicon -->
-    <link rel="icon" href="{{url_for('inicio_assets', filename='BotaoUsuario.ico')}}" type="image/x-icon">
-    <!-- ALTERAÇÃO 3: Removida a linha de CSS duplicada e incorreta -->
-    <link rel="stylesheet" href="{{ url_for('login_assets', filename='style.css') }}">
-
+    <!-- Caminhos estáticos para os assets. Organize-os em pastas /assets e /css -->
+    <link rel="icon" href="./assets/BotaoUsuario.ico" type="image/x-icon">
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* Estilo do Toast para notificações */
+        .toast {
+            visibility: hidden; min-width: 250px; background-color: #f44336; color: white;
+            text-align: center; border-radius: 5px; padding: 16px; position: fixed;
+            z-index: 100; right: 30px; top: 30px; font-size: 17px; opacity: 0;
+            transition: opacity 0.5s, visibility 0.5s; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .toast.show { visibility: visible; opacity: 1; }
+    </style>
 </head>
 <body>
     
-    <img class="logo" src="{{ url_for('login_assets', filename='logo.png') }}" alt="Logotipo Geral da Aplicação">
+    <img class="logo" src="./assets/logo.png" alt="Logotipo Geral da Aplicação">
 
     <h1 class="titulo">Login</h1>
     
-    <div id="toast-notification" class="toast"
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                data-message="{{ messages[0][1] }}" 
-                data-category="{{ messages[0][0] }}"
-            {% endif %}
-        {% endwith %}
-    ></div>
+    <div id="toast-notification" class="toast"></div>
     
-    <form action="{{ url_for('login') }}" method="post">
-        <input placeholder="Email" type="email" name="email" value="{{ email or '' }}" required>
+    <!-- O formulário agora tem um ID para ser capturado pelo JavaScript -->
+    <form id="login-form">
+        <input placeholder="Email" type="email" name="email" required>
         <input placeholder="Senha" type="password" name="senha" required>
         
-        <a class="esqueceuSenha" href="{{ url_for('esqueci_senha') }}">Esqueceu a senha?</a>
-        
+        <!-- Link estático para a página de cadastro -->
+        <a class="esqueceuSenha" href="#">Esqueceu a senha?</a>
         <button class="login" type="submit">Login</button>
-        
         <p class="ou">ou</p>
-        
-        <a class="criarNovaConta" href="{{ url_for('cadastro') }}">Criar nova conta</a>
+        <a class="criarNovaConta" href="./cadastro.html">Criar nova conta</a>
     </form>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', (event) => {
+    <!-- Importa o cliente Supabase via CDN -->
+    <script type="module">
+        import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+        // Suas chaves e URLs já estão configuradas!
+        const SUPABASE_URL = 'https://ulbaklykimxpsdrtkqet.supabase.co'
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVsYmFrbHlraW14cHNkcnRrcWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMjc0MjcsImV4cCI6MjA3MzkwMzQyN30.A3_WLF3cNstQtXcOr2Q3OJCvTYqBQe7wmmXHc_WCqAk'
+        const LOGIN_FUNCTION_URL = 'https://ulbaklykimxpsdrtkqet.supabase.co/functions/v1/login'
+
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY )
+
+        // Função para exibir notificações
+        function showToast(message, isSuccess = false) {
             const toast = document.getElementById("toast-notification");
-            
-            if (toast && toast.dataset.message) {
-                const message = toast.dataset.message;
-                const category = toast.dataset.category;
+            toast.textContent = message;
+            toast.style.backgroundColor = isSuccess ? '#28a745' : '#dc3545';
+            toast.classList.add("show");
+            setTimeout(() => toast.classList.remove("show"), 4000);
+        }
+
+        // Captura o envio do formulário
+        document.getElementById('login-form').addEventListener('submit', async (event) => {
+            event.preventDefault(); // Impede o recarregamento da página
+
+            const form = event.target;
+            const email = form.email.value;
+            const senha = form.senha.value;
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Entrando...';
+
+            try {
+                // Chama a Edge Function de login
+                const response = await fetch(LOGIN_FUNCTION_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, senha })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'Email ou senha inválidos.');
+                }
+
+                // Se o login for bem-sucedido, salva a sessão no navegador
+                await supabase.auth.setSession(result.session);
+
+                showToast('Login realizado com sucesso!', true);
                 
-                toast.textContent = message;
-                toast.style.backgroundColor = category === 'success' ? 'green' : '#f44336';
-                
-                toast.classList.add("show");
-                setTimeout(() => toast.classList.remove("show"), 4000);
+                // Redireciona para uma página de dashboard (crie este arquivo depois)
+                setTimeout(() => {
+                    window.location.href = '/dashboard.html';
+                }, 1000);
+
+            } catch (error) {
+                showToast(error.message, false);
+                submitButton.disabled = false;
+                submitButton.textContent = 'Login';
             }
         });
     </script>
