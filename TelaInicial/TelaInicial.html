@@ -5,100 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tela Inicial</title>
 
-    <link rel="icon" href="{{ url_for('inicio_assets', filename='BotaoUsuario.ico') }}" type="image/x-icon">
-    <!-- ALTERAÇÃO 1: Removida a linha de CSS duplicada e incorreta -->
-    <link rel="stylesheet" href="{{ url_for('inicio_assets', filename='styleInicial.css') }}">
-
-    
+    <link rel="icon" href="/TelaInicial/BotaoUsuario.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/TelaInicial/styleInicial.css">
 </head>
 <body>
-    
-    <div id="toast-notification" class="toast"
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                data-message="{{ messages[0][1] }}" 
-                data-category="{{ messages[0][0] }}"
-            {% endif %}
-        {% endwith %}
-    ></div>
-
-    <header class="page-header">
-        </header>
+    <header class="page-header"></header>
     <main>
         <div class="search-container">
-            <input type="text" id="search-input" placeholder="Buscar usuários..." onkeyup="searchUsers()">
-            <img src="{{ url_for('inicio_assets', filename='lupa.png') }}" alt="Ícone de busca" class="search-icon">
+            <input type="text" id="search-input" class="search-input" placeholder="Buscar usuários...">
+            <img src="/TelaInicial/lupa.png" alt="Ícone de busca" class="search-icon">
         </div>
 
-        <div class="user-list" id="user-list">
-            {% if users %}
-                {% for user in users %}
-                    <a href="{{ url_for('chat_with_user', destinatario_id=user.id) }}" class="user-card-link">
-                        <div class="user-card">
-                            <img class="user-avatar" 
-                                 src="{{ url_for('serve_static_files', filename=user.profile_image_url) if user.profile_image_url else url_for('inicio_assets', filename='iconeUser.png') }}" 
-                                 alt="Avatar de {{ user.nome or 'Usuário' }}">
-                            <p class="user-name">{{ user.nome or 'Nome Desconhecido' }}</p>
-                            <div class="user-details">
-                                <p>{{ user.posicao or 'N/A' }} | {{ user.cidade or 'N/A' }}</p>
-                                <p>{{ user.idade or 'N/A' }} anos</p>
-                            </div>
-                        </div>
-                    </a>
-                {% endfor %}
-            {% else %}
-                <p style="text-align: center; color: #aaa; width: 100%;">Nenhum outro usuário encontrado.</p>
-            {% endif %}
+        <!-- O container onde os cards de usuário serão renderizados -->
+        <div class="user-list" id="usuarios-container">
+            <p style="text-align: center; color: #aaa; width: 100%;">Carregando...</p>
         </div>
+        
+        <!-- Container para alertas -->
+        <div id="alerta-container"></div>
+
     </main>
     
     <nav class="navigation-links">
-        <!-- ALTERAÇÃO 2: Corrigido 'feed_posts' para 'pagina_feed' -->
-        <a href="{{ url_for('pagina_feed') }}" title="Feed de Posts" class="nav-button feed-button">
-            Feed
-        </a> 
-        
-        <a href="{{ url_for('pagina_usuario', user_id=session.user_id) }}" title="Meu Perfil" class="nav-button profile-button">
-             <img src="{{ url_for('inicio_assets', filename='BotaoUsuario.ico') }}" alt="Perfil" class="profile-button-icon">
+        <a href="/TelaFeed/feed.html" title="Feed de Posts" class="nav-button feed-button">Feed</a> 
+        <a href="/TelaDeUsuario/TelaUser.html" title="Meu Perfil" class="nav-button profile-button">
+             <img src="/TelaInicial/BotaoUsuario.ico" alt="Perfil" class="profile-button-icon">
         </a>
-        
-        <a href="{{ url_for('logout') }}" title="Sair" class="nav-button logout-button">
-            Sair
-        </a>
+        <a href="#" id="logout-button" title="Sair" class="nav-button logout-button">Sair</a>
     </nav>
-    <script>
-        // Função de busca de usuários (filtro local)
-        function searchUsers() {
-            const input = document.getElementById('search-input').value.toLowerCase();
-            const userLinks = document.querySelectorAll('.user-card-link'); 
-            
-            userLinks.forEach(link => {
-                const userCard = link.querySelector('.user-card');
-                const name = userCard.querySelector('.user-name').textContent.toLowerCase();
-                link.style.display = name.includes(input) ? 'block' : 'none'; 
-            });
-        }
 
-        // Lógica do Toast: Corrigida para usar classes CSS
-        document.addEventListener('DOMContentLoaded', () => {
-            const toast = document.getElementById('toast-notification');
-            if (toast && toast.dataset.message) {
-                toast.textContent = toast.dataset.message;
-                
-                const category = toast.dataset.category;
-                
-                if (category === 'success') {
-                    toast.style.backgroundColor = 'green';
-                } else if (category === 'danger') {
-                    toast.style.backgroundColor = '#f44336';
-                } else {
-                    toast.style.backgroundColor = '#333';
-                }
-                
-                toast.classList.add('show');
-                setTimeout(() => toast.classList.remove('show'), 3000);
-            }
-        });
-    </script>
+    <!-- ================================================== -->
+    <!-- CHAMADA PARA O SCRIPT EXTERNO -->
+    <!-- ================================================== -->
+    <script type="module" src="/TelaInicial/script.js"></script>
 </body>
 </html>

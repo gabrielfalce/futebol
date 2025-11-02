@@ -32,7 +32,6 @@
         <a class="criarNovaConta" href="/Cadastrar_templates/cadastrar.html">Criar nova conta</a>
     </form>
 
-    <!-- Importa o cliente Supabase via CDN -->
     <script type="module">
         import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -59,27 +58,22 @@
             submitButton.textContent = 'Entrando...';
 
             try {
-                // ⬇️ ===== MUDANÇA PRINCIPAL AQUI ===== ⬇️
-                // Usando a função nativa do Supabase Auth em vez da Edge Function
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email: email,
                     password: senha,
                 });
 
-                if (error) {
-                    // Se houver um erro, lança para o bloco catch
-                    throw error;
-                }
+                if (error) { throw error; }
 
                 showToast('Login realizado com sucesso!', true);
                 
-                // Redireciona para a página de feed
+                // ⬇️ ===== CORREÇÃO PRINCIPAL AQUI ===== ⬇️
+                // Redireciona para a Tela Inicial
                 setTimeout(() => {
-                    window.location.href = '/TelaFeed/feed.html';
+                    window.location.href = '/TelaInicial/TelaInicial.html';
                 }, 1000);
 
             } catch (error) {
-                // A mensagem de erro da Supabase é mais clara
                 showToast(error.message || 'Email ou senha inválidos.', false);
                 submitButton.disabled = false;
                 submitButton.textContent = 'Login';

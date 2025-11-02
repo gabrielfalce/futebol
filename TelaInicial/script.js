@@ -1,162 +1,128 @@
+// Importa a função para criar o cliente Supabase
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
 // =======================
 // INICIALIZAÇÃO E VARIÁVEIS GLOBAIS
 // =======================
-document.addEventListener('DOMContentLoaded', function () {
-    // --- Seleção de Elementos DOM ---
-    const adicionarUsuarioBtn = document.getElementById('adicionarUsuarioBtn');
-    const usuariosContainer = document.getElementById('usuarios-container');
-    const searchInput = document.querySelector('.search-input');
-    const alertaContainer = document.getElementById('alerta-container');
+const SUPABASE_URL = 'https://ulbaklykimxpsdrtkqet.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVsYmFrbHlraW14cHNkcnRrcWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMjc0MjcsImV4cCI6MjA3MzkwMzQyN30.A3_WLF3cNstQtXcOr2Q3OJCvTYqBQe7wmmXHc_WCqAk'
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY )
 
-    // --- Dados Iniciais dos Usuários ---
-    let usuarios = [
-        {
-            nome: 'matheson',
-            idade: '25 anos',
-            cidade: 'mesopotamia',
-            foto: 'iconeUser.png'
-        }
-    ];
+// --- Seleção de Elementos DOM ---
+const usuariosContainer = document.getElementById('usuarios-container');
+const searchInput = document.querySelector('.search-input');
+const alertaContainer = document.getElementById('alerta-container');
+const logoutButton = document.getElementById('logout-button');
 
-    // --- Limite Máximo de Usuários ---
-    const LIMITE_USUARIOS = 3;
+// --- Dados dos Usuários (agora virão do banco) ---
+let todosOsUsuarios = [];
+let usuarioLogado = null;
 
-    // =======================
-    // EVENTOS PRINCIPAIS
-    // =======================
-    adicionarUsuarioBtn.addEventListener('click', adicionarUsuario);      // Adiciona usuário ao clicar
-    adicionarUsuarioBtn.addEventListener('click', AnimationEffect);       // Animação do botão ao clicar
-    searchInput.addEventListener('input', filtrarUsuarios);               // Filtra usuários ao digitar
+// =======================
+// FLUXO PRINCIPAL DA PÁGINA
+// =======================
+// Função principal que roda quando o script é carregado
+async function iniciarPagina() {
+    // 1. Protege a Rota e obtém a sessão
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        window.location.href = '/index.html'; 
+        return; // Para a execução se não houver sessão
+    }
+    usuarioLogado = session.user;
 
-    // Renderização inicial dos usuários
+    // 2. Busca os usuários do banco de dados
+    await fetchUsers();
+
+    // 3. Adiciona os eventos aos elementos da página
+    searchInput.addEventListener('input', filtrarUsuarios);
+    logoutButton.addEventListener('click', handleLogout);
+}
+
+// Chama a função principal para iniciar a página
+iniciarPagina();
+
+// =======================
+// FUNÇÃO: Buscar Usuários da Supabase
+// =======================
+async function fetchUsers() {
+    usuariosContainer.innerHTML = '<p>Carregando usuários...</p>';
+
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('*');
+
+    if (error) {
+        console.error('Erro ao buscar usuários:', error);
+        mostrarAlerta('Erro ao carregar usuários.', 'error');
+        return;
+    }
+    
+    // Armazena todos os usuários na variável global
+    todosOsUsuarios = data || [];
+    
+    // Renderiza os usuários na tela
     renderizarUsuarios();
+}
 
-    // =======================
-    // FUNÇÃO: Renderizar Usuários na Tela
-    // =======================
-    function renderizarUsuarios(usuariosParaRenderizar = usuarios) {
-        usuariosContainer.innerHTML = '';
+// =======================
+// FUNÇÃO: Renderizar Usuários na Tela
+// =======================
+function renderizarUsuarios(usuariosParaRenderizar = todosOsUsuarios) {
+    usuariosContainer.innerHTML = '';
 
-        usuariosParaRenderizar.forEach(usuario => {
-            const usuarioHTML = `
+    const usuariosFiltrados = usuariosParaRenderizar.filter(u => u.id !== usuarioLogado.id);
+
+    if (usuariosFiltrados.length === 0) {
+        usuariosContainer.innerHTML = '<p style="text-align: center; color: #aaa; width: 100%;">Nenhum outro usuário encontrado.</p>';
+        return;
+    }
+
+    usuariosFiltrados.forEach(usuario => {
+        const usuarioHTML = `
+            <a href="/TelaChat/chat.html?destinatario_id=${usuario.id}" class="user-card-link">
                 <div class="usuario-card">
-                    <img class="usuario-foto" src="${usuario.foto}" alt="Foto do usuário">
+                    <img class="usuario-foto" src="/TelaDeUsuario/imagens/hM94BRC.jpeg" alt="Foto de ${usuario.nome_completo}">
                     <div class="usuario-info">
-                        <h3 class="usuario-nome">${usuario.nome}</h3>
-                        <p class="usuario-idade">${usuario.idade}</p>
-                        <p class="usuario-cidade">${usuario.cidade}</p>
+                        <h3 class="usuario-nome">${usuario.nome_completo || 'Nome Desconhecido'}</h3>
+                        <p class="usuario-cidade">${usuario.cidade || 'N/A'}</p>
+                        <p class="usuario-posicao">${usuario.posicao || 'N/A'}</p>
                     </div>
                 </div>
-            `;
-            usuariosContainer.insertAdjacentHTML('beforeend', usuarioHTML);
-        });
+            </a>
+        `;
+        usuariosContainer.insertAdjacentHTML('beforeend', usuarioHTML);
+    });
+}
 
-        atualizarAlerta();
-        atualizarEstadoBotao();
-    }
+// =======================
+// FUNÇÃO: Filtrar Usuários (adaptada do seu código)
+// =======================
+function filtrarUsuarios() {
+    const termo = searchInput.value.toLowerCase();
+    const usuariosFiltrados = todosOsUsuarios.filter(usuario =>
+        (usuario.nome_completo && usuario.nome_completo.toLowerCase().includes(termo)) ||
+        (usuario.cidade && usuario.cidade.toLowerCase().includes(termo)) ||
+        (usuario.posicao && usuario.posicao.toLowerCase().includes(termo))
+    );
+    renderizarUsuarios(usuariosFiltrados);
+}
 
-    // =======================
-    // FUNÇÃO: Adicionar Novo Usuário
-    // =======================
-    function adicionarUsuario() {
-        if (usuarios.length >= LIMITE_USUARIOS) {
-            mostrarAlerta(
-                `Limite máximo de usuários atingido! Utilize a barra de pesquisa para encontrar usuários.`,
-                'error'
-            );
-            return;
-        }
+// =======================
+// FUNÇÃO: Logout
+// =======================
+async function handleLogout(event) {
+    event.preventDefault(); // Previne que o link '#' mude a URL
+    await supabase.auth.signOut();
+    window.location.href = '/index.html';
+}
 
-        const novoUsuario = {
-            nome: `Usuário ${usuarios.length + 1}`,
-            idade: `${Math.floor(Math.random() * 80) + 1} anos`,
-            cidade: ['mesopotamia', 'curitiba', 'roma', 'atenas'][Math.floor(Math.random() * 4)],
-            foto: 'iconeUser.png'
-        };
-
-        usuarios.unshift(novoUsuario);
-        renderizarUsuarios();
-
-        // Animação no novo card
-        const cards = document.querySelectorAll('.usuario-card');
-        if (cards.length > 0) {
-            cards[0].style.transform = 'scale(1.05)';
-            setTimeout(() => {
-                cards[0].style.transform = '';
-            }, 300);
-        }
-    }
-
-    // =======================
-    // FUNÇÃO: Atualizar Estado do Botão de Adicionar
-    // =======================
-    function atualizarEstadoBotao() {
-        if (usuarios.length >= LIMITE_USUARIOS) {
-            adicionarUsuarioBtn.disabled = true;
-            adicionarUsuarioBtn.style.opacity = '0.5';
-            adicionarUsuarioBtn.style.cursor = 'not-allowed';
-            adicionarUsuarioBtn.title = 'Limite máximo de usuários atingido';
-        } else {
-            adicionarUsuarioBtn.disabled = false;
-            adicionarUsuarioBtn.style.opacity = '1';
-            adicionarUsuarioBtn.style.cursor = 'pointer';
-            adicionarUsuarioBtn.title = 'Adicionar novo usuário';
-        }
-    }
-
-    // =======================
-    // FUNÇÃO: Filtrar Usuários pelo Campo de Pesquisa
-    // =======================
-    function filtrarUsuarios() {
-        const termo = searchInput.value.toLowerCase();
-        const usuariosFiltrados = usuarios.filter(usuario =>
-            usuario.nome.toLowerCase().includes(termo) ||
-            usuario.cidade.toLowerCase().includes(termo) ||
-            usuario.idade.includes(termo)
-        );
-        renderizarUsuarios(usuariosFiltrados);
-    }
-
-    // =======================
-    // FUNÇÃO: Atualizar Alerta Fixo Abaixo dos Cards
-    // =======================
-    function atualizarAlerta() {
-        if (usuarios.length >= LIMITE_USUARIOS) {
-            alertaContainer.innerHTML = `
-                <div class="alerta alerta-error">
-                    Limite máximo de ${LIMITE_USUARIOS} usuários atingido! Utilize a barra de pesquisa para encontrar usuários.
-                </div>
-            `;
-        } else {
-            alertaContainer.innerHTML = '';
-        }
-    }
-
-    // =======================
-    // FUNÇÃO: Mostrar Alerta Centralizado na Tela (Temporário)
-    // =======================
-    function mostrarAlerta(mensagem, tipo) {
-        const alerta = document.createElement('div');
-        alerta.className = `alerta alerta-${tipo}`;
-        alerta.textContent = mensagem;
-        document.body.appendChild(alerta);
-
-        setTimeout(() => {
-            alerta.classList.add('fade-out');
-            setTimeout(() => alerta.remove(), 500);
-        }, 3000);
-    }
-
-    // =======================
-    // FUNÇÃO: Animação do Botão de Adicionar Usuário
-    // =======================
-    function AnimationEffect() {
-        if (usuarios.length >= LIMITE_USUARIOS) return;
-        adicionarUsuarioBtn.style.transform = 'scale(1.1) rotate(90deg)';
-        setTimeout(() => {
-            adicionarUsuarioBtn.style.transform = 'scale(1) rotate(0)';
-        }, 300);
-    }
-});
-
-
+// =======================
+// FUNÇÃO: Mostrar Alerta (adaptada do seu código)
+// =======================
+function mostrarAlerta(mensagem, tipo) {
+    alertaContainer.innerHTML = `<div class="alerta alerta-${tipo}">${mensagem}</div>`;
+    setTimeout(() => {
+        alertaContainer.innerHTML = '';
+    }, 3000);
+}
