@@ -148,7 +148,7 @@ body {
 
 .user-name {
     color: #333333; /* Cor do texto alterada para escuro para ser legível em fundo branco */
-    font-size: 1.0rem; /* Tamanho da fonte para nome e posição */
+    font-size: 0.5rem; /* Tamanho da fonte para nome e posição */
     font-weight: 600;
     margin-bottom: 2px; /* Espaçamento entre nome/posição e o próximo item */
 }
@@ -213,10 +213,21 @@ body {
     .logo-container img {
         height: 50px;
     }
+    .nome-user{
+        font-size: 0.1rem;
+    }
+}
+
+@media (min-width: 1080px) {
+    .user-list {
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+
+    }
+    
 }
 
 
-   /* ESTILO PARA A NOVA BARRA DE NAVEGAÇÃO INFERIOR FIXA */
+/* ESTILO PARA A NOVA BARRA DE NAVEGAÇÃO INFERIOR FIXA */
    .navigation-links {
     position: fixed; /* Fixa a barra na parte inferior */
     bottom: 0;
@@ -262,6 +273,21 @@ body {
     background-color: var(--cor-card);
 }
 
+/* modal para configurações */
+.modal-Config{
+    display: none; /* Oculto por padrão */
+    position: fixed; 
+    z-index: 1001; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0, 0, 0, 0.5); 
+}
+
+
+
 /* Estilo específico para o botão de perfil com ícone */
 .profile-button {
     padding: 0; /* Remove o padding para o ícone controlar o espaço */
@@ -299,7 +325,6 @@ body .navigation-links .profile-button img.avatar-fallback {
     height: 28px !important;
     background-image: none !important;
 }
-
 
 /* parte que o augusto modificou e eu estou sem paciencia de arrumar  */
 
