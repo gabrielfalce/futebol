@@ -2,102 +2,106 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 // =======================
-// CONFIGURAÇÃO
+// CONFIGURAÇÃO E INICIALIZAÇÃO IMEDIATA
 // =======================
 const SUPABASE_URL = 'https://ulbaklykimxpsdrtkqet.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVsYmFrbHlraW14cHNkcnRrcWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMjc0MjcsImV4cCI6MjA3MzkwMzQyN30.A3_WLF3cNstQtXcOr2Q3OJCvTYqBQe7wmmXHc_WCqAk'
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY )
-const CADASTRO_FUNCTION_URL = 'https://ulbaklykimxpsdrtkqet.supabase.co/functions/v1/cadastro';
+
+// --- Seleção de Elementos DOM ---
+// É seguro fazer isso aqui, pois o script é carregado no final do <body>
+const usuariosContainer = document.getElementById('usuarios-container');
+const searchInput = document.querySelector('.search-input');
+const logoutButton = document.getElementById('logout-button');
+
+// --- Armazenamento de Dados ---
+let todosOsUsuarios = [];
+let usuarioLogado = null;
 
 // =======================
-// FUNÇÕES DE UTILIDADE
+// FUNÇÕES
 // =======================
-function showToast(message, isSuccess = false ) {
-    const toast = document.getElementById("toast-notification");
-    if (!toast) return; // Não faz nada se o elemento toast não existir
-    toast.textContent = message;
-    toast.style.backgroundColor = isSuccess ? '#28a745' : '#dc3545';
-    toast.classList.add("show");
-    setTimeout(() => toast.classList.remove("show"), 5000); // Aumentado o tempo para 5s
+
+// Busca todos os perfis da tabela 'profiles'
+async function fetchUsers() {
+    const { data, error } = await supabase.from('profiles').select('*');
+
+    if (error) {
+        console.error('Erro ao buscar usuários:', error);
+        usuariosContainer.innerHTML = '<p>Erro ao carregar usuários.</p>';
+        return;
+    }
+    
+    todosOsUsuarios = data || [];
+    renderizarUsuarios();
+}
+
+// Realiza o logout do usuário
+async function handleLogout(event) {
+    event.preventDefault();
+    await supabase.auth.signOut();
+    window.location.href = '/index.html';
+}
+
+// Renderiza os cards de usuário na tela
+function renderizarUsuarios(usuariosParaRenderizar = todosOsUsuarios) {
+    usuariosContainer.innerHTML = '';
+    const outrosUsuarios = usuariosParaRenderizar.filter(u => u.id !== usuarioLogado.id);
+
+    if (outrosUsuarios.length === 0) {
+        usuariosContainer.innerHTML = '<p style="text-align: center; color: #aaa; width: 100%;">Nenhum outro usuário encontrado.</p>';
+        return;
+    }
+
+    outrosUsuarios.forEach(usuario => {
+        const usuarioHTML = `
+            <a href="/TelaChat/chat.html?destinatario_id=${usuario.id}" class="user-card-link">
+                <div class="usuario-card">
+                    <img class="usuario-foto" src="/TelaDeUsuario/imagens/hM94BRC.jpeg" alt="Foto de ${usuario.nome_completo}">
+                    <div class="usuario-info">
+                        <h3 class="usuario-nome">${usuario.nome_completo || 'Nome Desconhecido'}</h3>
+                        <p class="usuario-cidade">${usuario.cidade || 'N/A'}</p>
+                        <p class="usuario-posicao">${usuario.posicao || 'N/A'}</p>
+                    </div>
+                </div>
+            </a>
+        `;
+        usuariosContainer.insertAdjacentHTML('beforeend', usuarioHTML);
+    });
+}
+
+// Filtra os usuários com base no que é digitado na barra de busca
+function filtrarUsuarios() {
+    const termo = searchInput.value.toLowerCase();
+    const usuariosFiltrados = todosOsUsuarios.filter(usuario =>
+        (usuario.nome_completo && usuario.nome_completo.toLowerCase().includes(termo)) ||
+        (usuario.cidade && usuario.cidade.toLowerCase().includes(termo)) ||
+        (usuario.posicao && usuario.posicao.toLowerCase().includes(termo))
+    );
+    renderizarUsuarios(usuariosFiltrados);
 }
 
 // =======================
-// LÓGICA PRINCIPAL DO FORMULÁRIO
+// PONTO DE ENTRADA PRINCIPAL (IIFE - Immediately Invoked Function Expression)
 // =======================
-// Garante que o código só roda depois que a página carregou completamente
-document.addEventListener('DOMContentLoaded', () => {
-    const cadastroForm = document.getElementById('cadastro-form');
-    if (!cadastroForm) return; // Para a execução se o formulário não for encontrado
+// Esta função anônima é executada imediatamente assim que o script é lido.
+(async () => {
+    // 1. Protege a Rota: Verifica se há um usuário logado
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-    cadastroForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const form = event.target;
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
-        const submitButton = form.querySelector('button[type="submit"]');
-        
-        submitButton.disabled = true;
-        submitButton.textContent = 'Cadastrando...';
+    if (sessionError || !session) {
+        // Se houver erro ou não houver sessão, redireciona para o login
+        window.location.href = '/index.html'; 
+        return;
+    }
+    
+    usuarioLogado = session.user;
 
-        try {
-            // -----------------------------------------------------------------
-            // ETAPA 1: Criar o usuário no sistema de autenticação da Supabase
-            // -----------------------------------------------------------------
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: data.email,
-                password: data.senha,
-            });
+    // 2. Adiciona os eventos aos elementos da página
+    searchInput.addEventListener('input', filtrarUsuarios);
+    logoutButton.addEventListener('click', handleLogout);
 
-            if (authError) {
-                // Se o erro for "User already registered", mostra uma mensagem amigável
-                if (authError.message.includes("User already registered")) {
-                    throw new Error("Este email já está cadastrado.");
-                }
-                throw authError;
-            }
-            
-            if (!authData.user) {
-                 throw new Error("Não foi possível criar o usuário. Verifique os dados e tente novamente.");
-            }
-            
-            // Pega o token de acesso da sessão. É ESSENCIAL para a próxima etapa.
-            const accessToken = authData.session?.access_token;
-
-            // Se a confirmação de email estiver ativa, o `accessToken` pode ser nulo.
-            // Nesse caso, o usuário foi criado, mas não podemos criar o perfil ainda.
-            if (!accessToken) {
-                showToast('Usuário criado! Verifique seu email para confirmar a conta antes de fazer login.', true);
-                setTimeout(() => { window.location.href = '/index.html'; }, 4000);
-                return; // Encerra a função aqui.
-            }
-
-            // -----------------------------------------------------------------
-            // ETAPA 2: Chamar a Edge Function para criar o perfil do usuário
-            // -----------------------------------------------------------------
-            const response = await fetch(CADASTRO_FUNCTION_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // A LINHA MAIS IMPORTANTE: Envia o token de autorização
-                    'Authorization': `Bearer ${accessToken}`
-                },
-                body: JSON.stringify(data) // Envia os dados extras (nome, cidade, etc.)
-            });
-
-            const result = await response.json();
-            if (!response.ok) {
-                // Se a função retornar um erro, lança para o bloco catch
-                throw new Error(result.error || `Erro no servidor: ${response.status}`);
-            }
-
-            showToast('Cadastro e perfil criados com sucesso! Redirecionando...', true);
-            form.reset();
-            setTimeout(() => { window.location.href = '/index.html'; }, 2000);
-
-        } catch (error) {
-            showToast(error.message, false);
-            submitButton.disabled = false;
-            submitButton.textContent = 'Cadastrar';
-        }
-    });
-});
+    // 3. Busca os usuários do banco de dados
+    // Esta chamada agora é a última coisa a acontecer
+    await fetchUsers();
+})();
