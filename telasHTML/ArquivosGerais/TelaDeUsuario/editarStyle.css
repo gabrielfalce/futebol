@@ -45,7 +45,7 @@ header h1 {
     margin: 0;
 }
 
-.back-button {
+.botao-voltar {
     text-decoration: none;
     color: var(--cor-texto-card);
     font-size: 1rem;
@@ -54,10 +54,30 @@ header h1 {
     transition: color 0.2s;
 }
 
-.back-button:hover {
+.botao-voltar:hover {
     color: var(--cor-primaria);
 }
-
+  .toast {
+            visibility: hidden;
+            opacity: 0;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 5px;
+            padding: 16px;
+            position: fixed;
+            z-index: 101;
+            left: 50%;
+            transform: translateX(-50%); /* Centraliza horizontalmente */
+            bottom: 30px;
+            font-size: 17px;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+        }
 
 /* =======================
    MODAL DE CORTE DE IMAGEM (Inalterado, apenas reposicionado para ordem)
@@ -75,7 +95,7 @@ header h1 {
     background: rgba(8, 4, 4, 0.7);
 }
 
-.modal-content {
+.conteudo-modal {
     background: var(--cor-fundo);
     padding: 20px;
     border-radius: 8px;
@@ -85,7 +105,7 @@ header h1 {
     text-align: center;
 }
 
-.close-button {
+.botao-fechar {
     position: absolute;
     top: 10px;
     right: 10px;
@@ -100,7 +120,7 @@ header h1 {
     background-color: #00000081;
 }
 
-.close-button:hover {
+.botao-fechar:hover {
     color: var(--cor-primaria);
     background: rgba(255, 255, 255, 0.1);
 }
@@ -135,7 +155,7 @@ input[type="file"]::-webkit-file-upload-button:hover {
    ======================= */
 
 /* CONTAINER PRINCIPAL: Alterado .container para .edit-container */
-.edit-container { 
+.container-edicao { 
     background-color: var(--cor-card);
     padding: 30px 40px;
     border-radius: 12px;
@@ -147,17 +167,17 @@ input[type="file"]::-webkit-file-upload-button:hover {
 }
 
 /* Formulário e Grupos: Alterado .container form para .edit-container .unified-form */
-.edit-container .unified-form {
+.container-edicao .formulario-unificado {
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
 
-.edit-container .form-group {
+.container-edicao .grupo-formulario {
     text-align: left;
 }
 
-.edit-container .form-group label {
+.container-edicao .grupo-formulario label {
     display: block;
     margin-bottom: 5px;
     font-weight: 500;
@@ -187,7 +207,7 @@ input[type="number"]:focus {
 }
 
 /* Botão de Submissão: Alterado .container .submit-button para .submit-data-button */
-.submit-data-button {
+.botao-salvar-dados {
     background-color: var(--cor-primaria);
     color: white;
     border: none;
@@ -200,7 +220,7 @@ input[type="number"]:focus {
     margin-top: 10px;
 }
 
-.submit-data-button:hover {
+.botao-salvar-dados:hover {
     transform: scale(1.03);
     background-color: #25a880;
 }
@@ -209,7 +229,7 @@ input[type="number"]:focus {
 /* ESTILOS NOVOS PARA UPLOAD DA IMAGEM */
 /* ------------------------------------- */
 
-.profile-image-upload-label {
+.rotulo-upload-imagem-perfil {
     display: block;
     width: 150px;
     height: 150px;
@@ -222,18 +242,18 @@ input[type="number"]:focus {
     transition: box-shadow 0.3s;
 }
 
-.profile-image-upload-label:hover {
+.rotulo-upload-imagem-perfil:hover {
     box-shadow: 0 0 0 4px var(--cor-card), 0 0 0 8px #50d9ad;
 }
 
-.profile-image-preview {
+.previa-imagem-perfil {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
 }
 
-.upload-icon {
+.icone-upload {
     position: absolute;
     bottom: 0;
     right: 0;
@@ -248,7 +268,7 @@ input[type="number"]:focus {
     transform: translate(5px, 5px); /* Move ligeiramente para fora da borda */
 }
 
-.upload-icon svg {
+.icone-upload svg {
     width: 20px;
     height: 20px;
     fill: currentColor;
@@ -270,14 +290,14 @@ input[type="number"]:focus {
    MEDIA QUERIES (RESPONSIVIDADE)
    ======================= */
 @media (max-width: 768px) {
-    .modal-content {
+    .conteudo-modal {
         width: 95%;
         padding: 15px;
     }
 
-    .edit-container { /* Alterado de .container para .edit-container */
+    .container-edicao { /* Alterado de .container para .edit-container */
         margin: 20px auto;
-        padding: 25px 20px;
+        padding: 25px 15px; /* Reduzido o padding horizontal */
         max-width: 95%;
     }
 
@@ -287,5 +307,22 @@ input[type="number"]:focus {
 
     .back-button {
         font-size: 0.9rem;
+    }
+
+    .rotulo-upload-imagem-perfil {
+        width: 120px;
+        height: 120px;
+    }
+
+    .icone-upload {
+        width: 35px;
+        height: 35px;
+    }
+
+    input[type="text"],
+    input[type="tel"],
+    input[type="number"] {
+        padding: 10px 12px; /* Reduz o preenchimento interno */
+        font-size: 0.9rem; /* Reduz o tamanho da fonte */
     }
 }

@@ -4,80 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Perfil</title>
-    
+    <link rel="stylesheet" href="editarStyle.css">
     <link rel="stylesheet" href="{{ url_for('user_assets', filename='editarStyle.css' ) }}">
-    
-    <style>
-        .toast {
-            visibility: hidden;
-            opacity: 0;
-            min-width: 250px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 5px;
-            padding: 16px;
-            position: fixed;
-            z-index: 101;
-            left: 50%;
-            transform: translateX(-50%); /* Centraliza horizontalmente */
-            bottom: 30px;
-            font-size: 17px;
-            transition: opacity 0.5s, visibility 0.5s;
-        }
-        .toast.show {
-            visibility: visible;
-            opacity: 1;
-        }
-    </style>
+  
 </head>
 <body>
 
-    <div id="toast-notification" class="toast"></div>
+    <div id="notificacao-toast" class="notificacao-toast"></div>
 
     <header>
-        <a href="{{ url_for('pagina_usuario', user_id=session.user_id) }}" class="back-button">&larr; Voltar</a>
+        <a href="{{ url_for('pagina_usuario', user_id=session.user_id) }}" class="botao-voltar">&larr; Voltar</a>
         <h1>Editar Perfil</h1>
     </header>
 
-    <main class="edit-container">
+    <main class="container-edicao">
 
-        <form action="{{ url_for('editar_perfil') }}" method="POST" enctype="multipart/form-data" class="unified-form">
+        <form action="{{ url_for('editar_perfil') }}" method="POST" enctype="multipart/form-data" class="formulario-unificado">
             
-            <label for="profile_image" class="profile-image-upload-label">
+            <label for="profile_image" class="rotulo-upload-imagem-perfil">
                 <!-- ALTERAÇÃO: Trocado o placeholder inexistente por um que sabemos que existe ('BotaoUsuario.ico') -->
-                <img id="image-preview" 
+                <img id="previa-imagem" 
                      src="{{ url_for('serve_static_files', filename=usuario.profile_image_url) if usuario.profile_image_url else url_for('inicio_assets', filename='BotaoUsuario.ico') }}"
                      alt="Pré-visualização da Imagem de Perfil" 
-                     class="profile-image-preview">
-                <div class="upload-icon">
+                     class="previa-imagem-perfil">
+                <div class="icone-upload">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
                 </div>
             </label>
             
             <input type="file" id="profile_image" name="profile_image" accept="image/*" style="display: none;">
             
-            <div class="form-group">
+            <div class="grupo-formulario">
                 <label for="nome">Nome</label>
                 <input type="text" id="nome" name="nome" value="{{ usuario.nome or '' }}">
             </div>
             
-            <div class="form-group">
+            <div class="grupo-formulario">
                 <label for="cidade">Cidade</label>
                 <input type="text" id="cidade" name="cidade" value="{{ usuario.cidade or '' }}">
             </div>
             
-            <div class="form-group">
+            <div class="grupo-formulario">
                 <label for="posicao">Posição</label>
                 <input type="text" id="posicao" name="posicao" value="{{ usuario.posicao or '' }}">
             </div>
             
-            <div class="form-group">
+            <div class="grupo-formulario">
                 <label for="numero_camisa">Nº da Camisa</label>
                 <input type="number" id="numero_camisa" name="numero" value="{{ usuario.numero_camisa or '' }}" min="1" max="99" placeholder="Opcional">
             </div>
 
-            <div class="form-group">
+            <div class="grupo-formulario">
                 <label for="nascimento">Data de Nascimento (DD/MM/AAAA  )</label>
                 {% set data_nasc_formatted = "" %}
                 {% if usuario.nascimento %}
@@ -89,12 +66,12 @@
                        placeholder="Ex: 01/01/1990">
             </div>
             
-            <div class="form-group">
+            <div class="grupo-formulario">
                 <label for="numero_tel">Telefone</label>
                 <input type="tel" id="numero_tel" name="numero_tel" value="{{ usuario.numero or '' }}" placeholder="(XX) XXXXX-XXXX">
             </div>
 
-            <button type="submit" class="submit-data-button">Salvar Alterações</button>
+            <button type="submit" class="botao-salvar-dados">Salvar Alterações</button>
         </form>
 
     </main>
@@ -102,7 +79,7 @@
     <script>
         document.getElementById('profile_image').addEventListener('change', function() {
             const file = this.files[0];
-            const imagePreview = document.getElementById('image-preview');
+            const imagePreview = document.getElementById('previa-imagem');
             
             if (file) {
                 const reader = new FileReader();
@@ -120,7 +97,7 @@
                         const message = {{ messages[0][1] | tojson }};
                         const category = {{ messages[0][0] | tojson }};
                         
-                        const toast = document.getElementById("toast-notification");
+                        const toast = document.getElementById("notificacao-toast");
                         toast.textContent = message;
                         
                         if (category === 'success') {

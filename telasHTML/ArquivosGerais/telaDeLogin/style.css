@@ -83,7 +83,6 @@ input[type="email"]:focus {
     border-radius: 100000px;
 }
 
-
 .buttonLogin,
 button[type="submit"] {
     width: 40%;

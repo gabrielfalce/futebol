@@ -4,143 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feed de Posts</title>
-    
     <link rel="stylesheet" href="{{ url_for('feed_assets', filename='feed.css') }}">
-    
-    <style>
-        /* Estilos básicos para o spinner de carregamento */
-        .loading-spinner {
-            border: 8px solid #f3f3f3;
-            border-top: 8px solid #2BBF90; /* Cor primária */
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 1s linear infinite;
-            margin: 50px auto;
-            display: block;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Os estilos do post agora virão do feed.css, então estes são redundantes, mas os manteremos para não alterar o arquivo original desnecessariamente. */
-        .post {
-            background: #23272f;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            padding: 15px;
-            color: #fff;
-        }
-        .post-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .post-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 10px;
-        }
-        .post-content img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="feed.css">
+   
 </head>
 <body>
-    <header class="page-header">
-        <h1 class="titulo">Futebol App - Feed</h1>
-        <nav class="navigation">
+    <header class="cabecalho-pagina">
+        <h1 class="titulo">publicações</h1>
+        <nav class="navegacao">
             <a href="{{ url_for('pagina_inicial') }}">Usuários</a>
             <a href="{{ url_for('pagina_usuario', user_id=session.user_id) }}">Meu Perfil</a>
             <a href="{{ url_for('logout') }}">Sair</a>
         </nav>
     </header>
 
-    <main class="feed-container" id="feed-container">
-        <div class="loading-spinner" id="loading-spinner"></div>
+    <main class="container-feed" id="container-feed">
+        <div class="spinner-carregamento" id="spinner-carregamento"></div>
     </main>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const feedContainer = document.getElementById('feed-container');
-            const loadingSpinner = document.getElementById('loading-spinner');
-
-            // Função para formatar a data (adicionada para uso)
-            function formatarData(isoString) {
-                if (!isoString) return '';
-                const data = new Date(isoString);
-                return data.toLocaleString('pt-BR', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            }
-
-            async function loadPosts() {
-                try {
-                    const response = await fetch('{{ url_for("api_posts") }}');
-                    if (!response.ok) {
-                        throw new Error('Falha ao carregar posts');
-                    }
-                    const posts = await response.json();
-                    
-                    loadingSpinner.style.display = 'none';
-                    renderPosts(posts);
-                    
-                } catch (error) {
-                    console.error('Erro:', error);
-                    loadingSpinner.style.display = 'none';
-                    feedContainer.innerHTML = '<p style="text-align: center; color: #f44336;">Erro ao carregar o feed. Tente novamente mais tarde.</p>';
-                }
-            }
-
-            function renderPosts(posts) {
-                if (posts.length === 0) {
-                    feedContainer.innerHTML = '<p style="text-align: center; color: #aaa;">Nenhum post no feed ainda.</p>';
-                    return;
-                }
-                
-                posts.forEach(post => {
-                    // =================== INÍCIO DAS ALTERAÇÕES ===================
-
-                    // 1. Define uma imagem padrão segura se o autor não tiver avatar
-                    const avatarUrl = post.autor.profile_image_url || '{{ url_for("inicio_assets", filename="iconeUser.png") }}';
-
-                    const postElement = document.createElement('div');
-                    // 2. Usa a classe 'post-card' do seu CSS para o estilo correto
-                    postElement.className = 'post-card'; 
-                    
-                    // 3. Constrói o HTML com os nomes de campos CORRETOS e a estrutura do seu CSS
-                    postElement.innerHTML = `
-                        <div class="post-header">
-                            <img src="${avatarUrl}" alt="Avatar de ${post.autor.nome}" class="author-avatar">
-                            <div class="author-info">
-                                <p class="author-name">${post.autor.nome}</p>
-                                <p class="post-timestamp">${formatarData(post.created_at)}</p>
-                            </div>
-                        </div>
-                        <div class="post-content">
-                            <p>${post.legenda}</p>
-                        </div>
-                        ${post.imagem_url ? `<img src="${post.imagem_url}" alt="Imagem do post" class="post-image">` : ''}
-                    `;
-                    // 4. Removido o 'post-footer' com Likes e Comentários que causava "undefined"
-
-                    // =================== FIM DAS ALTERAÇÕES ===================
-
-                    feedContainer.appendChild(postElement);
-                });
-            }
-
-            loadPosts();
-        });
-    </script>
+    <script src="feed.js"></script>
 </body>
 </html>
