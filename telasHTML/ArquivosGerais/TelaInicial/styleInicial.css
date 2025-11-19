@@ -12,6 +12,11 @@
     --sombra: -8px 8px 0px var(--cor-primaria);
 }
 
+.iconePg {
+max-width: 80%;
+}
+
+
 /* =======================
    RESET E ESTILOS BASE
    ======================= */
