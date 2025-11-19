@@ -31,6 +31,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
                 </div>
             </label>
+            <input id="WallpaperInput" type="file" accept="image/*" placeholder="sdsadsa">
             
             <input type="file" id="profile_image" name="profile_image" accept="image/*" style="display: none;">
             
@@ -46,12 +47,13 @@
             
             <div class="grupo-formulario">
                 <label for="posicao">Posição</label>
-                <input type="text" id="posicao" name="posicao" value="{{ usuario.posicao or '' }}">
+                <input type="text" id="posicao favorita" name="posicao"  required="false"
+                       value="{{ usuario.posicao or '' }}">
             </div>
             
             <div class="grupo-formulario">
                 <label for="numero_camisa">Nº da Camisa</label>
-                <input type="number" id="numero_camisa" name="numero" value="{{ usuario.numero_camisa or '' }}" min="1" max="99" placeholder="Opcional">
+                <input type="number" id="numero_camisa" name="numero" value="{{ usuario.numero_camisa or '' }}" min="1" max="99" required="false" placeholder="Opcional">
             </div>
 
             <div class="grupo-formulario">

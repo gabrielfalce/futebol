@@ -33,8 +33,8 @@
 
             <div class="profile-info-group">
                 <h2 class="nomeUsuario">{{ usuario.nome or 'Nome Não Definido' }}</h2>
-                <p class="posicaoUsuario">{{ usuario.posicao or 'Posição Não Definida' }}</p>
-                <p class="cidadeUsuario">{{ usuario.cidade or 'Cidade Não Definida' }}</p>
+                <p class="posicaoUsuario">{{ 'posição favorita' ~ usuario.posicao or 'Posição Não Definida' }}</p>
+                <p class="cidadeUsuario">{{ usuario.cidade or 'Cidadse Não Definida' }}</p>
             </div>
             
             <div class="profile-actions">
