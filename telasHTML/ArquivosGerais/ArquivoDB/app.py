@@ -391,7 +391,8 @@ def chat_historico(destinatario_id):
         # Usa o cliente Supabase para buscar as mensagens
         # Condição OR para pegar mensagens onde EU SOU o remetente E ele o destinatário
         # OU onde EU SOU o destinatário E ele o remetente
-        # CORREÇÃO: Usando .or_() e ENVELOPANDO a consulta em parênteses `()` para evitar o SyntaxError
+        # CORREÇÃO: Envolver a consulta em parênteses `()` permite quebrar a linha de forma limpa,
+        # resolvendo o SyntaxError causado por quebras de linha não permitidas.
         response = (
             supabase.from('mensagens')
             .select('*')
