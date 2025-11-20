@@ -62,7 +62,7 @@
                         </div>
                     </div>
 
-                    <div class="post-content">
+                    <div iclass="post-content">
                         <p>{{ post.legenda }}</p>
                         {% if post.imagem_url %}
                         <!-- ALTERAÇÃO: A URL da imagem do post agora vem diretamente do banco de dados -->
@@ -114,6 +114,6 @@
     <!-- O bloco raw/filter foi removido pois o filtro strftime foi definido no app.py -->
 
     <!-- Script atualizado -->
-    <script src="{{ url_for('user_assets', filename='script.js' ) }}"></script>
+    <!-- <script src="{{ url_for('user_assets', filename='script.js' ) }}"></script> -->
 </body>
 </html>

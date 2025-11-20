@@ -455,3 +455,217 @@ body {
         width: 20px; /* Reduz a barra no mobile */
     }
 }
+
+/*
+================================================================
+STYLES FROM FEED.CSS APPENDED BELOW
+================================================================
+*/
+
+/*
+  Arquivo: feed.css
+  Estilos para a página de feed de publicações.
+*/
+
+/* 
+  ================================================================
+  VARIÁVEIS GLOBAIS
+  Inspirado no seu pedido de usar variáveis do "TelaInicial".
+  Altere estes valores para corresponder à identidade visual do seu projeto.
+  ================================================================
+*/
+:root {
+    /* Variáveis adaptadas do styleInicial.css para um tema escuro */
+    --cor-primaria: #2BBF90;
+    --cor-fundo: #1E1E1E;
+    --cor-card: #2C2C2C;
+    --cor-texto-principal: #FFFFFF;
+    --cor-texto-secundario: #E0E0E0;
+    --cor-borda: #444; /* Um cinza mais escuro para as bordas */
+    --cor-header: #2C2C2C; /* Fundo do cabeçalho igual ao dos cards */
+    --sombra-padrao: -4px 4px 0px var(--cor-primaria); /* Sombra sólida do tema */
+    --fonte-principal: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/*
+  ================================================================
+  ESTILOS GERAIS E RESET
+  ================================================================
+*/
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--fonte-principal);
+    background-color: var(--cor-fundo);
+    color: var(--cor-texto-principal);
+    line-height: 1.6;
+}
+
+/*
+  ================================================================
+  CABEÇALHO
+  ================================================================
+*/
+.cabecalho-pagina {
+    background-color: var(--cor-header);
+    padding: 1rem 5%; /* Usa porcentagem para ser mais fluido */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--cor-borda);
+    box-shadow: var(--sombra-padrao);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.titulo {
+    font-size: 1.5rem;
+    color: var(--cor-primaria);
+    text-transform: uppercase;
+}
+
+.navegacao a {
+    color: var(--cor-texto-secundario);
+    text-decoration: none;
+    margin-left: 1.5rem;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.navegacao a:hover {
+    color: var(--cor-primaria);
+}
+
+/*
+  ================================================================
+  CONTEÚDO PRINCIPAL (FEED)
+  ================================================================
+*/
+.container-feed {
+    max-width: 680px;
+    margin: 2rem auto;
+    padding: 0 1rem; /* Espaçamento lateral para telas menores */
+    /* Adiciona espaço no final para não ser coberto pela barra de navegação móvel */
+    /* O valor pode precisar de ajuste dependendo da altura final da barra */
+    padding-bottom: 80px; 
+}
+
+/* Mensagens de erro ou feed vazio */
+.container-feed > p {
+    text-align: center;
+    color: var(--cor-texto-secundario);
+    margin-top: 3rem;
+    font-size: 1.1rem;
+}
+
+/*
+  ================================================================
+  CARD DE POST
+  ================================================================
+*/
+.post-card {
+    background-color: var(--cor-card);
+    border-radius: 8px;
+    border: 1px solid var(--cor-borda);
+    margin-bottom: 1.5rem;
+    box-shadow: var(--sombra-padrao);
+    overflow: hidden; /* Garante que a imagem não vaze das bordas arredondadas */
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+}
+
+.author-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 0.75rem;
+}
+
+.author-info .author-name {
+    font-weight: 600;
+    color: var(--cor-texto-principal);
+}
+
+.author-info .post-timestamp {
+    font-size: 0.8rem;
+    color: var(--cor-texto-secundario);
+}
+
+.post-content {
+    padding: 0 1rem 1rem 1rem;
+}
+
+
+.post-image {
+    border-radius: 1rem;
+    margin: 0 auto 2rem auto;
+    width: 80%;
+    height: auto;
+    display: block; /* Remove espaço extra abaixo da imagem */
+}
+
+/*
+  ================================================================
+  SPINNER DE CARREGAMENTO
+  ================================================================
+*/
+.spinner-carregamento {
+    border: 5px solid var(--cor-fundo);
+    border-top: 5px solid var(--cor-primaria);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 5rem auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/*
+  ================================================================
+  RESPONSIVIDADE (MEDIA QUERIES)
+  ================================================================
+*/
+@media (max-width: 768px) {
+    .cabecalho-pagina {
+        /* Em telas pequenas, o cabeçalho conterá apenas o título */
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .titulo {
+        margin-bottom: 0;
+        font-size: 1.2rem; /* Um pouco menor para caber melhor */
+    }
+
+    .navegacao {
+        /* Transforma a navegação em uma barra fixa no rodapé */
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: var(--cor-card); /* Usa a cor do card para a barra inferior */
+        border-top: 1px solid var(--cor-borda);
+        display: flex;
+        justify-content: space-around;
+        padding: 0.5rem 0;
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.1); /* Sombra para dar profundidade */
+    }
+
+    .navegacao a {
+        margin: 0; /* Remove a margem lateral da versão desktop */
+    }
+}
