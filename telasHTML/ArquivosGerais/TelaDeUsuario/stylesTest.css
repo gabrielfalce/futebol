@@ -205,8 +205,7 @@ body {
     gap: 20px;
 }
 
-/* Estilos para o Box de Post (pronto para ser injetado pelo backend) */
-.BoxePublicacoes {
+.post-card {
     background-color: var(--cor-card);
     border-radius: 12px;
     overflow: hidden;
@@ -216,26 +215,49 @@ body {
 .post-header {
     padding: 15px 20px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 15px;
+}
+
+.post-author-img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.post-author-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.post-author-info strong {
     font-size: 1rem;
     font-weight: bold;
+    color: var(--cor-texto);
+}
+
+.post-author-info small {
+    font-size: 0.8rem;
+    color: #aaa;
+}
+
+.post-content {
+    padding: 0 20px 15px;
     color: var(--cor-texto-card);
 }
 
-/* Estilo para o ícone SVG de opções de post */
-.post-options-icon {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-    fill: var(--cor-texto-card); /* Garante que o ícone seja claro */
+.post-content p {
+    margin: 0 0 15px 0;
 }
 
-.publicacaoImagem {
+.post-image {
     width: 100%;
     height: auto;
     object-fit: cover;
     display: block;
+    border-radius: 8px;
+    margin-top: 10px;
 }
 
 .post-actions {
