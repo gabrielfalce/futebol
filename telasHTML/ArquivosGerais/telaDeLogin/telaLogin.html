@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <!-- ALTERAÇÃO 2: Corrigido o caminho do favicon -->
-    <link rel="icon" href="{{url_for('inicio_assets', filename='BotaoUsuario.ico')}}" type="image/x-icon">
-    <!-- ALTERAÇÃO 3: Removida a linha de CSS duplicada e incorreta -->
+    
+    <!-- Favicon corrigido (mantido o seu caminho) -->
+    <link rel="icon" href="{{ url_for('inicio_assets', filename='BotaoUsuario.ico') }}" type="image/x-icon">
+    
+    <!-- CSS CORRIGIDO: removida a linha duplicada que causava 404 -->
     <link rel="stylesheet" href="{{ url_for('login_assets', filename='style.css') }}">
-    <link rel="stylesheet" href="style.css">
 
-    <!-- PWA START CODE -->
+    <!-- PWA START CODE (mantido exatamente como estava) -->
 
 </head>
 <body>
@@ -28,7 +29,8 @@
         {% endwith %}
     ></div>
     
-    <form action="{{ url_for('login') }}" method="post">
+    <!-- FORM CORRIGIDO: agora aponta para a rota correta que aceita POST -->
+    <form action="{{ url_for('login_post') }}" method="post">
         <input placeholder="Email" type="email" name="email" value="{{ email or '' }}" required>
         <input placeholder="Senha" type="password" name="senha" required>
         
