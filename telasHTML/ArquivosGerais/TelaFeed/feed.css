@@ -141,8 +141,11 @@ body {
     padding: 0 1rem 1rem 1rem;
 }
 
+
 .post-image {
-    width: 100%;
+    border-radius: 1rem;
+    margin: 0 auto 2rem auto;
+    width: 80%;
     height: auto;
     display: block; /* Remove espaço extra abaixo da imagem */
 }
