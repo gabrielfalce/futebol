@@ -33,7 +33,7 @@
 
             <div class="profile-info-group">
                 <h2 class="nomeUsuario">{{ usuario.nome or 'Nome Não Definido' }}</h2>
-                <p class="posicaoUsuario">{{ 'posição favorita' ~ usuario.posicao or 'Posição Não Definida' }}</p>
+                <p class="posicaoUsuario">{{ 'posição favorita'usuario.posicao or 'Posição Não Definida' }}</p>
                 <p class="cidadeUsuario">{{ usuario.cidade or 'Cidadse Não Definida' }}</p>
             </div>
             
@@ -83,7 +83,7 @@
             <div class="floating-button-bar"></div>
             <a href="{{ url_for('pagina_inicial') }}" title="Usuários">
                 <button class="floating-button">
-                    <img src="{{ url_for('user_assets', filename='imagens/bolaLogo.png') }}" alt="Ir para tela inicial">
+                    <img src="{{ url_for('user_assets', filename='home.png') }}" aria-placeholder="tela inicial" alt="Ir para tela inicial">
                 </button>
             </a>
         </div>
