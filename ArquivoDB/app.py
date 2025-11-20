@@ -1,3 +1,4 @@
+# arquivo: app.py
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory, jsonify
 from dotenv import load_dotenv
@@ -13,13 +14,13 @@ from functools import wraps
 
 load_dotenv()
 
-# === CONFIGURAÇÃO DE DIRETÓRIOS ===
+# === CONFIGURAÇÃO DE DIRETÓRIOS ===  ←←← AQUI ESTAVA O PROBLEMA (era 4 níveis acima)
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
-BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..', '..', '..')) 
+BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..'))  # ← ALTERADO: agora só sobe 1 nível (raiz correta)
 
 app = Flask(
     __name__,
-    template_folder=BASE_DIR
+    template_folder=BASE_DIR  # ← agora aponta para a pasta do projeto onde está telasHTML
 )
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "chave_padrao_para_dev")
 
