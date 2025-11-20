@@ -1,3 +1,5 @@
+**Arquivo Alterado: telasHTML\ArquivosGerais\TelaChat\chat.html**
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -5,7 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat com {{ destinatario.nome }}</title>
     
-    <!-- ALTERAÇÃO: A rota foi corrigida de 'user_assets' para 'chat_assets' -->
     <link rel="stylesheet" href="{{ url_for('chat_assets', filename='chat.css') }}">
 </head>
 <body>
@@ -39,122 +40,19 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
+        // Variáveis Jinja injetadas para o chat.js
         const REMETENTE_ID = {{ remetente.id | tojson }};
         const DESTINATARIO_ID = {{ destinatario.id | tojson }};
         
         const SUPABASE_URL = {{ supabase_url | tojson }};
-        const SUPABASE_ANON_KEY = {{ supabase_anon_key | tojson }};
-
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY   );
-        const chatBody = document.getElementById('chat-body');
-        const messageForm = document.getElementById('message-form');
-        const messageInput = document.getElementById('message-input');
-        const nomeDestinatario = document.getElementById('nomeDestinatario');
-
-        // --- Funções Auxiliares de Renderização ---
-
-        function formatMessage(message) {
-            const isRemetente = message.remetente_id === REMETENTE_ID;
-            const className = isRemetente ? 'message remetente' : 'message destinatario';
-            const messageHtml = `
-                <div class="${className}">
-                    <p>${message.conteudo}</p>
-                    <span class="timestamp">${new Date(message.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
-                </div>
-            `;
-            return messageHtml;
-        }
-
-        function appendMessage(message) {
-            if (chatBody.querySelector('.no-messages')) {
-                chatBody.innerHTML = ''; // Limpa a mensagem "Inicie uma conversa"
-            }
-            chatBody.insertAdjacentHTML('beforeend', formatMessage(message));
-            chatBody.scrollTop = chatBody.scrollHeight; // Scroll para o final
-        }
-
-        // --- Lógica do Chat ---
-
-        // 1. Carregar Histórico de Mensagens
-        async function loadMessages() {
-            chatBody.innerHTML = ''; // Limpa "Carregando mensagens..."
-            
-            try {
-                const { data, error } = await supabase
-                    .from('mensagens')
-                    .select('*')
-                    .or(`and(remetente_id.eq.${REMETENTE_ID},destinatario_id.eq.${DESTINATARIO_ID}),and(remetente_id.eq.${DESTINATARIO_ID},destinatario_id.eq.${REMETENTE_ID})`)
-                    .order('created_at', { ascending: true });
-                    
-                if (error) throw error;
-                
-                if (data.length === 0) {
-                    chatBody.innerHTML = '<p class="no-messages" style="text-align:center; color: #aaa;">Inicie uma conversa!</p>';
-                } else {
-                    data.forEach(appendMessage);
-                }
-                
-            } catch (error) {
-                console.error('Erro ao carregar mensagens:', error);
-                chatBody.innerHTML = `<p style="text-align:center; color: red;">Erro ao carregar mensagens: ${error.message}</p>`;
-            }
-        }
+        const SUPABASE_KEY = {{ supabase_anon_key | tojson }};
         
-        // 2. Enviar Nova Mensagem
-        messageForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const content = messageInput.value.trim();
-            
-            if (content.length > 0) {
-                messageInput.value = ''; // Limpa a caixa de texto imediatamente para melhor UX
-                try {
-                    const { error } = await supabase
-                        .from('mensagens')
-                        .insert([{ 
-                            remetente_id: REMETENTE_ID, 
-                            destinatario_id: DESTINATARIO_ID, 
-                            conteudo: content 
-                        }]);
-                        
-                    if (error) throw error;
-                    
-                } catch (error) {
-                    console.error('Erro ao enviar mensagem:', error);
-                    alert('Erro ao enviar mensagem. Verifique o console.');
-                    messageInput.value = content; // Restaura a mensagem se o envio falhar
-                }
-            }
-        });
+        // Garante que o ID do remetente e destinatário são passados como números para o JS
+        // (O tojson do Jinja já garante aspas para strings, mas a conversão em JS é mais segura)
         
-        // 3. Subscrição para Mensagens em Tempo Real (Realtime)
-        function subscribeToNewMessages() {
-            const channel = supabase.channel(`chat_${Math.min(REMETENTE_ID, DESTINATARIO_ID)}_${Math.max(REMETENTE_ID, DESTINATARIO_ID)}`);
-            
-            channel.on('postgres_changes', { 
-                event: 'INSERT', 
-                schema: 'public', 
-                table: 'mensagens',
-                filter: `destinatario_id=eq.${REMETENTE_ID}` // Ouve apenas mensagens destinadas a mim
-            }, payload => {
-                const newMessage = payload.new;
-                // Verifica se a nova mensagem é do destinatário deste chat
-                if (newMessage.remetente_id === DESTINATARIO_ID) {
-                    appendMessage(newMessage);
-                }
-            }).subscribe();
-                
-            console.log('Subscrito ao canal de chat.');
-        }
-
-        // Inicialização
-        loadMessages();
-        subscribeToNewMessages();
-        
-        // Desinscrever-se ao sair da página (boa prática)
-        window.addEventListener('beforeunload', () => {
-            supabase.removeAllChannels();
-        });
-
+        // A lógica do chat está agora no chat.js
     </script>
+    
+    <script src="{{ url_for('chat_assets', filename='chat.js') }}"></script>
 </body>
 </html>

@@ -1,3 +1,5 @@
+**Arquivo Alterado: telasHTML\ArquivosGerais\TelaChat\chat.js**
+```javascript
 // chat.js
 // Aguarda o DOM carregar completamente antes de executar o script
 document.addEventListener('DOMContentLoaded', () => {
@@ -8,8 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const messageInput = document.getElementById('message-input');
     
         // Inicializa o cliente Supabase com as credenciais passadas pelo Flask
-        // As constantes (SUPABASE_URL, SUPABASE_KEY) são definidas no bloco <script> do chat.html
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // As constantes (SUPABASE_URL, SUPABASE_KEY, REMETENTE_ID, DESTINATARIO_ID) são definidas no bloco <script> do chat.html
+        // CORREÇÃO: Usar o objeto global 'supabase' (fornecido pelo CDN) para criar o cliente
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
         // --- 2. FUNÇÕES AUXILIARES ---
     
@@ -63,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
             } catch (error) {
                 console.error('Erro ao carregar histórico:', error);
-                chatBody.innerHTML = '<p style="text-align:center; color: #ff4d4d; padding: 20px;">Não foi possível carregar as mensagens. Verifique a API do Flask.</p>';
+                chatBody.innerHTML = '<p style="text-align:center; color: #ff4d4d; padding: 20px;">Não foi possível carregar as mensagens. Verifique a API do Flask e as chaves Supabase.</p>';
             }
         }
     
@@ -80,7 +83,8 @@ document.addEventListener('DOMContentLoaded', () => {
             };
     
             // Usa o cliente Supabase para inserir a nova mensagem na tabela 'mensagens'
-            const { error } = await supabase.from('mensagens').insert([message]);
+            // CORREÇÃO: Usar o cliente local 'supabaseClient'
+            const { error } = await supabaseClient.from('mensagens').insert([message]);
     
             if (error) {
                 console.error('Erro ao enviar mensagem:', error);
@@ -110,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
         // Listener do Supabase Realtime: "ouve" por novas inserções na tabela 'mensagens'
         // O filtro: escutar apenas mensagens onde EU sou o destinatário (REMETENTE_ID)
-        supabase.channel('chat-conversas') 
+        supabaseClient.channel('chat-conversas') 
             .on('postgres_changes', { 
                 event: 'INSERT', 
                 schema: 'public', 
@@ -121,6 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const newMessage = payload.new;
     
                 // Verifica se o remetente é o usuário com quem estou conversando (DESTINATARIO_ID)
+                // Apenas exibe se a mensagem for do OUTRO usuário
                 if (newMessage.remetente_id === DESTINATARIO_ID) {
                     addMessageToScreen(newMessage); // Adiciona a nova mensagem na tela em tempo real
                 }
@@ -129,4 +134,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
         // Carrega o histórico de mensagens assim que a página é aberta
         loadMessageHistory();
+    
+    // Desinscrever-se ao sair da página (boa prática)
+    window.addEventListener('beforeunload', () => {
+        supabaseClient.removeAllChannels();
     });
+});

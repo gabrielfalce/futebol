@@ -1,3 +1,5 @@
+**Arquivo Alterado: telasHTML\ArquivosGerais\ArquivoDB\app.py**
+```python
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory, jsonify
 from dotenv import load_dotenv
@@ -376,6 +378,32 @@ def chat_with_user(destinatario_id):
                            destinatario=destinatario,
                            supabase_url=supabase_url,
                            supabase_anon_key=supabase_anon_key)
+
+
+# ROTA API ADICIONADA: Busca o histórico de mensagens entre dois usuários
+@app.route("/api/chat/historico/<int:destinatario_id>", methods=['GET'])
+@login_required
+def chat_historico(destinatario_id):
+    remetente_id = session.get('user_id')
+    
+    if not remetente_id:
+        return jsonify({"error": "Usuário não logado."}), 401
+
+    try:
+        # Usa o cliente Supabase para buscar as mensagens
+        # Condição OR para pegar mensagens onde EU SOU o remetente E ele o destinatário
+        # OU onde EU SOU o destinatário E ele o remetente
+        response = supabase.from('mensagens').select('*').or(
+            f'and(remetente_id.eq.{remetente_id},destinatario_id.eq.{destinatario_id}),and(remetente_id.eq.{destinatario_id},destinatario_id.eq.{remetente_id})'
+        ).order('created_at', desc=False).execute()
+
+        # O `response.data` contém a lista de mensagens (ou lista vazia)
+        messages = response.data
+        return jsonify(messages), 200
+
+    except Exception as e:
+        print(f"ERRO ao buscar histórico de chat: {e}")
+        return jsonify({"error": "Erro interno ao buscar mensagens."}), 500
 
 
 @app.route("/esqueci_senha", methods=['GET', 'POST'])
