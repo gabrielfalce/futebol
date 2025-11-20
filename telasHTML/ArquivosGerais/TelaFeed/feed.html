@@ -8,15 +8,17 @@
     <link rel="stylesheet" href="feed.css">
    
 </head>
-<body>
+<body data-api-url="{{ url_for('api_posts') }}" 
+      data-default-avatar="{{ url_for('inicio_assets', filename='iconeUser.png') }}">
     <header class="cabecalho-pagina">
         <h1 class="titulo">publicações</h1>
         <nav class="navegacao">
             <a href="{{ url_for('pagina_inicial') }}">Usuários</a>
-            <a href="{{ url_for('pagina_usuario', user_id=session.user_id) }}">Meu Perfil</a>
+            <a href="{{ url_for('pagina_usuario', user_id=session['user_id']) }}">Meu Perfil</a>
             <a href="{{ url_for('logout') }}">Sair</a>
         </nav>
     </header>
+
 
     <main class="container-feed" id="container-feed">
         <div class="spinner-carregamento" id="spinner-carregamento"></div>
@@ -41,6 +43,6 @@
 
     </main>
 
-    <script src="feed.js"></script>
+    <script src="{{ url_for('feed_assets', filename='feed.js') }}"></script>
 </body>
 </html>
