@@ -388,9 +388,6 @@ def chat_historico(destinatario_id):
         return jsonify({"error": "Usuário não logado."}), 401
 
     try:
-        # Usa o cliente Supabase para buscar as mensagens
-        # Condição OR para pegar mensagens onde EU SOU o remetente E ele o destinatário
-        # OU onde EU SOU o destinatário E ele o remetente
         # CORREÇÃO: Envolver a consulta em parênteses `()` permite quebrar a linha de forma limpa,
         # resolvendo o SyntaxError causado por quebras de linha não permitidas.
         response = (
@@ -445,6 +442,7 @@ def _jinja2_filter_strftime(date_str, fmt='%d/%m/%Y às %H:%M'):
     if not date_str:
         return ''
     try:
+        # Tenta parsear a string de data (assumindo formato ISO com 'Z' opcional)
         dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
         return dt.strftime(fmt)
     except:
