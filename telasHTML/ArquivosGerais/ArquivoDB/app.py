@@ -256,8 +256,8 @@ def chat_with_user(destinatario_id):
         "telasHTML/ArquivosGerais/TelaChat/chat.html",
         remetente=remetente,
         destinatario=destinatario,
-        SUPABASE_URL=os.environ.get("SUPABASE_URL"),
-        SUPABASE_ANON_KEY=os.environ.get("SUPABASE_ANON_KEY")
+        SUPABASE_URL=os.environ.get("SUPABASE_URL", ""),
+        SUPABASE_ANON_KEY=os.environ.get("SUPABASE_ANON_KEY", "")
     )
 
 @app.route("/esqueci_senha", methods=['GET', 'POST'])
