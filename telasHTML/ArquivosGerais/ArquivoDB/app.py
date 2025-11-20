@@ -391,10 +391,16 @@ def chat_historico(destinatario_id):
         # Usa o cliente Supabase para buscar as mensagens
         # Condição OR para pegar mensagens onde EU SOU o remetente E ele o destinatário
         # OU onde EU SOU o destinatário E ele o remetente
-        # CORREÇÃO: Usando .or_() para evitar SyntaxError (palavra-chave reservada 'or')
-        response = supabase.from('mensagens').select('*').or_(
-            f'and(remetente_id.eq.{remetente_id},destinatario_id.eq.{destinatario_id}),and(remetente_id.eq.{destinatario_id},destinatario_id.eq.{remetente_id})'
-        ).order('created_at', desc=False).execute()
+        # CORREÇÃO: Usando .or_() e ENVELOPANDO a consulta em parênteses `()` para evitar o SyntaxError
+        response = (
+            supabase.from('mensagens')
+            .select('*')
+            .or_(
+                f'and(remetente_id.eq.{remetente_id},destinatario_id.eq.{destinatario_id}),and(remetente_id.eq.{destinatario_id},destinatario_id.eq.{remetente_id})'
+            )
+            .order('created_at', desc=False)
+            .execute()
+        )
 
         # O `response.data` contém a lista de mensagens (ou lista vazia)
         messages = response.data
