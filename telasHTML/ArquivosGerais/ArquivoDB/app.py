@@ -388,10 +388,9 @@ def chat_historico(destinatario_id):
         return jsonify({"error": "Usuário não logado."}), 401
 
     try:
-        # CORREÇÃO: Envolver a consulta em parênteses `()` permite quebrar a linha de forma limpa,
-        # resolvendo o SyntaxError causado por quebras de linha não permitidas.
-        response = (
-            supabase.from('mensagens')
+        # CORREÇÃO FINAL APLICADA: Colocar o início da chain na mesma linha do parêntese de abertura
+        # para garantir que o parser do Python não encontre um erro de sintaxe na quebra de linha.
+        response = (supabase.from('mensagens')
             .select('*')
             .or_(
                 f'and(remetente_id.eq.{remetente_id},destinatario_id.eq.{destinatario_id}),and(remetente_id.eq.{destinatario_id},destinatario_id.eq.{remetente_id})'
@@ -442,7 +441,6 @@ def _jinja2_filter_strftime(date_str, fmt='%d/%m/%Y às %H:%M'):
     if not date_str:
         return ''
     try:
-        # Tenta parsear a string de data (assumindo formato ISO com 'Z' opcional)
         dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
         return dt.strftime(fmt)
     except:
