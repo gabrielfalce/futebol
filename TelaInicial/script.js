@@ -81,9 +81,7 @@ function filtrarUsuarios() {
     renderizarUsuarios(usuariosFiltrados);
 }
 
-// =======================
-// PONTO DE ENTRADA PRINCIPAL (IIFE - Immediately Invoked Function Expression)
-// =======================
+
 // Esta função anônima é executada imediatamente assim que o script é lido.
 (async () => {
     // 1. Protege a Rota: Verifica se há um usuário logado
