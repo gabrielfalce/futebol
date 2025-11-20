@@ -107,7 +107,7 @@ def login():
 def login_post():
     if request.method == 'POST':
         email = request.form['email']
-        senha = request.form['senha'].encode('utf-8')
+        senha = request.form['senha']  # ← CORRIGIDO: removido o .encode('utf-8')
         
         user = check_user(email, senha)
         if user:
@@ -235,7 +235,7 @@ def api_posts():
         posts = get_all_posts()
         return jsonify(posts)
 
-# ROTA DO CHAT – CORRIGIDA E SEGURA (usa apenas a anon key pública)
+# ROTA DO CHAT – CORRIGIDA E SEGURA
 @app.route("/chat/<int:destinatario_id>")
 @login_required
 def chat_with_user(destinatario_id):
@@ -257,7 +257,7 @@ def chat_with_user(destinatario_id):
         remetente=remetente,
         destinatario=destinatario,
         SUPABASE_URL=os.environ.get("SUPABASE_URL"),
-        SUPABASE_ANON_KEY=os.environ.get("SUPABASE_ANON_KEY")  # chave pública correta
+        SUPABASE_ANON_KEY=os.environ.get("SUPABASE_ANON_KEY")
     )
 
 @app.route("/esqueci_senha", methods=['GET', 'POST'])
