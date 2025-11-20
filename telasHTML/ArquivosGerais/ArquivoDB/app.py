@@ -29,7 +29,7 @@ UPLOAD_FOLDER_RELATIVE = 'telasHTML/ArquivosGerais/TelaDeUsuario/imagens/profile
 POST_UPLOAD_FOLDER_RELATIVE = 'telasHTML/ArquivosGerais/TelaFeed/imagens/post_pics'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-# ALTERAÇÃO: Corrigindo os nomes dos buckets para corresponder ao seu Supabase.
+# Buckets do Supabase
 PROFILE_BUCKET = 'profile_images'
 POST_BUCKET = 'post-images'
 
@@ -48,7 +48,6 @@ def login_required(f):
     return decorated_function
 
 # === ROTAS DEDICADAS PARA ARQUIVOS ESTÁTICOS (ASSETS) ===
-
 @app.route('/login-assets/<path:filename>')
 def login_assets(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'telaDeLogin')
@@ -89,269 +88,154 @@ def recuperar_senha_assets(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML', 'RecuperarSenha')
     return send_from_directory(dir_path, filename)
 
-# Rota genérica para servir arquivos estáticos de dentro do diretório 'telasHTML'
 @app.route('/serve_static_files/<path:filename>')
 def serve_static_files(filename):
     dir_path = os.path.join(BASE_DIR, 'telasHTML')
     return send_from_directory(dir_path, filename)
 
-# ROTA PARA SERVIR IMAGENS DE POSTS
-@app.route('/post-assets/<path:filename>')
-def post_assets(filename):
-    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaFeed', 'imagens', 'post_pics')
+@app.route('/post-images/<path:filename>')
+def post_images(filename):
+    dir_path = os.path.join(BASE_DIR, POST_UPLOAD_FOLDER_RELATIVE)
     return send_from_directory(dir_path, filename)
 
-
-# === ROTAS DO APLICATIVO ===
-
-@app.route("/")
-@app.route("/login", methods=['GET', 'POST'])
+# === ROTAS PRINCIPAIS ===
+@app.route('/')
 def login():
+    return render_template('telasHTML/ArquivosGerais/telaDeLogin/telaLogin.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login_post():
     if request.method == 'POST':
+        email = request.form['email']
+        senha = request.form['senha'].encode('utf-8')
+        
+        user = check_user(email, senha)
+        if user:
+            session['user_email'] = user['email']
+            session['user_id'] = user['id']
+            return redirect(url_for('pagina_inicial'))
+        else:
+            flash('Credenciais inválidas.', 'danger')
+    return redirect(url_for('login'))
+
+@app.route('/cadastro', methods=['GET', 'POST'])
+def cadastro():
+    if request.method == 'POST':
+        nome = request.form['nome']
         email = request.form['email']
         senha = request.form['senha']
         
-        user_data = check_user(email, senha)
-        
-        if user_data:
-            session['user_email'] = email
-            session['user_id'] = user_data.get('id')
-            session['user_name'] = user_data.get('nome')
-            flash('Login realizado com sucesso!', 'success')
-            return redirect(url_for('tela_loading', next_page='pagina_inicial'))
+        if register_user(nome, email, senha):
+            flash('Cadastro realizado com sucesso! Faça login.', 'success')
+            return redirect(url_for('login'))
         else:
-            flash('Email ou senha incorretos.', 'danger')
-            return render_template("telasHTML/ArquivosGerais/telaDeLogin/telaLogin.html", email=email)
-            
-    return render_template("telasHTML/ArquivosGerais/telaDeLogin/telaLogin.html")
-
-
-@app.route("/cadastro", methods=['GET', 'POST'])
-def cadastro():
-    if request.method == 'POST':
-        try:
-            nome = request.form['nome']
-            email = request.form['email']
-            senha = request.form['senha']
-            cidade = request.form['cidade']
-            posicao = request.form['posicao']
-            nascimento_str = request.form['nascimento']
-            
-            numero_telefone = request.form.get('numero_telefone')
-            numero_camisa = request.form.get('numero_camisa')
-
-            try:
-                nascimento_formatado = datetime.strptime(nascimento_str, '%d/%m/%Y').strftime('%Y-%m-%d')
-            except ValueError:
-                nascimento_formatado = nascimento_str
-        
-            success, message = register_user(nome, email, senha, cidade, posicao, nascimento_formatado, numero_camisa, numero_telefone)
-            
-            if success:
-                user_data = check_user(email, senha)
-                if user_data:
-                    session['user_email'] = email
-                    session['user_id'] = user_data.get('id')
-                    session['user_name'] = user_data.get('nome')
-                    flash(message, 'success')
-                    return redirect(url_for('tela_loading', next_page='pagina_inicial', message_category='success'))
-                else:
-                    flash('Cadastro realizado, mas falha no login automático. Faça o login.', 'warning')
-                    return redirect(url_for('tela_loading', next_page='login', message_category='warning'))
-            else:
-                flash(message, 'danger')
-                form_data = request.form.to_dict()
-                if "telefone" in message:
-                    form_data['numero_telefone'] = ""
-                return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data=form_data)
-
-        except ValueError:
-            flash('Formato de data de nascimento inválido. Use DD/MM/AAAA.', 'danger')
-            return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data=request.form)
-        
-        except Exception as e:
-            print(f"ERRO geral no cadastro: {e}")
-            flash('Ocorreu um erro inesperado ao tentar cadastrar o usuário.', 'danger')
-            return redirect(url_for('cadastro'))
-
-    return render_template("telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data={})
-
-
-@app.route("/loading/<next_page>")
-def tela_loading(next_page):
-    message_category = request.args.get('message_category', 'success')
-    message = request.args.get('message')
+            flash('Erro ao cadastrar. E-mail já existe.', 'danger')
     
-    if message:
-        flash(message, message_category)
+    return render_template('telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html')
 
-    next_url = url_for(next_page)
-    
-    return render_template("telasHTML/ArquivosGerais/TelaLoading/Telaloading.html", 
-                           next_url=next_url, 
-                           tempo_loading=2500)
+@app.route('/loading/pagina_inicial')
+def loading():
+    return render_template('telasHTML/ArquivosGerais/TelaLoading/Telaloading.html')
 
-
-@app.route("/logout")
-@login_required
-def logout():
-    session.pop('user_email', None)
-    session.pop('user_id', None)
-    session.pop('user_name', None)
-    flash('Você foi desconectado com sucesso!', 'success')
-    return redirect(url_for('login'))
-
-
-@app.route("/inicio")
+@app.route('/inicio')
 @login_required
 def pagina_inicial():
     users = get_all_users()
-    current_user_email = session.get('user_email')
-    users = [user for user in users if user.get('email') != current_user_email]
-    
-    return render_template("telasHTML/ArquivosGerais/TelaInicial/TelaInicial.html", users=users)
+    return render_template('telasHTML/ArquivosGerais/TelaInicial/TelaInicial.html', users=users)
 
-
-@app.route("/perfil/<int:user_id>")
+@app.route('/perfil/<int:user_id>')
 @login_required
-def pagina_usuario(user_id=None):
-    if user_id is None or user_id == session.get('user_id'):
-        user_email = session.get('user_email')
-        usuario = get_user_by_email(user_email)
-        is_owner = True
-    else:
-        usuario = get_user_by_id(user_id)
-        is_owner = False
-        
-    if not usuario:
+def pagina_usuario(user_id):
+    user = get_user_by_id(user_id)
+    if not user:
         flash('Usuário não encontrado.', 'danger')
         return redirect(url_for('pagina_inicial'))
+    posts = get_posts_by_user(user_id)
+    return render_template('telasHTML/ArquivosGerais/TelaDeUsuario/TelaUser.html', user=user, posts=posts)
 
-    publicacoes = get_posts_by_user(usuario['id']) if usuario else []
-
-    return render_template("telasHTML/ArquivosGerais/TelaDeUsuario/TelaUser.html", 
-                           usuario=usuario, 
-                           is_owner=is_owner,
-                           publicacoes=publicacoes)
-
-
-@app.route("/editar_perfil", methods=['GET', 'POST'])
+@app.route('/editar_perfil', methods=['GET', 'POST'])
 @login_required
 def editar_perfil():
-    user_email = session.get('user_email')
-    usuario = get_user_by_email(user_email)
-    
-    if not usuario:
-        flash('Erro ao carregar dados do usuário.', 'danger')
-        return redirect(url_for('pagina_inicial'))
-
+    user_id = session['user_id']
     if request.method == 'POST':
-        update_data = {}
-        
         nome = request.form.get('nome')
-        cidade = request.form.get('cidade')
-        posicao = request.form.get('posicao')
-        numero = request.form.get('numero')
-        
-        if nome:
-            update_data['nome'] = nome
-        if cidade:
-            update_data['cidade'] = cidade
-        if posicao:
-            update_data['posicao'] = posicao
-        if numero:
-            update_data['numero_camisa'] = numero
-            
-        if 'profile_image' in request.files:
-            file = request.files['profile_image']
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                try:
-                    file_bytes = file.read()
-                    bucket_path = f"users/{session['user_id']}/{filename}"
-                    supabase.storage.from_(PROFILE_BUCKET).upload(
-                        path=bucket_path,
-                        file=file_bytes,
-                        file_options={"content-type": file.content_type, "upsert": "true"}
-                    )
-                    public_url = supabase.storage.from_(PROFILE_BUCKET).get_public_url(bucket_path)
-                    update_data['profile_image_url'] = public_url
-                    session['user_profile_image'] = public_url
-                except Exception as e:
-                    print(f"ERRO no upload de perfil: {e}")
-                    flash('Falha ao fazer upload da foto de perfil.', 'danger')
+        bio = request.form.get('bio')
+        profile_image = request.files.get('profile_image')
 
-        if update_data:
-            success = update_user_profile(user_email, **update_data)
-            if success:
-                flash('Perfil atualizado com sucesso!', 'success')
-            else:
-                flash('Falha ao atualizar o perfil.', 'danger')
+        profile_image_url = None
+        if profile_image and allowed_file(profile_image.filename):
+            filename = secure_filename(profile_image.filename)
+            bucket_path = f"users/{user_id}/{filename}"
+            try:
+                supabase.storage.from_(PROFILE_BUCKET).upload(
+                    bucket_path,
+                    profile_image.read(),
+                    file_options={"content-type": profile_image.content_type}
+                )
+                public_url = supabase.storage.from_(PROFILE_BUCKET).get_public_url(bucket_path)
+                profile_image_url = public_url
+            except Exception as e:
+                flash('Erro ao fazer upload da imagem.', 'danger')
+                print(e)
+
+        success = update_user_profile(user_id, nome, bio, profile_image_url)
+        if success:
+            flash('Perfil atualizado com sucesso!', 'success')
         else:
-             flash('Nenhuma alteração detectada.', 'info')
-             
-        return redirect(url_for('editar_perfil'))
+            flash('Erro ao atualizar perfil.', 'danger')
+        
+        return redirect(url_for('pagina_usuario', user_id=user_id))
 
-    return render_template("telasHTML/ArquivosGerais/TelaDeUsuario/editar_perfil.html", usuario=usuario)
+    user = get_user_by_id(user_id)
+    return render_template('telasHTML/ArquivosGerais/TelaDeUsuario/editar_perfil.html', user=user)
 
-
-@app.route("/feed")
+@app.route('/feed')
 @login_required
 def pagina_feed():
-    posts = get_all_posts()
-    return render_template("telasHTML/ArquivosGerais/TelaFeed/feed.html", posts=posts)
+    return render_template("telasHTML/ArquivosGerais/TelaFeed/feed.html")
 
-
-@app.route("/api/posts", methods=['GET', 'POST'])
+@app.route('/api/posts', methods=['GET', 'POST'])
 @login_required
 def api_posts():
     if request.method == 'POST':
-        try:
-            legenda = request.form.get('legenda', '').strip()
-            if not legenda:
-                return jsonify({'success': False, 'error': 'Legenda é obrigatória.'}), 400
+        legenda = request.form.get('legenda', '')
+        autor_id = session['user_id']
+        imagem_url = None
 
-            autor_id = session.get('user_id')
-            imagem_url = None
-
-            if 'postImage' in request.files:
-                file = request.files['postImage']
-                if file and allowed_file(file.filename):
+        if 'imagem' in request.files:
+            file = request.files['imagem']
+            if file and file.filename != '' and allowed_file(file.filename):
+                try:
                     filename = secure_filename(file.filename)
-                    try:
-                        file_bytes = file.read()
-                        bucket_path = f"posts/{autor_id}/{datetime.now().timestamp()}_{filename}"
-                        supabase.storage.from_(POST_BUCKET).upload(
-                            path=bucket_path,
-                            file=file_bytes,
-                            file_options={"content-type": file.content_type}
-                        )
-                        public_url = supabase.storage.from_(POST_BUCKET).get_public_url(bucket_path)
-                        imagem_url = public_url
-                    except Exception as e:
-                        print(f"ERRO no upload do post: {e}")
-                        return jsonify({'success': False, 'error': 'Falha no upload da imagem.'}), 500
+                    bucket_path = f"users/{autor_id}/{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
+                    supabase.storage.from_(POST_BUCKET).upload(
+                        bucket_path,
+                        file.read(),
+                        file_options={"content-type": file.content_type}
+                    )
+                    public_url = supabase.storage.from_(POST_BUCKET).get_public_url(bucket_path)
+                    imagem_url = public_url
+                except Exception as e:
+                    print(f"ERRO no upload do post: {e}")
+                    return jsonify({'success': False, 'error': 'Falha no upload da imagem.'}), 500
 
-            success, result = create_post(autor_id, legenda, imagem_url)
-            
-            if success:
-                post_id = result
-                new_post_data = get_post_by_id(post_id)
-                if new_post_data:
-                    return jsonify({'success': True, 'post': new_post_data}), 201
-                else:
-                    return jsonify({'success': False, 'error': 'Post criado, mas não pôde ser recuperado.'}), 500
+        success, result = create_post(autor_id, legenda, imagem_url)
+        
+        if success:
+            post_id = result
+            new_post_data = get_post_by_id(post_id)
+            if new_post_data:
+                return jsonify({'success': True, 'post': new_post_data}), 201
             else:
-                return jsonify({'success': False, 'error': result}), 500
-        except Exception as e:
-            print(f"ERRO GERAL ao criar post: {e}")
-            return jsonify({'success': False, 'error': 'Erro interno do servidor.'}), 500
+                return jsonify({'success': False, 'error': 'Post criado, mas não pôde ser recuperado.'}), 500
+        else:
+            return jsonify({'success': False, 'error': result}), 500
 
     elif request.method == 'GET':
         posts = get_all_posts()
         return jsonify(posts)
 
-
+# ROTA DO CHAT – CORRIGIDA E SEGURA (usa apenas a anon key pública)
 @app.route("/chat/<int:destinatario_id>")
 @login_required
 def chat_with_user(destinatario_id):
@@ -368,45 +252,13 @@ def chat_with_user(destinatario_id):
         flash('Usuário para chat não encontrado.', 'danger')
         return redirect(url_for('pagina_inicial'))
 
-    supabase_url = os.environ.get("SUPABASE_URL")
-    supabase_anon_key = os.environ.get("SUPABASE_KEY")
-
-    return render_template("telasHTML/ArquivosGerais/TelaChat/chat.html", 
-                           remetente=remetente, 
-                           destinatario=destinatario,
-                           supabase_url=supabase_url,
-                           supabase_anon_key=supabase_anon_key)
-
-
-# ROTA API ADICIONADA: Busca o histórico de mensagens entre dois usuários
-@app.route("/api/chat/historico/<int:destinatario_id>", methods=['GET'])
-@login_required
-def chat_historico(destinatario_id):
-    remetente_id = session.get('user_id')
-    
-    if not remetente_id:
-        return jsonify({"error": "Usuário não logado."}), 401
-
-    try:
-        # CORREÇÃO FINAL APLICADA: Colocar o início da chain na mesma linha do parêntese de abertura
-        # para garantir que o parser do Python não encontre um erro de sintaxe na quebra de linha.
-        response = (supabase.from('mensagens')
-            .select('*')
-            .or_(
-                f'and(remetente_id.eq.{remetente_id},destinatario_id.eq.{destinatario_id}),and(remetente_id.eq.{destinatario_id},destinatario_id.eq.{remetente_id})'
-            )
-            .order('created_at', desc=False)
-            .execute()
-        )
-
-        # O `response.data` contém a lista de mensagens (ou lista vazia)
-        messages = response.data
-        return jsonify(messages), 200
-
-    except Exception as e:
-        print(f"ERRO ao buscar histórico de chat: {e}")
-        return jsonify({"error": "Erro interno ao buscar mensagens."}), 500
-
+    return render_template(
+        "telasHTML/ArquivosGerais/TelaChat/chat.html",
+        remetente=remetente,
+        destinatario=destinatario,
+        SUPABASE_URL=os.environ.get("SUPABASE_URL"),
+        SUPABASE_ANON_KEY=os.environ.get("SUPABASE_ANON_KEY")  # chave pública correta
+    )
 
 @app.route("/esqueci_senha", methods=['GET', 'POST'])
 def esqueci_senha():
@@ -414,16 +266,13 @@ def esqueci_senha():
         email = request.form.get('email')
         flash(f'Se o e-mail {email} estiver cadastrado, um link de redefinição de senha foi enviado.', 'success')
         return redirect(url_for('login'))
-        
     return render_template("telasHTML/RecuperarSenha/esqueci_senha.html")
-
 
 @app.route("/redefinir_senha", methods=['GET', 'POST'])
 def redefinir_senha():
     if request.method == 'POST':
         nova_senha = request.form.get('nova_senha')
         email = request.args.get('email')
-        
         if email and nova_senha and len(nova_senha) >= 6:
             if update_password(email, nova_senha):
                 flash('Sua senha foi redefinida com sucesso. Faça o login.', 'success')
@@ -432,9 +281,12 @@ def redefinir_senha():
                 flash('Falha ao redefinir a senha. Tente novamente.', 'danger')
         else:
             flash('Senha inválida ou falta de informações.', 'danger')
-
     return render_template("telasHTML/RecuperarSenha/redefinir_senha.html")
 
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 
 @app.template_filter('strftime')
 def _jinja2_filter_strftime(date_str, fmt='%d/%m/%Y às %H:%M'):
@@ -445,7 +297,6 @@ def _jinja2_filter_strftime(date_str, fmt='%d/%m/%Y às %H:%M'):
         return dt.strftime(fmt)
     except:
         return date_str
-
 
 if __name__ == '__main__':
     os.makedirs(os.path.join(BASE_DIR, UPLOAD_FOLDER_RELATIVE), exist_ok=True)
