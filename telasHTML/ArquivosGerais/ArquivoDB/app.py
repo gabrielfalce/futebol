@@ -1,5 +1,3 @@
-**Arquivo Alterado: telasHTML\ArquivosGerais\ArquivoDB\app.py**
-```python
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory, jsonify
 from dotenv import load_dotenv
