@@ -5,7 +5,7 @@ from database import (
     register_user, check_user, get_all_users, get_user_by_email,
     update_user_profile_image, update_user_profile, get_user_by_id, update_password,
     create_post, get_posts_by_user, get_all_posts, get_post_by_id, supabase,
-    create_message # <-- NOVO: Adicionado para salvar mensagens
+    create_message # Adicionado para salvar mensagens
 )
 import bcrypt
 from datetime import datetime
@@ -122,7 +122,7 @@ def login_post():
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
     if request.method == 'POST':
-        # CORREÇÃO: Extrair todos os campos do formulário
+        # Extrair todos os campos do formulário
         nome = request.form.get('nome')
         email = request.form.get('email')
         senha = request.form.get('senha')
@@ -132,7 +132,7 @@ def cadastro():
         numero_camisa = request.form.get('numero_camisa')
         numero_telefone = request.form.get('numero_telefone')
         
-        # CORREÇÃO: Chamar register_user com todos os argumentos
+        # Chamar register_user com todos os argumentos
         success, message = register_user(
             nome, email, senha, cidade, posicao, nascimento, numero_camisa, numero_telefone
         )
@@ -141,14 +141,14 @@ def cadastro():
             flash('Cadastro realizado com sucesso! Faça login.', 'success')
             return redirect(url_for('login'))
         else:
-            # CORREÇÃO: Tratar a mensagem de erro e repassar os dados do formulário
+            # Tratar a mensagem de erro e repassar os dados do formulário
             flash(message, 'danger')
             return render_template(
                 'telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html',
                 form_data=request.form
             )
     
-    # CORREÇÃO: Garante que 'form_data' seja passado em requisições GET
+    # Garante que 'form_data' seja passado em requisições GET
     return render_template(
         'telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html',
         form_data={}
@@ -164,7 +164,7 @@ def pagina_inicial():
     users = get_all_users()
     return render_template('telasHTML/ArquivosGerais/TelaInicial/TelaInicial.html', users=users)
 
-# ROTA DE PERFIL - CORRIGIDA
+# ROTA DE PERFIL
 @app.route('/perfil/<int:user_id>')
 @login_required
 def pagina_usuario(user_id):
@@ -177,9 +177,9 @@ def pagina_usuario(user_id):
     posts = get_posts_by_user(user_id)
     return render_template(
         'telasHTML/ArquivosGerais/TelaDeUsuario/TelaUser.html', 
-        usuario=user, # CORRIGIDO: Nome da variável para corresponder ao HTML
-        publicacoes=posts, # CORRIGIDO: Nome da variável para corresponder ao HTML
-        is_owner=is_owner # Variável crucial para exibir botões de edição
+        usuario=user,
+        publicacoes=posts,
+        is_owner=is_owner
     )
 
 
@@ -266,7 +266,7 @@ def api_posts():
         posts = get_all_posts()
         return jsonify(posts)
 
-# NOVA ROTA API CHAT - PARA ENVIAR MENSAGENS (NECESSÁRIO PARA TEMPO REAL)
+# ROTA API CHAT - PARA ENVIAR MENSAGENS (NECESSÁRIO PARA TEMPO REAL)
 @app.route("/api/chat/send_message", methods=['POST'])
 @login_required
 def api_send_message():
@@ -285,7 +285,7 @@ def api_send_message():
     except ValueError:
         return jsonify({'success': False, 'error': 'ID de destinatário inválido.'}), 400
 
-    # Chama a função de banco de dados
+    # Chama a função de banco de dados para salvar a mensagem
     success, result = create_message(remetente_id, destinatario_id, content)
 
     if success:
@@ -319,7 +319,7 @@ def chat_with_user(destinatario_id):
         SUPABASE_ANON_KEY=os.environ.get("SUPABASE_ANON_KEY")
     )
 
-# ROTA API CHAT - PARA CARREGAMENTO DE HISTÓRICO VIA JS (REINTRODUZIDA)
+# ROTA API CHAT - PARA CARREGAMENTO DE HISTÓRICO VIA JS
 @app.route("/api/chat/historico/<int:destinatario_id>")
 @login_required
 def api_chat_historico(destinatario_id):
@@ -328,12 +328,13 @@ def api_chat_historico(destinatario_id):
     if not remetente_id:
         return jsonify({'success': False, 'error': 'Usuário não autenticado.'}), 401
 
-    # Ordena os IDs para garantir a chave de conversa consistente
+    # Ordena os IDs para garantir a chave de conversa consistente na busca
     id1 = min(remetente_id, destinatario_id)
     id2 = max(remetente_id, destinatario_id)
     
     try:
-        # Consulta mensagens onde (remetente=id1 E destinatário=id2) OU (remetente=id2 E destinatário=id1)
+        # Busca mensagens onde (remetente=id1 E destinatário=id2) OU (remetente=id2 E destinatário=id1)
+        # O operador OR faz a busca de mensagens enviadas e recebidas.
         response = (
             supabase.from_('mensagens').select('*').or_(
                 f'and(remetente_id.eq.{id1},destinatario_id.eq.{id2}),and(remetente_id.eq.{id2},destinatario_id.eq.{id1})'

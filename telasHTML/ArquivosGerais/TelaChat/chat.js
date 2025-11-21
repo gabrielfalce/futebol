@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const messageInput = document.getElementById('message-input');
     
     // Inicializa o cliente Supabase com as credenciais
+    // Depende do CDN ter sido carregado no HTML antes.
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
     // --- 2. FUNÇÕES AUXILIARES ---
@@ -36,8 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Adicionar timestamp
         const timeSpan = document.createElement('span');
+        // Usa `message.created_at` que deve vir do banco de dados (ISO string)
         const date = new Date(message.created_at);
-        // Garante que a hora seja formatada corretamente
         timeSpan.textContent = date.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
         timeSpan.classList.add('timestamp');
         messageElement.appendChild(timeSpan);
@@ -54,11 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
     async function sendMessage(content) {
         if (content.trim() === '') return;
 
-        // Adiciona a mensagem imediatamente à tela para feedback rápido
+        // Feedback imediato na tela do remetente (pré-confirmação)
         appendMessage({
             remetente_id: REMETENTE_ID,
             content: content,
-            created_at: new Date().toISOString() // Temporário até a confirmação do DB
+            created_at: new Date().toISOString() // Usa hora local para feedback instantâneo
         });
 
         try {
@@ -77,9 +78,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (!data.success) {
                 console.error("Falha ao enviar mensagem:", data.error);
-                // NOTA: Em caso de falha, a mensagem 'sent' precisaria ser removida/marcada como erro.
                 alert("Erro ao enviar mensagem: " + data.error);
             }
+            // Se o envio for bem-sucedido, o Supabase Realtime cuidará de atualizar a mensagem no destinatário
+            // e, se o filtro fosse configurado para isso, atualizar no remetente com o timestamp do DB.
 
         } catch (error) {
             console.error('Erro de rede ao enviar mensagem:', error);
@@ -132,11 +134,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const channel = supabaseClient.channel(channelName);
         
-        // Ouve por novas mensagens onde EU (REMETENTE_ID) sou o destinatário
+        // Ouve por novas mensagens na tabela 'mensagens'
         channel.on('postgres_changes', { 
             event: 'INSERT', 
             schema: 'public', 
             table: 'mensagens',
+            // Filtra para receber apenas mensagens destinadas a esta sessão
             filter: `destinatario_id=eq.${REMETENTE_ID}` 
         }, (payload) => {
             const newMessage = payload.new;
@@ -148,11 +151,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }).subscribe();
             
         console.log('Subscrito ao canal de chat:', channelName);
-
-        // Opcional: Ouve a própria mensagem de volta via Realtime. Isso pode ser usado para 
-        // garantir que o created_at do DB seja usado, mas pode causar duplicação se o 
-        // appendMessage for chamado em sendMessage(). Deixamos o appendMessage no sendMessage() para feedback instantâneo.
-        
     }
 
 
