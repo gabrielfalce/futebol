@@ -222,9 +222,9 @@ def perfil(user_id):
         
     is_current_user = user_id == session.get('user_id')
     
-    # Mantido conforme seu arquivo atual
+    # Alteração mínima: usar o arquivo existente TelaUser.html
     return render_template(
-        "ArquivosGerais/TelaDeUsuario/usuario.html", 
+        "ArquivosGerais/TelaDeUsuario/TelaUser.html", 
         user=user_data, 
         is_current_user=is_current_user,
         posts=posts
