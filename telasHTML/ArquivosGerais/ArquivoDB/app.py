@@ -5,14 +5,14 @@ from database import (
     register_user, check_user, get_all_users, get_user_by_email,
     update_user_profile_image, update_user_profile, get_user_by_id, update_password,
     create_post, get_posts_by_user, get_all_posts, get_post_by_id, supabase,
-    create_message, 
-    get_chat_history 
+    create_message,
+    get_chat_history
 )
 import bcrypt
 from datetime import datetime
 from werkzeug.utils import secure_filename
 from functools import wraps
-import uuid 
+import uuid
 
 load_dotenv()
 
@@ -22,10 +22,10 @@ APP_DIR = os.path.dirname(os.path.abspath(__file__))
 # CORREÇÃO CRÍTICA: Definir template_folder para a pasta 'telasHTML' (dois níveis acima,
 # assumindo app.py está em 'telasHTML/ArquivosGerais/ArquivoDB').
 # O caminho a ser usado em render_template será relativo a este TEMPLATE_FOLDER.
-TEMPLATE_FOLDER = os.path.abspath(os.path.join(APP_DIR, '..', '..')) 
+TEMPLATE_FOLDER = os.path.abspath(os.path.join(APP_DIR, '..', '..'))
 
 # Para uploads, o caminho para o projeto raiz continua sendo útil
-BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..', '..', '..')) 
+BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..', '..', '..'))
 
 app = Flask(
     __name__,
@@ -201,9 +201,14 @@ def logout():
 def pagina_inicial():
     user_id = session.get('user_id')
     user = get_user_by_id(user_id)
-    posts = get_all_posts() 
+
+    posts = get_all_posts()
+
+    # ADIÇÃO MÍNIMA: carregar todos os usuários para exibição na TelaInicial
+    users = get_all_users()
+
     # ALTERAÇÃO MÍNIMA: apontando para o caminho confirmado
-    return render_template("ArquivosGerais/TelaInicial/TelaInicial.html", user=user, posts=posts)
+    return render_template("ArquivosGerais/TelaInicial/TelaInicial.html", user=user, posts=posts, users=users)
 
 @app.route("/perfil/<int:user_id>")
 @login_required
