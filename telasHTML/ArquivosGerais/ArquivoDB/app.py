@@ -21,6 +21,7 @@ APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # CORREÇÃO CRÍTICA: Definir template_folder para a pasta 'telasHTML' (dois níveis acima, 
 # assumindo app.py está em 'telasHTML/ArquivosGerais/ArquivoDB').
+# O caminho a ser usado em render_template será relativo a este TEMPLATE_FOLDER.
 TEMPLATE_FOLDER = os.path.abspath(os.path.join(APP_DIR, '..', '..')) 
 
 # Para uploads, o caminho para o projeto raiz continua sendo útil
@@ -121,11 +122,11 @@ def login():
             return redirect(url_for('pagina_inicial'))
         else:
             flash('Credenciais inválidas. Tente novamente.', 'danger')
-            # CORREÇÃO: Caminho do template relativo a 'telasHTML'
-            return render_template("Login/login.html", email=email)
+            # CORREÇÃO APLICADA: Usando o caminho completo ArquivosGerais/telaDeLogin/telaLogin.html
+            return render_template("ArquivosGerais/telaDeLogin/telaLogin.html", email=email)
             
-    # CORREÇÃO: Caminho do template relativo a 'telasHTML'
-    return render_template("Login/login.html")
+    # CORREÇÃO APLICADA: Usando o caminho completo ArquivosGerais/telaDeLogin/telaLogin.html
+    return render_template("ArquivosGerais/telaDeLogin/telaLogin.html")
 
 @app.route("/cadastro", methods=['GET', 'POST'])
 def cadastro():
