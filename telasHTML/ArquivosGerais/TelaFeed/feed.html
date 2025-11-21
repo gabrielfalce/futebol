@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feed de Posts</title>
     <link rel="stylesheet" href="{{ url_for('feed_assets', filename='feed.css') }}">
-    <link rel="stylesheet" href="feed.css">
-   
-</head>
+    </head>
 <body data-api-url="{{ url_for('api_posts') }}" 
       data-default-avatar="{{ url_for('inicio_assets', filename='iconeUser.png') }}">
     <header class="cabecalho-pagina">
@@ -23,25 +21,7 @@
     <main class="container-feed" id="container-feed">
         <div class="spinner-carregamento" id="spinner-carregamento"></div>
 
-        <!-- Card de Publicação de Exemplo -->
-        <div class="post-card">
-            <div class="post-header">
-                <!-- Use um caminho para uma imagem de avatar de exemplo ou deixe em branco -->
-                <img src="https://via.placeholder.com/40" alt="Avatar do usuário" class="author-avatar">
-                <div class="author-info">
-                    <p class="author-name">{{ user.nome or 'Ghost name'}}</p>
-                    <p class="post-timestamp">1 de janeiro de 2024</p>
-                </div>
-            </div>
-            <div class="post-content">
-                 <p>{{ post.legenda or '' }}</p>
-            </div class="post-aling">  
-            <!-- Imagem da publicação (opcional) -->
-            <img src="{{ post.imagem or '' }}" alt="Imagem do post" class="post-image">
-            </div>
-        <!-- Fim do Card de Exemplo -->
-
-    </main>
+        </main>
 
     <script src="{{ url_for('feed_assets', filename='feed.js') }}"></script>
 </body>
