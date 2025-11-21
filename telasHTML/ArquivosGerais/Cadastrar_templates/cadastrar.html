@@ -7,7 +7,6 @@
     
     <link rel="icon" href="{{url_for('cadastro_assets', filename='bolaverde.ico')}}" type="image/x-icon">
     <link rel="stylesheet" href="{{ url_for('cadastro_assets', filename='estilo.css') }}">
-    <link rel="stylesheet" href="estilo.css">
     <style>
         .toast {
             visibility: hidden;
@@ -41,7 +40,6 @@
     <div id="toast-notification" class="toast"></div>
     
     <form action="{{ url_for('cadastro') }}" method="post">
-        <!-- ALTERAÇÕES: Adicionado o atributo 'value' a todos os inputs -->
         <input placeholder="Nome Completo" type="text" name="nome" value="{{ form_data.nome or '' }}" required>
         <input placeholder="Email" type="email" name="email" value="{{ form_data.email or '' }}" required>
         <input placeholder="Senha" type="password" name="senha" required minlength="8">

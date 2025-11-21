@@ -121,22 +121,33 @@ def login_post():
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
     if request.method == 'POST':
-        nome = request.form['nome']
-        email = request.form['email']
-        senha = request.form['senha']
+        # CORREÇÃO: Extrair todos os campos do formulário
+        nome = request.form.get('nome')
+        email = request.form.get('email')
+        senha = request.form.get('senha')
+        cidade = request.form.get('cidade')
+        posicao = request.form.get('posicao')
+        nascimento = request.form.get('nascimento')
+        numero_camisa = request.form.get('numero_camisa')
+        numero_telefone = request.form.get('numero_telefone')
         
-        if register_user(nome, email, senha):
+        # CORREÇÃO: Chamar register_user com todos os argumentos
+        success, message = register_user(
+            nome, email, senha, cidade, posicao, nascimento, numero_camisa, numero_telefone
+        )
+        
+        if success:
             flash('Cadastro realizado com sucesso! Faça login.', 'success')
             return redirect(url_for('login'))
         else:
-            flash('Erro ao cadastrar. E-mail já existe.', 'danger')
-            # CORREÇÃO 1: Passa os dados do formulário de volta para manter o preenchimento em caso de erro
+            # CORREÇÃO: Tratar a mensagem de erro e repassar os dados do formulário
+            flash(message, 'danger')
             return render_template(
                 'telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html',
                 form_data=request.form
             )
     
-    # CORREÇÃO 2: Para requisições GET, passa um dicionário vazio.
+    # CORREÇÃO: Garante que 'form_data' seja passado em requisições GET
     return render_template(
         'telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html',
         form_data={}
@@ -293,14 +304,13 @@ def api_chat_historico(destinatario_id):
     id2 = max(remetente_id, destinatario_id)
     
     try:
-        # Utiliza .format() e from_() (correto para a biblioteca Supabase)
-        filter_format = 'and(remetente_id.eq.{id1},destinatario_id.eq.{id2}),and(remetente_id.eq.{id2},destinatario_id.eq.{id1})'
-        filter_str = filter_format.format(id1=id1, id2=id2)
-        
-        # O método correto para a biblioteca Supabase é from_(), não 'from'
-        supabase_query = supabase.from_('mensagens').select('*').or_(filter_str).order('created_at', asc=True)
-
-        response = supabase_query.execute()
+        # Consulta mensagens onde (remetente=id1 E destinatário=id2) OU (remetente=id2 E destinatário=id1)
+        # CORREÇÃO: Envolver a expressão em parênteses externos para forçar a continuação de linha e evitar SyntaxError
+        response = (
+            supabase.from_('mensagens').select('*').or_(
+                f'and(remetente_id.eq.{id1},destinatario_id.eq.{id2}),and(remetente_id.eq.{id2},destinatario_id.eq.{id1})'
+            ).order('created_at', asc=True).execute()
+        )
         
         data = response.data
         if not data:
