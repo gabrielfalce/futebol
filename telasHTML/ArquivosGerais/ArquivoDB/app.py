@@ -19,17 +19,14 @@ load_dotenv()
 # === CONFIGURAÇÃO DE DIRETÓRIOS ===
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# CORREÇÃO CRÍTICA: Definir template_folder para a pasta 'telasHTML' (dois níveis acima,
-# assumindo app.py está em 'telasHTML/ArquivosGerais/ArquivoDB').
-# O caminho a ser usado em render_template será relativo a este TEMPLATE_FOLDER.
+# Definir template_folder para a pasta 'telasHTML' (dois níveis acima).
 TEMPLATE_FOLDER = os.path.abspath(os.path.join(APP_DIR, '..', '..'))
 
-# Para uploads, o caminho para o projeto raiz continua sendo útil
+# Para uploads, o caminho para o projeto raiz
 BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..', '..', '..'))
 
 app = Flask(
     __name__,
-    # Usando o diretório 'telasHTML' como a base para templates.
     template_folder=TEMPLATE_FOLDER
 )
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "chave_padrao_para_dev")
@@ -47,12 +44,27 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def login_required(f):
-    """Decorator de verificação de login."""
+    """Decorator de verificação de login que também valida o usuário no banco."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        # Verifica se há user_id na sessão
         if 'user_id' not in session:
             flash('Você precisa fazer login para acessar esta página.', 'danger')
-            return redirect(url_for('login'))
+            # redireciona para login com next
+            return redirect(url_for('login', next=request.path))
+        # Valida existência do usuário no banco
+        try:
+            user = get_user_by_id(session.get('user_id'))
+            if not user:
+                # sessão inválida — limpa e força novo login
+                session.clear()
+                flash('Sessão inválida. Faça login novamente.', 'danger')
+                return redirect(url_for('login', next=request.path))
+        except Exception:
+            # Em caso de erro ao acessar o banco, trate como sessão inválida
+            session.clear()
+            flash('Erro ao validar sessão. Faça login novamente.', 'danger')
+            return redirect(url_for('login', next=request.path))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -87,11 +99,9 @@ def chat_assets(filename):
 
 @app.route('/static/user_assets/<path:filename>')
 def user_assets(filename):
-    # mapeia para TEMPLATE_FOLDER/ArquivosGerais so arquivos solicitados com prefixo ArquivosGerais/...
     directory = os.path.join(TEMPLATE_FOLDER, 'ArquivosGerais')
     return send_from_directory(directory, filename)
 
-# rota dedicada para assets da TelaInicial (mantida para conveniência)
 @app.route('/static/inicio/<path:filename>')
 def inicio_assets(filename):
     directory = os.path.join(TEMPLATE_FOLDER, 'ArquivosGerais', 'TelaInicial')
@@ -119,24 +129,33 @@ def index():
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
+    # preserva o next vindo da query string (se houver)
+    next_url = request.args.get('next') or request.form.get('next')
     if request.method == 'POST':
         email = request.form.get('email')
         senha = request.form.get('senha')
+        remember = request.form.get('remember')  # checkbox: 'on' quando marcado
         user = check_user(email, senha)
 
         if user:
             session['user_id'] = user['id']
             session['user_email'] = user['email']
             session['user_nome'] = user['nome']
+            # lembrar-me: torna a sessão permanente
+            if remember:
+                session.permanent = True
+            else:
+                session.permanent = False
             flash(f'Bem-vindo, {user["nome"]}!', 'success')
+            # redireciona para next se existir, senão para pagina_inicial
+            if next_url:
+                return redirect(next_url)
             return redirect(url_for('pagina_inicial'))
         else:
             flash('Credenciais inválidas. Tente novamente.', 'danger')
-            # Mantido conforme seu arquivo atual
-            return render_template("ArquivosGerais/telaDeLogin/telaLogin.html", email=email)
-            
-    # Mantido conforme seu arquivo atual
-    return render_template("ArquivosGerais/telaDeLogin/telaLogin.html")
+            return render_template("ArquivosGerais/telaDeLogin/telaLogin.html", email=email, next=next_url)
+    # GET: renderiza a página de login (passando next para o template)
+    return render_template("ArquivosGerais/telaDeLogin/telaLogin.html", next=next_url)
 
 @app.route("/cadastro", methods=['GET', 'POST'])
 def cadastro():
@@ -161,12 +180,10 @@ def cadastro():
             else:
                 flash(message, 'danger')
 
-    # Mantido conforme seu arquivo atual
     return render_template("Cadastro/cadastrar.html", form_data=form_data)
 
 @app.route("/esqueci_senha")
 def esqueci_senha():
-    # Mantido conforme seu arquivo atual
     return render_template("RecuperarSenha/esqueci_senha.html")
 
 @app.route("/redefinir_senha", methods=['GET', 'POST'])
@@ -184,7 +201,6 @@ def redefinir_senha():
         else:
             flash('Senha inválida ou falta de informações.', 'danger')
             
-    # Mantido conforme seu arquivo atual
     return render_template("RecuperarSenha/redefinir_senha.html")
 
 @app.route('/logout')
@@ -203,11 +219,8 @@ def pagina_inicial():
     user = get_user_by_id(user_id)
 
     posts = get_all_posts()
-
-    # ADIÇÃO MÍNIMA: carregar todos os usuários para exibição na TelaInicial
     users = get_all_users()
 
-    # ALTERAÇÃO MÍNIMA: apontando para o caminho confirmado
     return render_template("ArquivosGerais/TelaInicial/TelaInicial.html", user=user, posts=posts, users=users)
 
 @app.route("/perfil/<int:user_id>")
@@ -222,7 +235,6 @@ def perfil(user_id):
         
     is_current_user = user_id == session.get('user_id')
     
-    # Alteração mínima: usar o arquivo existente TelaUser.html
     return render_template(
         "ArquivosGerais/TelaDeUsuario/TelaUser.html", 
         user=user_data, 
@@ -323,7 +335,6 @@ def chat(destinatario_id):
     supabase_url = os.environ.get("SUPABASE_URL")
     supabase_anon_key = os.environ.get("SUPABASE_KEY") 
     
-    # Mantido conforme seu arquivo atual
     return render_template(
         "ArquivosGerais/TelaChat/chat.html",
         destinatario=destinatario,
