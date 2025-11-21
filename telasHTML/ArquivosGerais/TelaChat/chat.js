@@ -32,7 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
         messageElement.classList.add('message', isSender ? 'sent' : 'received');
         
         const contentP = document.createElement('p');
-        contentP.textContent = message.content;
+        // CORREÇÃO: Usar 'conteudo' (Português) para ler da resposta do DB
+        contentP.textContent = message.conteudo; 
         messageElement.appendChild(contentP);
 
         // Adicionar timestamp
@@ -56,9 +57,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (content.trim() === '') return;
 
         // Feedback imediato na tela do remetente (pré-confirmação)
+        // CORREÇÃO: Usar 'conteudo' (Português) para a estrutura do objeto para ser consistente com appendMessage
         appendMessage({
             remetente_id: REMETENTE_ID,
-            content: content,
+            conteudo: content, // <-- ALTERADO DE 'content' PARA 'conteudo'
             created_at: new Date().toISOString() // Usa hora local para feedback instantâneo
         });
 
@@ -80,8 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error("Falha ao enviar mensagem:", data.error);
                 alert("Erro ao enviar mensagem: " + data.error);
             }
-            // Se o envio for bem-sucedido, o Supabase Realtime cuidará de atualizar a mensagem no destinatário
-            // e, se o filtro fosse configurado para isso, atualizar no remetente com o timestamp do DB.
 
         } catch (error) {
             console.error('Erro de rede ao enviar mensagem:', error);

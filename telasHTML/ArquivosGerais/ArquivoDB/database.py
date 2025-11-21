@@ -217,11 +217,12 @@ def create_message(remetente_id: int, destinatario_id: int, content: str):
     Retorna (True, message_id) ou (False, error_message).
     """
     try:
+        # CORREÇÃO: Usar 'conteudo' (Português) para corresponder à definição da tabela SQL
         # A nova mensagem será inserida e o Realtime do Supabase a enviará.
         response = supabase.table('mensagens').insert({
             'remetente_id': remetente_id,
             'destinatario_id': destinatario_id,
-            'content': content
+            'conteudo': content
         }).execute()
 
         if response.data:
