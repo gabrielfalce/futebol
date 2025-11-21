@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tela Inicial</title>
      
-    <link rel="icon" type="image/png" href="bolaverde.ico">
-    <link class="iconePg" rel="icon" href="{{ url_for('inicio_assets', filename='bolaverde.ico') }}" type="image/x-icon">
-    <!-- ALTERAÇÃO 1: Removida a linha de CSS duplicada e incorreta -->
-    <link rel="stylesheet" href="{{ url_for('inicio_assets', filename='styleInicial.css') }}">
-     <link rel="stylesheet" href="styleInicial.css">
-    
+    <!-- ícone -->
+    <link rel="icon" type="image/png" href="{{ url_for('user_assets', filename='TelaInicial/bolaverde.ico') }}">
+    <!-- CSS da TelaInicial servido pela rota user_assets -->
+    <link rel="stylesheet" href="{{ url_for('user_assets', filename='TelaInicial/styleInicial.css') }}">
 </head>
 <body>
     
@@ -24,20 +22,20 @@
     ></div>
 
     <header class="page-header">
-        </header>
+    </header>
     <main>
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Buscar usuários..." onkeyup="searchUsers()">
-            <img src="{{ url_for('inicio_assets', filename='lupa.png') }}" alt="Ícone de busca" class="search-icon">
+            <img src="{{ url_for('user_assets', filename='TelaInicial/lupa.png') }}" alt="Ícone de busca" class="search-icon">
         </div>
 
         <div class="user-list" id="user-list">
             {% if users %}
                 {% for user in users %}
-                    <a href="{{ url_for('chat_with_user', destinatario_id=user.id) }}" class="user-card-link">
+                    <a href="{{ url_for('chat', destinatario_id=user.id) }}" class="user-card-link">
                         <div class="user-card">
                             <img class="user-avatar" 
-                                 src="{{ url_for('serve_static_files', filename=user.profile_image_url) if user.profile_image_url else url_for('inicio_assets', filename='iconeUser.png') }}" 
+                                 src="{{ url_for('uploaded_file', filename=user.profile_image_url.split('/')[-1]) if user.profile_image_url else url_for('user_assets', filename='TelaInicial/iconeUser.png') }}" 
                                  alt="Avatar de {{ user.nome or 'Usuário' }}">
                             <p class="user-name">{{ user.nome or 'Nome Desconhecido' }}</p>
                             <div class="user-details">
@@ -54,13 +52,14 @@
     </main>
     
     <nav class="navigation-links">
-        <!-- ALTERAÇÃO 2: Corrigido 'feed_posts' para 'pagina_feed' -->
-        <a href="{{ url_for('pagina_feed') }}" title="Feed de Posts" class="nav-button feed-button">
+        <!-- Feed: usando pagina_inicial (não existe pagina_feed no app.py) -->
+        <a href="{{ url_for('pagina_inicial') }}" title="Feed de Posts" class="nav-button feed-button">
             Feed
         </a> 
         
-        <a href="{{ url_for('pagina_usuario', user_id=session.user_id) }}" title="Meu Perfil" class="nav-button profile-button">
-             <img src="{{ url_for('inicio_assets', filename='BotaoUsuario.ico') }}" alt="Perfil" class="profile-button-icon">
+        <!-- Perfil: app.py usa 'perfil' como endpoint -->
+        <a href="{{ url_for('perfil', user_id=session.user_id) }}" title="Meu Perfil" class="nav-button profile-button">
+             <img src="{{ url_for('user_assets', filename='TelaInicial/BotaoUsuario.ico') }}" alt="Perfil" class="profile-button-icon">
         </a>
         
         <a href="{{ url_for('logout') }}" title="Sair" class="nav-button logout-button">

@@ -122,10 +122,10 @@ def login():
             return redirect(url_for('pagina_inicial'))
         else:
             flash('Credenciais inválidas. Tente novamente.', 'danger')
-            # CORREÇÃO APLICADA: Usando o caminho completo ArquivosGerais/telaDeLogin/telaLogin.html
+            # Mantido conforme seu arquivo atual
             return render_template("ArquivosGerais/telaDeLogin/telaLogin.html", email=email)
             
-    # CORREÇÃO APLICADA: Usando o caminho completo ArquivosGerais/telaDeLogin/telaLogin.html
+    # Mantido conforme seu arquivo atual
     return render_template("ArquivosGerais/telaDeLogin/telaLogin.html")
 
 @app.route("/cadastro", methods=['GET', 'POST'])
@@ -151,12 +151,12 @@ def cadastro():
             else:
                 flash(message, 'danger')
 
-    # CORREÇÃO: Caminho do template relativo a 'telasHTML'
+    # Mantido conforme seu arquivo atual
     return render_template("Cadastro/cadastrar.html", form_data=form_data)
 
 @app.route("/esqueci_senha")
 def esqueci_senha():
-    # CORREÇÃO: Caminho do template relativo a 'telasHTML'
+    # Mantido conforme seu arquivo atual
     return render_template("RecuperarSenha/esqueci_senha.html")
 
 @app.route("/redefinir_senha", methods=['GET', 'POST'])
@@ -174,7 +174,7 @@ def redefinir_senha():
         else:
             flash('Senha inválida ou falta de informações.', 'danger')
             
-    # CORREÇÃO: Caminho do template relativo a 'telasHTML'
+    # Mantido conforme seu arquivo atual
     return render_template("RecuperarSenha/redefinir_senha.html")
 
 @app.route('/logout')
@@ -191,12 +191,9 @@ def logout():
 def pagina_inicial():
     user_id = session.get('user_id')
     user = get_user_by_id(user_id)
-    
     posts = get_all_posts() 
-    
-    # CORREÇÃO: Caminho do template relativo a 'telasHTML'
-    return render_template("ArquivosGerais/TelaPrincipal/index.html", user=user, posts=posts)
-
+    # ALTERAÇÃO MÍNIMA: apontando para o caminho confirmado
+    return render_template("ArquivosGerais/TelaInicial/TelaInicial.html", user=user, posts=posts)
 
 @app.route("/perfil/<int:user_id>")
 @login_required
@@ -210,7 +207,7 @@ def perfil(user_id):
         
     is_current_user = user_id == session.get('user_id')
     
-    # CORREÇÃO: Caminho do template relativo a 'telasHTML'
+    # Mantido conforme seu arquivo atual
     return render_template(
         "ArquivosGerais/TelaDeUsuario/usuario.html", 
         user=user_data, 
@@ -311,7 +308,7 @@ def chat(destinatario_id):
     supabase_url = os.environ.get("SUPABASE_URL")
     supabase_anon_key = os.environ.get("SUPABASE_KEY") 
     
-    # CORREÇÃO: Caminho do template relativo a 'telasHTML'
+    # Mantido conforme seu arquivo atual
     return render_template(
         "ArquivosGerais/TelaChat/chat.html",
         destinatario=destinatario,
