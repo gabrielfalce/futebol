@@ -107,7 +107,7 @@ def login():
 def login_post():
     if request.method == 'POST':
         email = request.form['email']
-        senha = request.form['senha']  # ← CORRIGIDO: removido o .encode('utf-8')
+        senha = request.form['senha']
         
         user = check_user(email, senha)
         if user:
@@ -143,15 +143,24 @@ def pagina_inicial():
     users = get_all_users()
     return render_template('telasHTML/ArquivosGerais/TelaInicial/TelaInicial.html', users=users)
 
+# ROTA DE PERFIL - CORRIGIDA
 @app.route('/perfil/<int:user_id>')
 @login_required
 def pagina_usuario(user_id):
     user = get_user_by_id(user_id)
+    # Variável is_owner é crucial para o TelaUser.html
+    is_owner = session.get('user_id') == user_id
     if not user:
         flash('Usuário não encontrado.', 'danger')
         return redirect(url_for('pagina_inicial'))
     posts = get_posts_by_user(user_id)
-    return render_template('telasHTML/ArquivosGerais/TelaDeUsuario/TelaUser.html', user=user, posts=posts)
+    return render_template(
+        'telasHTML/ArquivosGerais/TelaDeUsuario/TelaUser.html', 
+        usuario=user, # CORRIGIDO: Nome da variável para corresponder ao HTML
+        publicacoes=posts, # CORRIGIDO: Nome da variável para corresponder ao HTML
+        is_owner=is_owner # Variável crucial para exibir botões de edição
+    )
+
 
 @app.route('/editar_perfil', methods=['GET', 'POST'])
 @login_required
@@ -192,6 +201,7 @@ def editar_perfil():
 @app.route('/feed')
 @login_required
 def pagina_feed():
+    # O feed.html carrega o conteúdo via AJAX na rota /api/posts
     return render_template("telasHTML/ArquivosGerais/TelaFeed/feed.html")
 
 @app.route('/api/posts', methods=['GET', 'POST'])
@@ -235,7 +245,7 @@ def api_posts():
         posts = get_all_posts()
         return jsonify(posts)
 
-# ROTA DO CHAT – CORRIGIDA E SEGURA
+# ROTA DO CHAT
 @app.route("/chat/<int:destinatario_id>")
 @login_required
 def chat_with_user(destinatario_id):
@@ -256,9 +266,39 @@ def chat_with_user(destinatario_id):
         "telasHTML/ArquivosGerais/TelaChat/chat.html",
         remetente=remetente,
         destinatario=destinatario,
-        SUPABASE_URL=os.environ.get("SUPABASE_URL", ""),
-        SUPABASE_ANON_KEY=os.environ.get("SUPABASE_ANON_KEY", "")
+        SUPABASE_URL=os.environ.get("SUPABASE_URL"),
+        SUPABASE_ANON_KEY=os.environ.get("SUPABASE_ANON_KEY")
     )
+
+# NOVA ROTA API CHAT - PARA CARREGAMENTO DE HISTÓRICO VIA JS (REINTRODUZIDA)
+@app.route("/api/chat/historico/<int:destinatario_id>")
+@login_required
+def api_chat_historico(destinatario_id):
+    remetente_id = session.get('user_id')
+    
+    if not remetente_id:
+        return jsonify({'success': False, 'error': 'Usuário não autenticado.'}), 401
+
+    # Ordena os IDs para garantir a chave de conversa consistente
+    id1 = min(remetente_id, destinatario_id)
+    id2 = max(remetente_id, destinatario_id)
+    
+    try:
+        # Consulta mensagens onde (remetente=id1 E destinatário=id2) OU (remetente=id2 E destinatário=id1)
+        response = supabase.from('mensagens').select('*').or_(
+            f'and(remetente_id.eq.{id1},destinatario_id.eq.{id2}),and(remetente_id.eq.{id2},destinatario_id.eq.{id1})'
+        ).order('created_at', asc=True).execute()
+        
+        data = response.data
+        if not data:
+            return jsonify([]), 200
+            
+        return jsonify(data), 200
+
+    except Exception as e:
+        print(f"Erro ao buscar histórico de chat: {e}")
+        return jsonify({'success': False, 'error': f'Falha no servidor ao carregar histórico: {str(e)}'}), 500
+
 
 @app.route("/esqueci_senha", methods=['GET', 'POST'])
 def esqueci_senha():
