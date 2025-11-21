@@ -114,9 +114,9 @@ def login():
             return redirect(url_for('pagina_inicial'))
         else:
             flash('Credenciais inválidas. Tente novamente.', 'danger')
-            return render_template("telasHTML/Login/login.html", email=email)
+            return render_template("telaDeLogin/telaLogin.html", email=email)
             
-    return render_template("telasHTML/Login/login.html")
+    return render_template("telaDeLogin/telaLogin.html")
 
 @app.route("/cadastro", methods=['GET', 'POST'])
 def cadastro():
