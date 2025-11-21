@@ -285,9 +285,12 @@ def api_chat_historico(destinatario_id):
     
     try:
         # Consulta mensagens onde (remetente=id1 E destinatário=id2) OU (remetente=id2 E destinatário=id1)
-        response = supabase.from('mensagens').select('*').or_(
-            f'and(remetente_id.eq.{id1},destinatario_id.eq.{id2}),and(remetente_id.eq.{id2},destinatario_id.eq.{id1})'
-        ).order('created_at', asc=True).execute()
+        # CORREÇÃO: Envolver a expressão em parênteses externos para forçar a continuação de linha e evitar SyntaxError
+        response = (
+            supabase.from('mensagens').select('*').or_(
+                f'and(remetente_id.eq.{id1},destinatario_id.eq.{id2}),and(remetente_id.eq.{id2},destinatario_id.eq.{id1})'
+            ).order('created_at', asc=True).execute()
+        )
         
         data = response.data
         if not data:
