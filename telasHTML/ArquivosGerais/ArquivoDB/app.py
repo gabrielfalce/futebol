@@ -19,7 +19,7 @@ load_dotenv()
 # === CONFIGURAÇÃO DE DIRETÓRIOS ===
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# CORREÇÃO CRÍTICA: Definir template_folder para a pasta 'telasHTML' (dois níveis acima, 
+# CORREÇÃO CRÍTICA: Definir template_folder para a pasta 'telasHTML' (dois níveis acima,
 # assumindo app.py está em 'telasHTML/ArquivosGerais/ArquivoDB').
 # O caminho a ser usado em render_template será relativo a este TEMPLATE_FOLDER.
 TEMPLATE_FOLDER = os.path.abspath(os.path.join(APP_DIR, '..', '..')) 
@@ -68,24 +68,34 @@ def _jinja2_filter_strftime(date_str, fmt='%d/%m/%Y às %H:%M'):
         return 'Data Inválida'
 
 # === ROTAS DE ASSETS (CSS/JS/IMAGENS) ===
-# Estas rotas continuam usando o caminho completo para a pasta correta (telasHTML/...)
-# e não o template_folder, pois usam send_from_directory.
+# Usar caminhos absolutos baseados em TEMPLATE_FOLDER para evitar 404s por working directory.
 
 @app.route('/static/login/<path:filename>')
 def login_assets(filename):
-    return send_from_directory('telasHTML/Login', filename)
+    directory = os.path.join(TEMPLATE_FOLDER, 'telaDeLogin')
+    return send_from_directory(directory, filename)
 
 @app.route('/static/cadastro/<path:filename>')
 def cadastro_assets(filename):
-    return send_from_directory('telasHTML/Cadastro', filename)
+    directory = os.path.join(TEMPLATE_FOLDER, 'Cadastrar_templates')
+    return send_from_directory(directory, filename)
     
 @app.route('/static/chat/<path:filename>')
 def chat_assets(filename):
-    return send_from_directory('telasHTML/ArquivosGerais/TelaChat', filename)
+    directory = os.path.join(TEMPLATE_FOLDER, 'TelaChat')
+    return send_from_directory(directory, filename)
 
 @app.route('/static/user_assets/<path:filename>')
 def user_assets(filename):
-    return send_from_directory('telasHTML/ArquivosGerais', filename)
+    # mapeia para TEMPLATE_FOLDER/ArquivosGerais so arquivos solicitados com prefixo ArquivosGerais/...
+    directory = os.path.join(TEMPLATE_FOLDER, 'ArquivosGerais')
+    return send_from_directory(directory, filename)
+
+# rota dedicada para assets da TelaInicial (mantida para conveniência)
+@app.route('/static/inicio/<path:filename>')
+def inicio_assets(filename):
+    directory = os.path.join(TEMPLATE_FOLDER, 'ArquivosGerais', 'TelaInicial')
+    return send_from_directory(directory, filename)
 
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
