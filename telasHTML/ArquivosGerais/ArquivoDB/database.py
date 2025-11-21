@@ -19,7 +19,7 @@ if not url or not key:
 
 try:
     # A inicialização agora usa a chave de serviço, que tem mais privilégios.
-    supabase: Client = create_client(url, key     )
+    supabase: Client = create_client(url, key)
     print("Sucesso: Cliente Supabase inicializado com chave de serviço.")
 except Exception as e:
     print(f"ERRO ao inicializar o Cliente Supabase: {e}")
@@ -178,10 +178,21 @@ def update_user_profile_image(email, profile_image_url_path):
         print(f"ERRO em update_user_profile_image: {e}")
         return False
 
-def update_user_profile(email, **update_data):
+def update_user_profile(user_id, nome, bio, profile_image_url):
     """Atualiza o perfil do usuário com dados dinâmicos."""
     try:
-        response = supabase.table('usuarios').update(update_data).eq('email', email).execute()
+        update_data = {}
+        if nome is not None:
+            update_data['nome'] = nome
+        if bio is not None:
+            update_data['bio'] = bio
+        if profile_image_url is not None:
+            update_data['profile_image_url'] = profile_image_url
+            
+        if not update_data:
+            return True # Nada para atualizar
+
+        response = supabase.table('usuarios').update(update_data).eq('id', user_id).execute()
         return bool(response.data)
     except Exception as e:
         print(f"ERRO em update_user_profile: {e}")
@@ -199,6 +210,29 @@ def update_password(email, new_password):
         print(f"ERRO em update_password: {e}")
         return False
 
+# ====================== NOVAS FUNÇÕES PARA CHAT ======================
+def create_message(remetente_id: int, destinatario_id: int, content: str):
+    """
+    Insere uma nova mensagem na tabela `mensagens`.
+    Retorna (True, message_id) ou (False, error_message).
+    """
+    try:
+        response = supabase.table('mensagens').insert({
+            'remetente_id': remetente_id,
+            'destinatario_id': destinatario_id,
+            'content': content
+        }).execute()
+
+        if response.data:
+            # Retorna o ID da mensagem recém-criada
+            return True, response.data[0]['id']
+        else:
+            return False, "Nenhuma linha inserida. (Verifique RLS/Permissões)"
+    except Exception as e:
+        error_msg = str(e)
+        print(f"ERRO em create_message: {error_msg}")
+        return False, f"Falha ao enviar mensagem: {error_msg}"
+        
 # ====================== NOVAS FUNÇÕES PARA POSTS ======================
 
 def create_post(autor_id: int, legenda: str, imagem_url: str = None):

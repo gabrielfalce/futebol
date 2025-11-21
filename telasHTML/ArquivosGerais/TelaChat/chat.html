@@ -6,13 +6,14 @@
     <title>Chat com {{ destinatario.nome }}</title>
     
     <link rel="stylesheet" href="{{ url_for('chat_assets', filename='chat.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div class="chat-container">
         <header class="chat-header">
             <a href="{{ url_for('pagina_inicial') }}" class="back-button" aria-label="Voltar para a página anterior">&larr;</a>
             
-            <img src="{{ destinatario.profile_image_url if destinatario.profile_image_url else '' }}" alt="Avatar de {{ destinatario.nome }}" class="avatar">
+            <img src="{{ destinatario.profile_image_url if destinatario.profile_image_url else url_for('user_assets', filename='imagens/bolaLogo.png') }}" alt="Avatar de {{ destinatario.nome }}" class="avatar">
             
             <div class="user-info">
                 </div>
@@ -26,166 +27,21 @@
         <footer class="chat-footer">
             <form id="message-form" class="message-form">
                 <input class="CaixaTexto" type="text" id="message-input" placeholder="Digite uma mensagem..." autocomplete="off">
-                <button type="submit" aria-label="Enviar mensagem">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
-                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
-                    </svg>
+                <button type="submit" aria-label="Enviar Mensagem">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13"/></svg>
                 </button>
             </form>
         </footer>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
-        // 1. VARIÁVEIS DE CONTEXTO
-        const REMETENTE_ID = {{ remetente.id | tojson }};
-        const DESTINATARIO_ID = {{ destinatario.id | tojson }};
-        
-        // CORRIGIDO: Nomes das variáveis ajustados para 'SUPABASE_URL' e 'SUPABASE_ANON_KEY' (letras maiúsculas)
-        const SUPABASE_URL = {{ SUPABASE_URL | tojson }};
-        const SUPABASE_ANON_KEY = {{ SUPABASE_ANON_KEY | tojson }};
-
-        // 2. INICIALIZAÇÃO E ELEMENTOS DO DOM
-        // Note: 'supabase' é declarado aqui.
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        const chatBody = document.getElementById('chat-body');
-        const messageForm = document.getElementById('message-form');
-        const messageInput = document.getElementById('message-input');
-
-        // --- Funções Auxiliares de Renderização ---
-
-        function formatMessage(message) {
-            const isRemetente = message.remetente_id === REMETENTE_ID;
-            // Usa 'sent' para mensagens enviadas por mim e 'received' para as recebidas.
-            const wrapperClass = isRemetente ? 'sent' : 'received';
-            
-            const messageHtml = `
-                <div class="message-wrapper ${wrapperClass}">
-                    <div class="message ${wrapperClass}">
-                        <p>${message.conteudo}</p>
-                        <span class="timestamp">${new Date(message.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
-                    </div>
-                </div>
-            `;
-            return messageHtml;
-        }
-
-        function appendMessage(message) {
-            // Remove a mensagem inicial de carregamento ou "inicie uma conversa"
-            const placeholder = chatBody.querySelector('.no-messages');
-            const initialLoading = chatBody.querySelector('p[style*="Carregando mensagens"]');
-            
-            if (placeholder) {
-                chatBody.removeChild(placeholder);
-            }
-            if (initialLoading) {
-                 chatBody.removeChild(initialLoading);
-            }
-            
-            // Adiciona a mensagem formatada
-            chatBody.insertAdjacentHTML('beforeend', formatMessage(message));
-            // Scroll para o final
-            chatBody.scrollTop = chatBody.scrollHeight; 
-        }
-
-        // --- Lógica do Chat (Usando a API do Flask para o Histórico) ---
-
-        // 1. Carregar Histórico de Mensagens da API do Flask
-        async function loadMessages() {
-            chatBody.innerHTML = '<p style="text-align:center; color: #555;">Carregando mensagens...</p>'; // Garante o placeholder
-            
-            try {
-                // CHAMA A ROTA API DO FLASK CORRIGIDA EM app.py
-                const response = await fetch(`/api/chat/historico/${DESTINATARIO_ID}`);
-                const data = await response.json();
-                    
-                if (!response.ok) {
-                    // Lança um erro se a resposta do Flask não for OK (ex: 401, 500)
-                    throw new Error(data.error || 'Erro desconhecido ao carregar mensagens.');
-                }
-                
-                // Limpa o chat antes de adicionar o histórico
-                chatBody.innerHTML = ''; 
-
-                if (data.length === 0) {
-                    chatBody.innerHTML = '<p class="no-messages" style="text-align:center; color: #aaa;">Inicie uma conversa!</p>';
-                } else {
-                    data.forEach(appendMessage);
-                }
-                
-            } catch (error) {
-                console.error('Erro ao carregar mensagens:', error);
-                chatBody.innerHTML = `<p class="no-messages" style="text-align:center; color: red;">Erro ao carregar mensagens: ${error.message}</p>`;
-            }
-        }
-        
-        // 2. Enviar Nova Mensagem
-        messageForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const content = messageInput.value.trim();
-            
-            if (content.length > 0) {
-                // Limpa a caixa de texto imediatamente para melhor UX
-                messageInput.value = ''; 
-                
-                // Objeto da mensagem para Supabase
-                const message = {
-                    remetente_id: REMETENTE_ID,
-                    destinatario_id: DESTINATARIO_ID,
-                    conteudo: content
-                };
-                
-                try {
-                    // Insere diretamente no Supabase (não precisa de rota Flask para INSERT)
-                    const { error } = await supabase
-                        .from('mensagens')
-                        .insert([message]);
-                        
-                    if (error) throw error;
-                    
-                    // Adiciona a mensagem enviada à tela imediatamente, usando o timestamp atual.
-                    appendMessage({ ...message, created_at: new Date().toISOString() });
-                    
-                } catch (error) {
-                    console.error('Erro ao enviar mensagem:', error);
-                    alert('Erro ao enviar mensagem. Verifique o console.');
-                    messageInput.value = content; // Restaura a mensagem se o envio falhar
-                }
-            }
-        });
-        
-        // 3. Subscrição para Mensagens em Tempo Real (Realtime)
-        function subscribeToNewMessages() {
-            // Cria um canal de chat baseado nos IDs, garantindo que seja único para esta conversa
-            const channel = supabase.channel(`chat_${Math.min(REMETENTE_ID, DESTINATARIO_ID)}_${Math.max(REMETENTE_ID, DESTINATARIO_ID)}`);
-            
-            channel.on('postgres_changes', { 
-                event: 'INSERT', 
-                schema: 'public', 
-                table: 'mensagens',
-                // Ouve apenas mensagens destinadas a MIM (destinatario_id=eq.REMETENTE_ID)
-                filter: `destinatario_id=eq.${REMETENTE_ID}` 
-            }, payload => {
-                const newMessage = payload.new;
-                // Verifica se a nova mensagem é do usuário com quem estou conversando (DESTINATARIO_ID)
-                if (newMessage.remetente_id === DESTINATARIO_ID) {
-                    appendMessage(newMessage);
-                }
-            }).subscribe();
-                
-            console.log('Subscrito ao canal de chat.');
-        }
-
-        // --- Inicialização ---
-        loadMessages(); // Carrega o histórico via API do Flask
-        subscribeToNewMessages(); // Inicia a escuta em tempo real
-        
-        // Desinscrever-se ao sair da página (boa prática)
-        window.addEventListener('beforeunload', () => {
-            supabase.removeAllChannels();
-        });
-
+        // Variáveis globais necessárias para o chat.js
+        const SUPABASE_URL = "{{ SUPABASE_URL }}";
+        const SUPABASE_KEY = "{{ SUPABASE_ANON_KEY }}";
+        const REMETENTE_ID = {{ session['user_id'] }};
+        const DESTINATARIO_ID = {{ destinatario.id }};
     </script>
+    
+    <script src="{{ url_for('chat_assets', filename='chat.js') }}"></script>
 </body>
 </html>

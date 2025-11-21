@@ -4,7 +4,8 @@ from dotenv import load_dotenv
 from database import (
     register_user, check_user, get_all_users, get_user_by_email,
     update_user_profile_image, update_user_profile, get_user_by_id, update_password,
-    create_post, get_posts_by_user, get_all_posts, get_post_by_id, supabase
+    create_post, get_posts_by_user, get_all_posts, get_post_by_id, supabase,
+    create_message # <-- NOVO: Adicionado para salvar mensagens
 )
 import bcrypt
 from datetime import datetime
@@ -265,6 +266,34 @@ def api_posts():
         posts = get_all_posts()
         return jsonify(posts)
 
+# NOVA ROTA API CHAT - PARA ENVIAR MENSAGENS (NECESSÁRIO PARA TEMPO REAL)
+@app.route("/api/chat/send_message", methods=['POST'])
+@login_required
+def api_send_message():
+    remetente_id = session.get('user_id')
+    
+    # Espera dados JSON do frontend
+    data = request.get_json()
+    destinatario_id = data.get('destinatario_id')
+    content = data.get('content')
+
+    if not all([remetente_id, destinatario_id, content]):
+        return jsonify({'success': False, 'error': 'Dados incompletos para envio.'}), 400
+
+    try:
+        destinatario_id = int(destinatario_id)
+    except ValueError:
+        return jsonify({'success': False, 'error': 'ID de destinatário inválido.'}), 400
+
+    # Chama a função de banco de dados
+    success, result = create_message(remetente_id, destinatario_id, content)
+
+    if success:
+        return jsonify({'success': True, 'message_id': result}), 201
+    else:
+        return jsonify({'success': False, 'error': result}), 500
+
+
 # ROTA DO CHAT
 @app.route("/chat/<int:destinatario_id>")
 @login_required
@@ -290,7 +319,7 @@ def chat_with_user(destinatario_id):
         SUPABASE_ANON_KEY=os.environ.get("SUPABASE_ANON_KEY")
     )
 
-# NOVA ROTA API CHAT - PARA CARREGAMENTO DE HISTÓRICO VIA JS (REINTRODUZIDA)
+# ROTA API CHAT - PARA CARREGAMENTO DE HISTÓRICO VIA JS (REINTRODUZIDA)
 @app.route("/api/chat/historico/<int:destinatario_id>")
 @login_required
 def api_chat_historico(destinatario_id):
@@ -305,7 +334,6 @@ def api_chat_historico(destinatario_id):
     
     try:
         # Consulta mensagens onde (remetente=id1 E destinatário=id2) OU (remetente=id2 E destinatário=id1)
-        # CORREÇÃO: Envolver a expressão em parênteses externos para forçar a continuação de linha e evitar SyntaxError
         response = (
             supabase.from_('mensagens').select('*').or_(
                 f'and(remetente_id.eq.{id1},destinatario_id.eq.{id2}),and(remetente_id.eq.{id2},destinatario_id.eq.{id1})'
