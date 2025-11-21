@@ -130,8 +130,17 @@ def cadastro():
             return redirect(url_for('login'))
         else:
             flash('Erro ao cadastrar. E-mail já existe.', 'danger')
+            # CORREÇÃO 1: Passa os dados do formulário de volta para manter o preenchimento em caso de erro
+            return render_template(
+                'telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html',
+                form_data=request.form
+            )
     
-    return render_template('telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html')
+    # CORREÇÃO 2: Para requisições GET, passa um dicionário vazio.
+    return render_template(
+        'telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html',
+        form_data={}
+    )
 
 @app.route('/loading/pagina_inicial')
 def loading():
@@ -284,11 +293,11 @@ def api_chat_historico(destinatario_id):
     id2 = max(remetente_id, destinatario_id)
     
     try:
-        # CORREÇÃO: Utiliza .format() e from_() (correto para a biblioteca Supabase) para resolver o SyntaxError no parsing.
+        # Utiliza .format() e from_() (correto para a biblioteca Supabase)
         filter_format = 'and(remetente_id.eq.{id1},destinatario_id.eq.{id2}),and(remetente_id.eq.{id2},destinatario_id.eq.{id1})'
         filter_str = filter_format.format(id1=id1, id2=id2)
         
-        # O método correto para a biblioteca Supabase é from_(), não 'from' (palavra reservada do Python).
+        # O método correto para a biblioteca Supabase é from_(), não 'from'
         supabase_query = supabase.from_('mensagens').select('*').or_(filter_str).order('created_at', asc=True)
 
         response = supabase_query.execute()
