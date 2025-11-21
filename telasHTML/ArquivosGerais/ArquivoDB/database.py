@@ -49,7 +49,7 @@ def calculate_age(born):
     return today.year - born_date.year - ((today.month, today.day) < (born_date.month, born_date.day))
 
 
-# === FUNÇÕES DE BANCO DE DADOS ===
+# === FUNÇÕES DE BANCO DE DADOS (USUÁRIOS) ===
 
 def get_user_by_email(email):
     """Busca um usuário por email e calcula sua idade."""
@@ -218,11 +218,10 @@ def create_message(remetente_id: int, destinatario_id: int, content: str):
     """
     try:
         # CORREÇÃO: Usar 'conteudo' (Português) para corresponder à definição da tabela SQL
-        # A nova mensagem será inserida e o Realtime do Supabase a enviará.
         response = supabase.table('mensagens').insert({
             'remetente_id': remetente_id,
             'destinatario_id': destinatario_id,
-            'conteudo': content
+            'conteudo': content 
         }).execute()
 
         if response.data:
@@ -234,8 +233,30 @@ def create_message(remetente_id: int, destinatario_id: int, content: str):
         error_msg = str(e)
         print(f"ERRO em create_message: {error_msg}")
         return False, f"Falha ao enviar mensagem: {error_msg}"
-        
-# ====================== NOVAS FUNÇÕES PARA POSTS ======================
+
+def get_chat_history(user_a_id: int, user_b_id: int):
+    """
+    Busca o histórico de mensagens entre dois usuários (user_a_id e user_b_id).
+    """
+    try:
+        response = (
+            supabase.table('mensagens')
+            .select('id, created_at, remetente_id, destinatario_id, conteudo, lida')
+            # Busca onde (remetente=A E destinatário=B) OU (remetente=B E destinatário=A)
+            # O or_() permite combinar duas condições AND
+            .or_(f"and(remetente_id.eq.{user_a_id},destinatario_id.eq.{user_b_id})",
+                 f"and(remetente_id.eq.{user_b_id},destinatario_id.eq.{user_a_id})")
+            .order('created_at', desc=False) # Ordem ascendente (mais antiga primeiro)
+            .execute()
+        )
+        if response.data:
+            return response.data
+        return []
+    except Exception as e:
+        print(f"ERRO em get_chat_history: {e}")
+        return []
+
+# ====================== FUNÇÕES PARA POSTS ======================
 
 def create_post(autor_id: int, legenda: str, imagem_url: str = None):
     """
@@ -264,7 +285,6 @@ def create_post(autor_id: int, legenda: str, imagem_url: str = None):
 def get_post_by_id(post_id: int):
     """Busca um único post pelo seu ID, incluindo dados do autor."""
     try:
-        # ALTERAÇÃO FINAL: Usando a sintaxe explícita com o nome da chave estrangeira.
         response = (
             supabase.table('posts')
             .select('*, usuarios:posts_autor_id_fkey(nome, profile_image_url)')
@@ -296,7 +316,6 @@ def get_posts_by_user(user_id: int):
     Inclui dados do autor (nome, profile_image_url) via join.
     """
     try:
-        # ALTERAÇÃO FINAL: Usando a sintaxe explícita com o nome da chave estrangeira.
         response = (
             supabase.table('posts')
             .select('*, usuarios:posts_autor_id_fkey(nome, profile_image_url)')
@@ -331,7 +350,6 @@ def get_all_posts():
     Ordenados do mais recente para o mais antigo.
     """
     try:
-        # ALTERAÇÃO FINAL: Usando a sintaxe explícita com o nome da chave estrangeira.
         response = (
             supabase.table('posts')
             .select('*, usuarios:posts_autor_id_fkey(nome, profile_image_url)')
@@ -357,5 +375,3 @@ def get_all_posts():
     except Exception as e:
         print(f"ERRO em get_all_posts: {e}")
         return []
-
-# ====================== FIM DAS NOVAS FUNÇÕES ======================

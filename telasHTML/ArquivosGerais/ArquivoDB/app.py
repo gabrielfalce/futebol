@@ -5,17 +5,20 @@ from database import (
     register_user, check_user, get_all_users, get_user_by_email,
     update_user_profile_image, update_user_profile, get_user_by_id, update_password,
     create_post, get_posts_by_user, get_all_posts, get_post_by_id, supabase,
-    create_message # Adicionado para salvar mensagens
+    create_message, # Adicionado para salvar mensagens
+    get_chat_history # Adicionado para buscar histórico
 )
 import bcrypt
 from datetime import datetime
 from werkzeug.utils import secure_filename
 from functools import wraps
+import uuid # Para gerar nomes de arquivo únicos
 
 load_dotenv()
 
 # === CONFIGURAÇÃO DE DIRETÓRIOS ===
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
+# Ajuste o caminho BASE_DIR conforme a estrutura do seu projeto se necessário
 BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..', '..', '..')) 
 
 app = Flask(
@@ -30,341 +33,129 @@ UPLOAD_FOLDER_RELATIVE = 'telasHTML/ArquivosGerais/TelaDeUsuario/imagens/profile
 POST_UPLOAD_FOLDER_RELATIVE = 'telasHTML/ArquivosGerais/TelaFeed/imagens/post_pics'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-# Buckets do Supabase
-PROFILE_BUCKET = 'profile_images'
-POST_BUCKET = 'post-images'
+# === FUNÇÕES AUXILIARES ===
 
 def allowed_file(filename):
     return '.' in filename and \
-           filename.rsplit('.', 1)[-1].lower() in ALLOWED_EXTENSIONS
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Decorador para exigir login
 def login_required(f):
+    """Decorator de verificação de login."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_email' not in session:
-            flash('Você precisa estar logado para acessar esta página.', 'danger')
+        if 'user_id' not in session:
+            flash('Você precisa fazer login para acessar esta página.', 'danger')
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
 
-# === ROTAS DEDICADAS PARA ARQUIVOS ESTÁTICOS (ASSETS) ===
-@app.route('/login-assets/<path:filename>')
+@app.template_filter('strftime')
+def _jinja2_filter_strftime(date_str, fmt='%d/%m/%Y às %H:%M'):
+    """Filtro Jinja para formatar datas (formato ISO do Supabase)."""
+    if not date_str:
+        return ''
+    try:
+        # Lida com o formato ISO 8601 (com ou sem 'Z' para UTC)
+        dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+        return dt.strftime(fmt)
+    except ValueError:
+        return 'Data Inválida'
+
+# === ROTAS DE ASSETS (CSS/JS/IMAGENS) ===
+
+@app.route('/static/login/<path:filename>')
 def login_assets(filename):
-    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'telaDeLogin')
-    return send_from_directory(dir_path, filename)
+    return send_from_directory('telasHTML/Login', filename)
 
-@app.route('/loading-assets/<path:filename>')
-def loading_assets(filename):
-    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaLoading')
-    return send_from_directory(dir_path, filename)
-
-@app.route('/cadastro-assets/<path:filename>')
+@app.route('/static/cadastro/<path:filename>')
 def cadastro_assets(filename):
-    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'Cadastrar_templates')
-    return send_from_directory(dir_path, filename)
-
-@app.route('/inicio-assets/<path:filename>')
-def inicio_assets(filename):
-    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaInicial')
-    return send_from_directory(dir_path, filename)
-
-@app.route('/user-assets/<path:filename>')
-def user_assets(filename):
-    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaDeUsuario')
-    return send_from_directory(dir_path, filename)
+    return send_from_directory('telasHTML/Cadastro', filename)
     
-@app.route('/feed-assets/<path:filename>')
-def feed_assets(filename):
-    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaFeed')
-    return send_from_directory(dir_path, filename)
-
-@app.route('/chat-assets/<path:filename>')
+@app.route('/static/chat/<path:filename>')
 def chat_assets(filename):
-    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'ArquivosGerais', 'TelaChat')
-    return send_from_directory(dir_path, filename)
+    return send_from_directory('telasHTML/ArquivosGerais/TelaChat', filename)
 
-@app.route('/recuperar-senha-assets/<path:filename>')
-def recuperar_senha_assets(filename):
-    dir_path = os.path.join(BASE_DIR, 'telasHTML', 'RecuperarSenha')
-    return send_from_directory(dir_path, filename)
+@app.route('/static/user_assets/<path:filename>')
+def user_assets(filename):
+    return send_from_directory('telasHTML/ArquivosGerais', filename)
 
-@app.route('/serve_static_files/<path:filename>')
-def serve_static_files(filename):
-    dir_path = os.path.join(BASE_DIR, 'telasHTML')
-    return send_from_directory(dir_path, filename)
+@app.route('/uploads/<path:filename>')
+def uploaded_file(filename):
+    """Rota para servir imagens de perfil."""
+    upload_path = os.path.join(BASE_DIR, UPLOAD_FOLDER_RELATIVE)
+    return send_from_directory(upload_path, filename)
 
-@app.route('/post-images/<path:filename>')
-def post_images(filename):
-    dir_path = os.path.join(BASE_DIR, POST_UPLOAD_FOLDER_RELATIVE)
-    return send_from_directory(dir_path, filename)
+@app.route('/post_uploads/<path:filename>')
+def post_uploaded_file(filename):
+    """Rota para servir imagens de posts."""
+    post_upload_path = os.path.join(BASE_DIR, POST_UPLOAD_FOLDER_RELATIVE)
+    return send_from_directory(post_upload_path, filename)
 
-# === ROTAS PRINCIPAIS ===
-@app.route('/')
-def login():
-    return render_template('telasHTML/ArquivosGerais/telaDeLogin/telaLogin.html')
+# === ROTAS DE AUTENTICAÇÃO E PERFIL ===
 
-@app.route('/login', methods=['GET', 'POST'])
-def login_post():
-    if request.method == 'POST':
-        email = request.form['email']
-        senha = request.form['senha']
-        
-        user = check_user(email, senha)
-        if user:
-            session['user_email'] = user['email']
-            session['user_id'] = user['id']
-            return redirect(url_for('pagina_inicial'))
-        else:
-            flash('Credenciais inválidas.', 'danger')
+@app.route("/")
+def index():
+    if 'user_id' in session:
+        return redirect(url_for('pagina_inicial'))
     return redirect(url_for('login'))
 
-@app.route('/cadastro', methods=['GET', 'POST'])
-def cadastro():
+@app.route("/login", methods=['GET', 'POST'])
+def login():
     if request.method == 'POST':
-        # Extrair todos os campos do formulário
-        nome = request.form.get('nome')
         email = request.form.get('email')
         senha = request.form.get('senha')
-        cidade = request.form.get('cidade')
-        posicao = request.form.get('posicao')
-        nascimento = request.form.get('nascimento')
-        numero_camisa = request.form.get('numero_camisa')
-        numero_telefone = request.form.get('numero_telefone')
-        
-        # Chamar register_user com todos os argumentos
-        success, message = register_user(
-            nome, email, senha, cidade, posicao, nascimento, numero_camisa, numero_telefone
-        )
-        
-        if success:
-            flash('Cadastro realizado com sucesso! Faça login.', 'success')
-            return redirect(url_for('login'))
+        user = check_user(email, senha)
+
+        if user:
+            session['user_id'] = user['id']
+            session['user_email'] = user['email']
+            session['user_nome'] = user['nome']
+            flash(f'Bem-vindo, {user["nome"]}!', 'success')
+            return redirect(url_for('pagina_inicial'))
         else:
-            # Tratar a mensagem de erro e repassar os dados do formulário
-            flash(message, 'danger')
-            return render_template(
-                'telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html',
-                form_data=request.form
-            )
-    
-    # Garante que 'form_data' seja passado em requisições GET
-    return render_template(
-        'telasHTML/ArquivosGerais/Cadastrar_templates/cadastrar.html',
-        form_data={}
-    )
-
-@app.route('/loading/pagina_inicial')
-def loading():
-    return render_template('telasHTML/ArquivosGerais/TelaLoading/Telaloading.html')
-
-@app.route('/inicio')
-@login_required
-def pagina_inicial():
-    users = get_all_users()
-    return render_template('telasHTML/ArquivosGerais/TelaInicial/TelaInicial.html', users=users)
-
-# ROTA DE PERFIL
-@app.route('/perfil/<int:user_id>')
-@login_required
-def pagina_usuario(user_id):
-    user = get_user_by_id(user_id)
-    # Variável is_owner é crucial para o TelaUser.html
-    is_owner = session.get('user_id') == user_id
-    if not user:
-        flash('Usuário não encontrado.', 'danger')
-        return redirect(url_for('pagina_inicial'))
-    posts = get_posts_by_user(user_id)
-    return render_template(
-        'telasHTML/ArquivosGerais/TelaDeUsuario/TelaUser.html', 
-        usuario=user,
-        publicacoes=posts,
-        is_owner=is_owner
-    )
-
-
-@app.route('/editar_perfil', methods=['GET', 'POST'])
-@login_required
-def editar_perfil():
-    user_id = session['user_id']
-    if request.method == 'POST':
-        nome = request.form.get('nome')
-        bio = request.form.get('bio')
-        profile_image = request.files.get('profile_image')
-
-        profile_image_url = None
-        if profile_image and allowed_file(profile_image.filename):
-            filename = secure_filename(profile_image.filename)
-            bucket_path = f"users/{user_id}/{filename}"
-            try:
-                supabase.storage.from_(PROFILE_BUCKET).upload(
-                    bucket_path,
-                    profile_image.read(),
-                    file_options={"content-type": profile_image.content_type}
-                )
-                public_url = supabase.storage.from_(PROFILE_BUCKET).get_public_url(bucket_path)
-                profile_image_url = public_url
-            except Exception as e:
-                flash('Erro ao fazer upload da imagem.', 'danger')
-                print(e)
-
-        success = update_user_profile(user_id, nome, bio, profile_image_url)
-        if success:
-            flash('Perfil atualizado com sucesso!', 'success')
-        else:
-            flash('Erro ao atualizar perfil.', 'danger')
-        
-        return redirect(url_for('pagina_usuario', user_id=user_id))
-
-    user = get_user_by_id(user_id)
-    return render_template('telasHTML/ArquivosGerais/TelaDeUsuario/editar_perfil.html', user=user)
-
-@app.route('/feed')
-@login_required
-def pagina_feed():
-    # O feed.html carrega o conteúdo via AJAX na rota /api/posts
-    return render_template("telasHTML/ArquivosGerais/TelaFeed/feed.html")
-
-@app.route('/api/posts', methods=['GET', 'POST'])
-@login_required
-def api_posts():
-    if request.method == 'POST':
-        legenda = request.form.get('legenda', '')
-        autor_id = session['user_id']
-        imagem_url = None
-
-        if 'imagem' in request.files:
-            file = request.files['imagem']
-            if file and file.filename != '' and allowed_file(file.filename):
-                try:
-                    filename = secure_filename(file.filename)
-                    bucket_path = f"users/{autor_id}/{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
-                    supabase.storage.from_(POST_BUCKET).upload(
-                        bucket_path,
-                        file.read(),
-                        file_options={"content-type": file.content_type}
-                    )
-                    public_url = supabase.storage.from_(POST_BUCKET).get_public_url(bucket_path)
-                    imagem_url = public_url
-                except Exception as e:
-                    print(f"ERRO no upload do post: {e}")
-                    return jsonify({'success': False, 'error': 'Falha no upload da imagem.'}), 500
-
-        success, result = create_post(autor_id, legenda, imagem_url)
-        
-        if success:
-            post_id = result
-            new_post_data = get_post_by_id(post_id)
-            if new_post_data:
-                return jsonify({'success': True, 'post': new_post_data}), 201
-            else:
-                return jsonify({'success': False, 'error': 'Post criado, mas não pôde ser recuperado.'}), 500
-        else:
-            return jsonify({'success': False, 'error': result}), 500
-
-    elif request.method == 'GET':
-        posts = get_all_posts()
-        return jsonify(posts)
-
-# ROTA API CHAT - PARA ENVIAR MENSAGENS (NECESSÁRIO PARA TEMPO REAL)
-@app.route("/api/chat/send_message", methods=['POST'])
-@login_required
-def api_send_message():
-    remetente_id = session.get('user_id')
-    
-    # Espera dados JSON do frontend
-    data = request.get_json()
-    destinatario_id = data.get('destinatario_id')
-    content = data.get('content')
-
-    if not all([remetente_id, destinatario_id, content]):
-        return jsonify({'success': False, 'error': 'Dados incompletos para envio.'}), 400
-
-    try:
-        destinatario_id = int(destinatario_id)
-    except ValueError:
-        return jsonify({'success': False, 'error': 'ID de destinatário inválido.'}), 400
-
-    # Chama a função de banco de dados para salvar a mensagem
-    success, result = create_message(remetente_id, destinatario_id, content)
-
-    if success:
-        return jsonify({'success': True, 'message_id': result}), 201
-    else:
-        return jsonify({'success': False, 'error': result}), 500
-
-
-# ROTA DO CHAT
-@app.route("/chat/<int:destinatario_id>")
-@login_required
-def chat_with_user(destinatario_id):
-    remetente_id = session.get('user_id')
-    
-    if remetente_id == destinatario_id:
-        flash('Você não pode conversar consigo mesmo.', 'danger')
-        return redirect(url_for('pagina_inicial'))
-
-    remetente = get_user_by_id(remetente_id)
-    destinatario = get_user_by_id(destinatario_id)
-    
-    if not remetente or not destinatario:
-        flash('Usuário para chat não encontrado.', 'danger')
-        return redirect(url_for('pagina_inicial'))
-
-    return render_template(
-        "telasHTML/ArquivosGerais/TelaChat/chat.html",
-        remetente=remetente,
-        destinatario=destinatario,
-        SUPABASE_URL=os.environ.get("SUPABASE_URL"),
-        SUPABASE_ANON_KEY=os.environ.get("SUPABASE_ANON_KEY")
-    )
-
-# ROTA API CHAT - PARA CARREGAMENTO DE HISTÓRICO VIA JS
-@app.route("/api/chat/historico/<int:destinatario_id>")
-@login_required
-def api_chat_historico(destinatario_id):
-    remetente_id = session.get('user_id')
-    
-    if not remetente_id:
-        return jsonify({'success': False, 'error': 'Usuário não autenticado.'}), 401
-
-    # Ordena os IDs para garantir a chave de conversa consistente na busca
-    id1 = min(remetente_id, destinatario_id)
-    id2 = max(remetente_id, destinatario_id)
-    
-    try:
-        # Busca mensagens onde (remetente=id1 E destinatário=id2) OU (remetente=id2 E destinatário=id1)
-        # O operador OR faz a busca de mensagens enviadas e recebidas.
-        response = (
-            supabase.from_('mensagens').select('*').or_(
-                f'and(remetente_id.eq.{id1},destinatario_id.eq.{id2}),and(remetente_id.eq.{id2},destinatario_id.eq.{id1})'
-            ).order('created_at', asc=True).execute()
-        )
-        
-        data = response.data
-        if not data:
-            return jsonify([]), 200
+            flash('Credenciais inválidas. Tente novamente.', 'danger')
+            return render_template("telasHTML/Login/login.html", email=email)
             
-        return jsonify(data), 200
+    return render_template("telasHTML/Login/login.html")
 
-    except Exception as e:
-        print(f"Erro ao buscar histórico de chat: {e}")
-        return jsonify({'success': False, 'error': f'Falha no servidor ao carregar histórico: {str(e)}'}), 500
-
-
-@app.route("/esqueci_senha", methods=['GET', 'POST'])
-def esqueci_senha():
+@app.route("/cadastro", methods=['GET', 'POST'])
+def cadastro():
+    form_data = request.form
     if request.method == 'POST':
-        email = request.form.get('email')
-        flash(f'Se o e-mail {email} estiver cadastrado, um link de redefinição de senha foi enviado.', 'success')
-        return redirect(url_for('login'))
+        nome = form_data.get('nome')
+        email = form_data.get('email')
+        senha = form_data.get('senha')
+        cidade = form_data.get('cidade')
+        posicao = form_data.get('posicao')
+        nascimento = form_data.get('nascimento')
+        numero_camisa = form_data.get('numero_camisa')
+        numero_telefone = form_data.get('numero_telefone')
+
+        if len(senha) < 6:
+            flash('A senha deve ter pelo menos 6 caracteres.', 'danger')
+        else:
+            success, message = register_user(nome, email, senha, cidade, posicao, nascimento, numero_camisa, numero_telefone)
+            if success:
+                flash(message, 'success')
+                return redirect(url_for('login'))
+            else:
+                flash(message, 'danger')
+
+    return render_template("telasHTML/Cadastro/cadastrar.html", form_data=form_data)
+
+@app.route("/esqueci_senha")
+def esqueci_senha():
+    # Rota básica de recuperação de senha (apenas renderiza o template)
+    # A funcionalidade real de envio de e-mail deve ser implementada aqui
     return render_template("telasHTML/RecuperarSenha/esqueci_senha.html")
 
 @app.route("/redefinir_senha", methods=['GET', 'POST'])
 def redefinir_senha():
     if request.method == 'POST':
         nova_senha = request.form.get('nova_senha')
-        email = request.args.get('email')
+        # Assume que o email vem da query string ou de um campo oculto
+        email = request.args.get('email') or request.form.get('email') 
+        
         if email and nova_senha and len(nova_senha) >= 6:
             if update_password(email, nova_senha):
                 flash('Sua senha foi redefinida com sucesso. Faça o login.', 'success')
@@ -373,24 +164,219 @@ def redefinir_senha():
                 flash('Falha ao redefinir a senha. Tente novamente.', 'danger')
         else:
             flash('Senha inválida ou falta de informações.', 'danger')
+            
     return render_template("telasHTML/RecuperarSenha/redefinir_senha.html")
 
 @app.route('/logout')
 def logout():
     session.clear()
+    flash('Você saiu da sua conta.', 'info')
     return redirect(url_for('login'))
 
-@app.template_filter('strftime')
-def _jinja2_filter_strftime(date_str, fmt='%d/%m/%Y às %H:%M'):
-    if not date_str:
-        return ''
+
+# === ROTAS DA APLICAÇÃO ===
+
+@app.route("/pagina_inicial")
+@login_required
+def pagina_inicial():
+    user_id = session.get('user_id')
+    user = get_user_by_id(user_id)
+    
+    # Carrega posts para o feed
+    posts = get_all_posts() 
+    
+    return render_template("telasHTML/ArquivosGerais/TelaPrincipal/index.html", user=user, posts=posts)
+
+
+@app.route("/perfil/<int:user_id>")
+@login_required
+def perfil(user_id):
+    user_data = get_user_by_id(user_id)
+    posts = get_posts_by_user(user_id) # Busca os posts específicos do usuário
+    
+    if not user_data:
+        flash("Usuário não encontrado.", 'danger')
+        return redirect(url_for('pagina_inicial'))
+        
+    is_current_user = user_id == session.get('user_id')
+    
+    return render_template(
+        "telasHTML/ArquivosGerais/TelaDeUsuario/usuario.html", 
+        user=user_data, 
+        is_current_user=is_current_user,
+        posts=posts
+    )
+
+@app.route("/upload_profile_image", methods=['POST'])
+@login_required
+def upload_profile_image():
+    user_id = session.get('user_id')
+    user_email = session.get('user_email')
+    
+    if 'profile_image' not in request.files:
+        flash('Nenhum arquivo enviado.', 'danger')
+        return redirect(url_for('perfil', user_id=user_id))
+    
+    file = request.files['profile_image']
+    
+    if file.filename == '':
+        flash('Nenhum arquivo selecionado.', 'danger')
+        return redirect(url_for('perfil', user_id=user_id))
+
+    if file and allowed_file(file.filename):
+        # Gera um nome de arquivo único
+        filename_base = str(uuid.uuid4())
+        extension = file.filename.rsplit('.', 1)[1].lower()
+        filename = secure_filename(f"{filename_base}.{extension}")
+        
+        # Define o caminho de salvamento local
+        save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(save_path)
+        
+        # O caminho URL que será salvo no banco de dados e usado no frontend
+        # Note: 'uploads/' deve corresponder à rota @app.route('/uploads/<path:filename>')
+        profile_image_url_path = f"uploads/{filename}" 
+        
+        if update_user_profile_image(user_email, profile_image_url_path):
+            flash('Foto de perfil atualizada com sucesso!', 'success')
+        else:
+            flash('Falha ao salvar o caminho da imagem no banco de dados.', 'danger')
+            
+    else:
+        flash('Tipo de arquivo não permitido.', 'danger')
+        
+    return redirect(url_for('perfil', user_id=user_id))
+
+# Rota para edição de perfil (exceto imagem, que tem sua própria rota)
+@app.route("/editar_perfil", methods=['POST'])
+@login_required
+def editar_perfil():
+    user_id = session.get('user_id')
+    nome = request.form.get('nome')
+    bio = request.form.get('bio') 
+    
+    if update_user_profile(user_id, nome, bio, None): # None para a URL da imagem (usamos rota separada)
+        flash('Perfil atualizado com sucesso!', 'success')
+    else:
+        flash('Falha ao atualizar o perfil.', 'danger')
+
+    return redirect(url_for('perfil', user_id=user_id))
+
+# === ROTAS DE POSTS ===
+
+@app.route("/create_post", methods=['POST'])
+@login_required
+def api_create_post():
+    autor_id = session.get('user_id')
+    legenda = request.form.get('legenda', '')
+    imagem_url = None
+    
+    if 'post_image' in request.files:
+        file = request.files['post_image']
+        if file.filename != '' and allowed_file(file.filename):
+            filename_base = str(uuid.uuid4())
+            extension = file.filename.rsplit('.', 1)[1].lower()
+            filename = secure_filename(f"{filename_base}.{extension}")
+            
+            save_path = os.path.join(app.config['POST_UPLOAD_FOLDER'], filename)
+            file.save(save_path)
+            # Note: 'post_uploads/' deve corresponder à rota @app.route('/post_uploads/<path:filename>')
+            imagem_url = f"post_uploads/{filename}" 
+
+    success, result = create_post(autor_id, legenda, imagem_url)
+    
+    if success:
+        flash('Post criado com sucesso!', 'success')
+        return redirect(url_for('pagina_inicial'))
+    else:
+        flash(f'Falha ao criar post: {result}', 'danger')
+        return redirect(url_for('pagina_inicial'))
+
+
+# === ROTAS DE CHAT ===
+
+# 1. Rota principal do chat (renderiza o HTML)
+@app.route("/chat/<int:destinatario_id>")
+@login_required
+def chat(destinatario_id):
+    destinatario = get_user_by_id(destinatario_id)
+    if not destinatario:
+        flash("Usuário de destino não encontrado.", 'danger')
+        return redirect(url_for('pagina_inicial'))
+
+    # Garante que a chave 'anon' é usada para o frontend (melhor prática de segurança)
+    supabase_url = os.environ.get("SUPABASE_URL")
+    supabase_anon_key = os.environ.get("SUPABASE_KEY") # Usando SUPABASE_KEY como ANON key se não houver ANON_KEY
+    
+    return render_template(
+        "telasHTML/ArquivosGerais/TelaChat/chat.html",
+        destinatario=destinatario,
+        SUPABASE_URL=supabase_url,
+        SUPABASE_ANON_KEY=supabase_anon_key, # Passado para o JS
+        # O user_id é pego da session pelo Jinja no chat.html
+    )
+
+# 2. ROTA API CHAT - PARA ENVIAR MENSAGENS (via POST)
+@app.route("/api/chat/send_message", methods=['POST'])
+@login_required
+def api_send_message():
+    remetente_id = session.get('user_id') 
+    
+    data = request.get_json()
+    destinatario_id = data.get('destinatario_id')
+    content = data.get('content') # Nome usado pelo frontend (chat.js)
+
+    if not all([remetente_id, destinatario_id, content]):
+        return jsonify({'success': False, 'error': 'Dados incompletos para envio.'}), 400
+
     try:
-        dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
-        return dt.strftime(fmt)
-    except:
-        return date_str
+        destinatario_id = int(destinatario_id)
+        
+        # Chama a função de banco de dados (que usa o campo 'conteudo')
+        success, result = create_message(remetente_id, destinatario_id, content)
+
+        if success:
+            return jsonify({'success': True, 'message_id': result}), 201
+        else:
+            return jsonify({'success': False, 'error': result}), 500
+            
+    except ValueError:
+        return jsonify({'success': False, 'error': 'ID de destinatário inválido.'}), 400
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Erro interno do servidor: {str(e)}'}), 500
+
+
+# 3. ROTA API CHAT - PARA CARREGAR HISTÓRICO (via GET)
+@app.route("/api/chat/historico/<int:destinatario_id>", methods=['GET'])
+@login_required
+def api_get_chat_history(destinatario_id):
+    remetente_id = session.get('user_id')
+    
+    if not remetente_id:
+        return jsonify({'success': False, 'error': 'Usuário não autenticado.'}), 401
+
+    try:
+        # Busca o histórico entre o usuário logado e o destinatário
+        messages = get_chat_history(remetente_id, destinatario_id)
+        
+        # Retorna a lista de mensagens como JSON
+        return jsonify(messages), 200
+
+    except Exception as e:
+        print(f"ERRO ao buscar histórico de chat: {e}")
+        return jsonify({'success': False, 'error': 'Falha ao buscar histórico de chat.'}), 500
+
+
+# === EXECUÇÃO DA APLICAÇÃO ===
 
 if __name__ == '__main__':
-    os.makedirs(os.path.join(BASE_DIR, UPLOAD_FOLDER_RELATIVE), exist_ok=True)
-    os.makedirs(os.path.join(BASE_DIR, POST_UPLOAD_FOLDER_RELATIVE), exist_ok=True)
+    # Configuração para servir uploads localmente durante o desenvolvimento
+    app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, UPLOAD_FOLDER_RELATIVE)
+    app.config['POST_UPLOAD_FOLDER'] = os.path.join(BASE_DIR, POST_UPLOAD_FOLDER_RELATIVE)
+
+    # Cria diretórios se não existirem
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    os.makedirs(app.config['POST_UPLOAD_FOLDER'], exist_ok=True)
+    
+    # Executa a aplicação Flask
     app.run(debug=True)
