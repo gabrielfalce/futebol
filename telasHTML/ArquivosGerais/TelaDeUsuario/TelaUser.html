@@ -1,110 +1,52 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil de {{ usuario.nome or 'Usuário' }}</title>
-    <link rel="stylesheet" href="{{ url_for('user_assets', filename='stylesTest.css') }}">
-    </head>
+    <title>Perfil de {{ user.nome or 'Usuário' }}</title>
+    <link rel="stylesheet" href="{{ url_for('user_assets', filename='TelaDeUsuario/editarStyle.css') }}">
+</head>
 <body>
-    
-    <div class="Wallpaper">
-        <img class="imagemWallpaper" 
-             src="{{ usuario.foto_capa_url if usuario.foto_capa_url else url_for('user_assets', filename='imagens/hM94BRC.jpeg') }}" 
-             alt="Wallpaper de fundo">
-    </div>
-    
-    <div class="header-actions">
-        {% if is_owner %}
-        <a href="{{ url_for('editar_perfil') }}" class="edit-button" title="Editar Perfil">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-        </a>
-        {% endif %}
-    </div>
+    <header>
+        <h1>{{ user.nome or 'Usuário' }}</h1>
+    </header>
 
-    <div class="main-content-wrapper">
-        <div id="profileContainer">
-            <div id="perfilImagemGeralCaixa">
-                <img class="profile-image" 
-                     src="{{ usuario.profile_image_url if usuario.profile_image_url else url_for('inicio_assets', filename='iconeUser.png' ) }}" 
-                     alt="Foto de Perfil">
+    <main>
+        <section class="profile-header">
+            <img src="{{ url_for('uploaded_file', filename=(user.profile_image_url.split('/')[-1]) ) if user.profile_image_url else url_for('user_assets', filename='TelaDeUsuario/home.png') }}" alt="Avatar de {{ user.nome or 'Usuário' }}" class="avatar">
+            <div class="profile-info">
+                <h2>{{ user.nome or 'Usuário' }}</h2>
+                <p><strong>Posição:</strong> {{ user.posicao or 'N/A' }}</p>
+                <p><strong>Cidade:</strong> {{ user.cidade or 'N/A' }}</p>
+                <p><strong>Idade:</strong> {{ user.idade or 'N/A' }}</p>
             </div>
+        </section>
 
-            <div class="profile-info-group">
-                <h2 class="nomeUsuario">{{ usuario.nome or 'Nome Não Definido' }}</h2>
-                <p class="posicaoUsuario">{{ 'Posição favorita: ' + usuario.posicao if usuario.posicao else 'Posição Não Definida' }}</p>
-                <p class="cidadeUsuario">{{ usuario.cidade or 'Cidade Não Definida' }}</p>
-            </div>
-            
-            <div class="profile-actions">
-                {% if not is_owner %}
-                    <button class="action-button follow-button">Seguir</button>
-                    <a href="{{ url_for('chat_with_user', destinatario_id=usuario.id) }}" class="action-button message-button" style="text-decoration: none; color: white;">Mensagem</a>
-                {% endif %}
-            </div>
-        </div>
+        <section class="profile-bio">
+            <h3>Biografia</h3>
+            <p>{{ user.bio or 'Este usuário ainda não escreveu uma biografia.' }}</p>
+        </section>
 
-        <div id="publicacoesContainer">
-            {% if not publicacoes %}
-                <p style="text-align: center; color: #aaa; padding-top: 30px;">Nenhuma publicação encontrada.</p>
+        <section class="user-posts">
+            <h3>Posts</h3>
+            {% if posts %}
+                <ul>
+                    {% for post in posts %}
+                        <li>
+                            <p>{{ post.legenda }}</p>
+                            {% if post.imagem_url %}
+                                <img src="{{ url_for('post_uploaded_file', filename=post.imagem_url.split('/')[-1]) }}" alt="Imagem do post">
+                            {% endif %}
+                            <small>{{ post.created_at|strftime }}</small>
+                        </li>
+                    {% endfor %}
+                </ul>
             {% else %}
-                {% for post in publicacoes %}
-                <div class="post-card">
-                    <div class="post-header">
-                        <img class="post-author-img" 
-                             src="{{ post.autor.profile_image_url if post.autor.profile_image_url else url_for('inicio_assets', filename='iconeUser.png') }}" 
-                             alt="Foto de {{ post.autor.nome }}">
-                        <div class="post-author-info">
-                            <strong>{{ post.autor.nome }}</strong>
-                            <small>{{ post.created_at | strftime }}</small>
-                        </div>
-                    </div>
-
-                    <div iclass="post-content">
-                        <p>{{ post.legenda }}</p>
-                        {% if post.imagem_url %}
-                        <img class="post-image" 
-                             src="{{ post.imagem_url }}" 
-                             alt="Imagem da publicação">
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
+                <p>Sem posts para mostrar.</p>
             {% endif %}
-        </div>
-    </div>
+        </section>
+    </main>
 
-    <div class="floating-buttons-group">
-        <div class="floating-button-wrapper">
-            <div class="floating-button-bar"></div>
-            <a href="{{ url_for('pagina_inicial') }}" title="Usuários">
-                <button class="floating-button">
-                    <img src="{{ url_for('user_assets', filename='home.png') }}" aria-placeholder="tela inicial" alt="Ir para tela inicial">
-                </button>
-            </a>
-        </div>
-
-        {% if is_owner %}
-        <div class="floating-button-wrapper">
-            <button id="createPostBtn" class="floating-button create-post-button" title="Criar nova publicação">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-            </button>
-        </div>
-        {% endif %}
-    </div>
-    
-    <div id="postModal" class="modal">
-        <div class="modal-content">
-            <button id="closePostModalBtn" class="close-button">&times;</button>
-            <h2>Criar Publicação</h2>
-            <form id="postForm" enctype="multipart/form-data">
-                <textarea id="postContent" name="legenda" placeholder="O que você está pensando?" required></textarea>
-                <input type="file" id="postImage" name="postImage" accept="image/*">
-                <button type="submit">Publicar</button>
-            </form>
-        </div>
-    </div>
-
-    <script src="{{ url_for('user_assets', filename='script.js' ) }}"></script>
+    <script src="{{ url_for('user_assets', filename='TelaDeUsuario/script.js') }}"></script>
 </body>
 </html>
