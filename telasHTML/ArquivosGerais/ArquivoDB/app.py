@@ -5,25 +5,31 @@ from database import (
     register_user, check_user, get_all_users, get_user_by_email,
     update_user_profile_image, update_user_profile, get_user_by_id, update_password,
     create_post, get_posts_by_user, get_all_posts, get_post_by_id, supabase,
-    create_message, # Adicionado para salvar mensagens
-    get_chat_history # Adicionado para buscar histórico
+    create_message, 
+    get_chat_history 
 )
 import bcrypt
 from datetime import datetime
 from werkzeug.utils import secure_filename
 from functools import wraps
-import uuid # Para gerar nomes de arquivo únicos
+import uuid 
 
 load_dotenv()
 
 # === CONFIGURAÇÃO DE DIRETÓRIOS ===
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
-# Ajuste o caminho BASE_DIR conforme a estrutura do seu projeto se necessário
+
+# CORREÇÃO CRÍTICA: Definir template_folder para a pasta 'telasHTML' (dois níveis acima, 
+# assumindo app.py está em 'telasHTML/ArquivosGerais/ArquivoDB').
+TEMPLATE_FOLDER = os.path.abspath(os.path.join(APP_DIR, '..', '..')) 
+
+# Para uploads, o caminho para o projeto raiz continua sendo útil
 BASE_DIR = os.path.abspath(os.path.join(APP_DIR, '..', '..', '..')) 
 
 app = Flask(
     __name__,
-    template_folder=BASE_DIR
+    # Usando o diretório 'telasHTML' como a base para templates.
+    template_folder=TEMPLATE_FOLDER
 )
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "chave_padrao_para_dev")
 
@@ -55,13 +61,14 @@ def _jinja2_filter_strftime(date_str, fmt='%d/%m/%Y às %H:%M'):
     if not date_str:
         return ''
     try:
-        # Lida com o formato ISO 8601 (com ou sem 'Z' para UTC)
         dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
         return dt.strftime(fmt)
     except ValueError:
         return 'Data Inválida'
 
 # === ROTAS DE ASSETS (CSS/JS/IMAGENS) ===
+# Estas rotas continuam usando o caminho completo para a pasta correta (telasHTML/...)
+# e não o template_folder, pois usam send_from_directory.
 
 @app.route('/static/login/<path:filename>')
 def login_assets(filename):
@@ -114,9 +121,11 @@ def login():
             return redirect(url_for('pagina_inicial'))
         else:
             flash('Credenciais inválidas. Tente novamente.', 'danger')
-            return render_template("telaDeLogin/telaLogin.html", email=email)
+            # CORREÇÃO: Caminho do template relativo a 'telasHTML'
+            return render_template("Login/login.html", email=email)
             
-    return render_template("telaDeLogin/telaLogin.html")
+    # CORREÇÃO: Caminho do template relativo a 'telasHTML'
+    return render_template("Login/login.html")
 
 @app.route("/cadastro", methods=['GET', 'POST'])
 def cadastro():
@@ -141,19 +150,18 @@ def cadastro():
             else:
                 flash(message, 'danger')
 
-    return render_template("telasHTML/Cadastro/cadastrar.html", form_data=form_data)
+    # CORREÇÃO: Caminho do template relativo a 'telasHTML'
+    return render_template("Cadastro/cadastrar.html", form_data=form_data)
 
 @app.route("/esqueci_senha")
 def esqueci_senha():
-    # Rota básica de recuperação de senha (apenas renderiza o template)
-    # A funcionalidade real de envio de e-mail deve ser implementada aqui
-    return render_template("telasHTML/RecuperarSenha/esqueci_senha.html")
+    # CORREÇÃO: Caminho do template relativo a 'telasHTML'
+    return render_template("RecuperarSenha/esqueci_senha.html")
 
 @app.route("/redefinir_senha", methods=['GET', 'POST'])
 def redefinir_senha():
     if request.method == 'POST':
         nova_senha = request.form.get('nova_senha')
-        # Assume que o email vem da query string ou de um campo oculto
         email = request.args.get('email') or request.form.get('email') 
         
         if email and nova_senha and len(nova_senha) >= 6:
@@ -165,7 +173,8 @@ def redefinir_senha():
         else:
             flash('Senha inválida ou falta de informações.', 'danger')
             
-    return render_template("telasHTML/RecuperarSenha/redefinir_senha.html")
+    # CORREÇÃO: Caminho do template relativo a 'telasHTML'
+    return render_template("RecuperarSenha/redefinir_senha.html")
 
 @app.route('/logout')
 def logout():
@@ -182,17 +191,17 @@ def pagina_inicial():
     user_id = session.get('user_id')
     user = get_user_by_id(user_id)
     
-    # Carrega posts para o feed
     posts = get_all_posts() 
     
-    return render_template("telasHTML/ArquivosGerais/TelaPrincipal/index.html", user=user, posts=posts)
+    # CORREÇÃO: Caminho do template relativo a 'telasHTML'
+    return render_template("ArquivosGerais/TelaPrincipal/index.html", user=user, posts=posts)
 
 
 @app.route("/perfil/<int:user_id>")
 @login_required
 def perfil(user_id):
     user_data = get_user_by_id(user_id)
-    posts = get_posts_by_user(user_id) # Busca os posts específicos do usuário
+    posts = get_posts_by_user(user_id) 
     
     if not user_data:
         flash("Usuário não encontrado.", 'danger')
@@ -200,8 +209,9 @@ def perfil(user_id):
         
     is_current_user = user_id == session.get('user_id')
     
+    # CORREÇÃO: Caminho do template relativo a 'telasHTML'
     return render_template(
-        "telasHTML/ArquivosGerais/TelaDeUsuario/usuario.html", 
+        "ArquivosGerais/TelaDeUsuario/usuario.html", 
         user=user_data, 
         is_current_user=is_current_user,
         posts=posts
@@ -224,17 +234,13 @@ def upload_profile_image():
         return redirect(url_for('perfil', user_id=user_id))
 
     if file and allowed_file(file.filename):
-        # Gera um nome de arquivo único
         filename_base = str(uuid.uuid4())
         extension = file.filename.rsplit('.', 1)[1].lower()
         filename = secure_filename(f"{filename_base}.{extension}")
         
-        # Define o caminho de salvamento local
         save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(save_path)
         
-        # O caminho URL que será salvo no banco de dados e usado no frontend
-        # Note: 'uploads/' deve corresponder à rota @app.route('/uploads/<path:filename>')
         profile_image_url_path = f"uploads/{filename}" 
         
         if update_user_profile_image(user_email, profile_image_url_path):
@@ -247,7 +253,6 @@ def upload_profile_image():
         
     return redirect(url_for('perfil', user_id=user_id))
 
-# Rota para edição de perfil (exceto imagem, que tem sua própria rota)
 @app.route("/editar_perfil", methods=['POST'])
 @login_required
 def editar_perfil():
@@ -255,7 +260,7 @@ def editar_perfil():
     nome = request.form.get('nome')
     bio = request.form.get('bio') 
     
-    if update_user_profile(user_id, nome, bio, None): # None para a URL da imagem (usamos rota separada)
+    if update_user_profile(user_id, nome, bio, None): 
         flash('Perfil atualizado com sucesso!', 'success')
     else:
         flash('Falha ao atualizar o perfil.', 'danger')
@@ -280,7 +285,6 @@ def api_create_post():
             
             save_path = os.path.join(app.config['POST_UPLOAD_FOLDER'], filename)
             file.save(save_path)
-            # Note: 'post_uploads/' deve corresponder à rota @app.route('/post_uploads/<path:filename>')
             imagem_url = f"post_uploads/{filename}" 
 
     success, result = create_post(autor_id, legenda, imagem_url)
@@ -295,7 +299,6 @@ def api_create_post():
 
 # === ROTAS DE CHAT ===
 
-# 1. Rota principal do chat (renderiza o HTML)
 @app.route("/chat/<int:destinatario_id>")
 @login_required
 def chat(destinatario_id):
@@ -304,19 +307,17 @@ def chat(destinatario_id):
         flash("Usuário de destino não encontrado.", 'danger')
         return redirect(url_for('pagina_inicial'))
 
-    # Garante que a chave 'anon' é usada para o frontend (melhor prática de segurança)
     supabase_url = os.environ.get("SUPABASE_URL")
-    supabase_anon_key = os.environ.get("SUPABASE_KEY") # Usando SUPABASE_KEY como ANON key se não houver ANON_KEY
+    supabase_anon_key = os.environ.get("SUPABASE_KEY") 
     
+    # CORREÇÃO: Caminho do template relativo a 'telasHTML'
     return render_template(
-        "telasHTML/ArquivosGerais/TelaChat/chat.html",
+        "ArquivosGerais/TelaChat/chat.html",
         destinatario=destinatario,
         SUPABASE_URL=supabase_url,
-        SUPABASE_ANON_KEY=supabase_anon_key, # Passado para o JS
-        # O user_id é pego da session pelo Jinja no chat.html
+        SUPABASE_ANON_KEY=supabase_anon_key, 
     )
 
-# 2. ROTA API CHAT - PARA ENVIAR MENSAGENS (via POST)
 @app.route("/api/chat/send_message", methods=['POST'])
 @login_required
 def api_send_message():
@@ -324,7 +325,7 @@ def api_send_message():
     
     data = request.get_json()
     destinatario_id = data.get('destinatario_id')
-    content = data.get('content') # Nome usado pelo frontend (chat.js)
+    content = data.get('content') 
 
     if not all([remetente_id, destinatario_id, content]):
         return jsonify({'success': False, 'error': 'Dados incompletos para envio.'}), 400
@@ -332,7 +333,6 @@ def api_send_message():
     try:
         destinatario_id = int(destinatario_id)
         
-        # Chama a função de banco de dados (que usa o campo 'conteudo')
         success, result = create_message(remetente_id, destinatario_id, content)
 
         if success:
@@ -346,7 +346,6 @@ def api_send_message():
         return jsonify({'success': False, 'error': f'Erro interno do servidor: {str(e)}'}), 500
 
 
-# 3. ROTA API CHAT - PARA CARREGAR HISTÓRICO (via GET)
 @app.route("/api/chat/historico/<int:destinatario_id>", methods=['GET'])
 @login_required
 def api_get_chat_history(destinatario_id):
@@ -356,10 +355,7 @@ def api_get_chat_history(destinatario_id):
         return jsonify({'success': False, 'error': 'Usuário não autenticado.'}), 401
 
     try:
-        # Busca o histórico entre o usuário logado e o destinatário
         messages = get_chat_history(remetente_id, destinatario_id)
-        
-        # Retorna a lista de mensagens como JSON
         return jsonify(messages), 200
 
     except Exception as e:
