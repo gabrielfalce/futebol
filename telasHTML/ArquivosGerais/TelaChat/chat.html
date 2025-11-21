@@ -15,136 +15,149 @@
             <img src="{{ url_for('serve_static_files', filename=destinatario.profile_image_url) if destinatario.profile_image_url else '' }}" alt="Avatar de {{ destinatario.nome }}" class="avatar">
             
             <div class="user-info">
-                </div>
-            <p id="nomeDestinatario">{{ destinatario.nome }}</p>
+                <p id="nomeDestinatario">{{ destinatario.nome }}</p>
+            </div>
         </header>
 
         <main class="chat-body" id="chat-body">
             <p style="text-align:center; color: #555;">Carregando mensagens...</p>
-            </main>
+        </main>
 
         <footer class="chat-footer">
             <form id="message-form" class="message-form">
                 <input class="CaixaTexto" type="text" id="message-input" placeholder="Digite uma mensagem..." autocomplete="off">
-                <button type="submit" aria-label="Enviar mensagem">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
-                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
-                    </svg>
-                </button>
+                <button type="submit" class="send-button">Enviar</button>
             </form>
         </footer>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // 1. VARIÁVEIS DE CONTEXTO
+        // Variáveis de Ambiente e Configurações do Supabase (passadas pelo Flask)
         const REMETENTE_ID = {{ remetente.id | tojson }};
         const DESTINATARIO_ID = {{ destinatario.id | tojson }};
-        
-        const SUPABASE_URL = {{ supabase_url | tojson }};
-        const SUPABASE_ANON_KEY = {{ supabase_anon_key | tojson }};
+        const SUPABASE_URL = {{ SUPABASE_URL | tojson }};
+        const SUPABASE_ANON_KEY = {{ SUPABASE_ANON_KEY | tojson }};
 
-        // 2. INICIALIZAÇÃO E ELEMENTOS DO DOM
-        // Note: 'supabase' é declarado aqui.
+        // Inicializa o cliente Supabase
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        const chatBody = document.getElementById('chat-body');
-        const messageForm = document.getElementById('message-form');
-        const messageInput = document.getElementById('message-input');
 
-        // --- Funções Auxiliares de Renderização ---
-
-        function formatMessage(message) {
-            const isRemetente = message.remetente_id === REMETENTE_ID;
-            // Usa 'sent' para mensagens enviadas por mim e 'received' para as recebidas.
-            const wrapperClass = isRemetente ? 'sent' : 'received';
-            
-            const messageHtml = `
-                <div class="message-wrapper ${wrapperClass}">
-                    <div class="message ${wrapperClass}">
-                        <p>${message.conteudo}</p>
-                        <span class="timestamp">${new Date(message.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
-                    </div>
-                </div>
-            `;
-            return messageHtml;
-        }
-
+        /**
+         * Adiciona um balão de mensagem ao chat.
+         * @param {object} message - Objeto da mensagem.
+         */
         function appendMessage(message) {
-            // Remove a mensagem inicial de carregamento ou "inicie uma conversa"
-            const placeholder = chatBody.querySelector('.no-messages');
-            if (placeholder) {
-                chatBody.removeChild(placeholder);
+            const chatBody = document.getElementById('chat-body');
+            const isMyMessage = message.remetente_id == REMETENTE_ID;
+            
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('message-wrapper');
+            wrapper.classList.add(isMyMessage ? 'my-message-wrapper' : 'their-message-wrapper');
+
+            const messageBubble = document.createElement('div');
+            messageBubble.classList.add('message-bubble');
+            messageBubble.classList.add(isMyMessage ? 'my-message' : 'their-message');
+            messageBubble.textContent = message.conteudo;
+
+            const messageTime = document.createElement('span');
+            messageTime.classList.add('message-time');
+            // Formatação de data/hora (Ajuste conforme necessário)
+            try {
+                const date = new Date(message.created_at);
+                messageTime.textContent = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            } catch {
+                messageTime.textContent = '';
             }
-            // Adiciona a mensagem formatada
-            chatBody.insertAdjacentHTML('beforeend', formatMessage(message));
-            // Scroll para o final
-            chatBody.scrollTop = chatBody.scrollHeight; 
+
+            if (isMyMessage) {
+                messageBubble.appendChild(messageTime);
+                wrapper.appendChild(messageBubble);
+            } else {
+                messageBubble.appendChild(messageTime);
+                wrapper.appendChild(messageBubble);
+            }
+            
+            chatBody.appendChild(wrapper);
+            chatBody.scrollTop = chatBody.scrollHeight; // Scroll para a última mensagem
         }
 
-        // --- Lógica do Chat (Usando a API do Flask para o Histórico) ---
-
-        // 1. Carregar Histórico de Mensagens da API do Flask
+        /**
+         * Carrega o histórico de mensagens.
+         */
         async function loadMessages() {
-            chatBody.innerHTML = '<p style="text-align:center; color: #555;">Carregando mensagens...</p>'; // Garante o placeholder
-            
-            try {
-                // CHAMA A ROTA API DO FLASK CORRIGIDA EM app.py
-                const response = await fetch(`/api/chat/historico/${DESTINATARIO_ID}`);
-                const data = await response.json();
-                    
-                if (!response.ok) {
-                    // Lança um erro se a resposta do Flask não for OK (ex: 401, 500)
-                    throw new Error(data.error || 'Erro desconhecido ao carregar mensagens.');
-                }
-                
-                // Limpa o chat antes de adicionar o histórico
-                chatBody.innerHTML = ''; 
+            const chatBody = document.getElementById('chat-body');
+            // Limpa o estado de carregamento
+            chatBody.innerHTML = ''; 
 
+            try {
+                // IDs ordenados para obter um histórico consistente
+                const id1 = REMETENTE_ID;
+                const id2 = DESTINATARIO_ID;
+
+                // Consulta: mensagens onde (remetente=id1 E destinatário=id2) OU (remetente=id2 E destinatário=id1)
+                const { data, error } = await supabase
+                    .from('mensagens')
+                    .select('*')
+                    .or(`and(remetente_id.eq.${id1},destinatario_id.eq.${id2}),and(remetente_id.eq.${id2},destinatario_id.eq.${id1})`)
+                    .order('created_at', { ascending: true }); // Ordena por tempo
+
+                if (error) throw error;
+                
                 if (data.length === 0) {
-                    chatBody.innerHTML = '<p class="no-messages" style="text-align:center; color: #aaa;">Inicie uma conversa!</p>';
+                    chatBody.innerHTML = '<p style="text-align:center; color: #555;">Inicie uma nova conversa!</p>';
                 } else {
                     data.forEach(appendMessage);
                 }
-                
+
             } catch (error) {
                 console.error('Erro ao carregar mensagens:', error);
-                chatBody.innerHTML = `<p class="no-messages" style="text-align:center; color: red;">Erro ao carregar mensagens: ${error.message}</p>`;
+                chatBody.innerHTML = '<p style="text-align:center; color: red;">Erro ao carregar histórico.</p>';
+            }
+        }
+
+        /**
+         * Envia uma nova mensagem.
+         * @param {string} content - Conteúdo da mensagem.
+         */
+        async function sendMessage(content) {
+            const messageInput = document.getElementById('message-input');
+            
+            try {
+                // 1. Insere a mensagem no Supabase
+                const { data, error } = await supabase
+                    .from('mensagens')
+                    .insert([
+                        { 
+                            remetente_id: REMETENTE_ID, 
+                            destinatario_id: DESTINATARIO_ID, 
+                            conteudo: content 
+                        }
+                    ])
+                    .select()
+                    .single();
+                
+                if (error) throw error;
+
+                // 2. Adiciona a mensagem à tela (como é minha, adiciono diretamente)
+                appendMessage(data);
+
+            } catch (error) {
+                console.error('Erro ao enviar mensagem:', error);
+                alert('Erro ao enviar mensagem. Verifique o console.');
+                messageInput.value = content; // Restaura a mensagem se o envio falhar
             }
         }
         
-        // 2. Enviar Nova Mensagem
-        messageForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const content = messageInput.value.trim();
-            
-            if (content.length > 0) {
-                // Limpa a caixa de texto imediatamente para melhor UX
-                messageInput.value = ''; 
-                
-                // Objeto da mensagem para Supabase
-                const message = {
-                    remetente_id: REMETENTE_ID,
-                    destinatario_id: DESTINATARIO_ID,
-                    conteudo: content
-                };
-                
-                try {
-                    // Insere diretamente no Supabase (não precisa de rota Flask para INSERT)
-                    const { error } = await supabase
-                        .from('mensagens')
-                        .insert([message]);
-                        
-                    if (error) throw error;
-                    
-                    // Adiciona a mensagem enviada à tela imediatamente, usando o timestamp atual.
-                    appendMessage({ ...message, created_at: new Date().toISOString() });
-                    
-                } catch (error) {
-                    console.error('Erro ao enviar mensagem:', error);
-                    alert('Erro ao enviar mensagem. Verifique o console.');
-                    messageInput.value = content; // Restaura a mensagem se o envio falhar
-                }
+        // 1. Manipulador de Envio de Formulário
+        const messageForm = document.getElementById('message-form');
+        messageForm.addEventListener('submit', async (event) => {
+            event.preventDefault(); // Impede o recarregamento da página
+            const messageInput = document.getElementById('message-input');
+            const content = messageInput.value.trim(); // Pega o texto e remove espaços em branco
+
+            if (content) {
+                await sendMessage(content); // Envia a mensagem
+                messageInput.value = ''; // Limpa o campo de texto
             }
         });
         
