@@ -284,10 +284,12 @@ def api_chat_historico(destinatario_id):
     id2 = max(remetente_id, destinatario_id)
     
     try:
-        # CORREÇÃO FINAL: Quebra a query em três passos para evitar erros de parsing do Gunicorn na linha de atribuição.
-        query_base = supabase.from('mensagens').select('*')
-        filter_str = f'and(remetente_id.eq.{id1},destinatario_id.eq.{id2}),and(remetente_id.eq.{id2},destinatario_id.eq.{id1})'
-        supabase_query = query_base.or_(filter_str).order('created_at', asc=True)
+        # CORREÇÃO: Utiliza .format() e from_() (correto para a biblioteca Supabase) para resolver o SyntaxError no parsing.
+        filter_format = 'and(remetente_id.eq.{id1},destinatario_id.eq.{id2}),and(remetente_id.eq.{id2},destinatario_id.eq.{id1})'
+        filter_str = filter_format.format(id1=id1, id2=id2)
+        
+        # O método correto para a biblioteca Supabase é from_(), não 'from' (palavra reservada do Python).
+        supabase_query = supabase.from_('mensagens').select('*').or_(filter_str).order('created_at', asc=True)
 
         response = supabase_query.execute()
         
