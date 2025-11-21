@@ -284,13 +284,9 @@ def api_chat_historico(destinatario_id):
     id2 = max(remetente_id, destinatario_id)
     
     try:
-        # Consulta mensagens onde (remetente=id1 E destinatário=id2) OU (remetente=id2 E destinatário=id1)
-        # CORREÇÃO: Estrutura da query Supabase em uma única linha lógica para evitar problemas de sintaxe em ambientes rigorosos.
-        response = (
-            supabase.from('mensagens').select('*').or_(
-                f'and(remetente_id.eq.{id1},destinatario_id.eq.{id2}),and(remetente_id.eq.{id2},destinatario_id.eq.{id1})'
-            ).order('created_at', asc=True).execute()
-        )
+        # CORREÇÃO: Query em uma única linha lógica para evitar SyntaxError na inicialização do Gunicorn/Python
+        supabase_query = supabase.from('mensagens').select('*').or_(f'and(remetente_id.eq.{id1},destinatario_id.eq.{id2}),and(remetente_id.eq.{id2},destinatario_id.eq.{id1})').order('created_at', asc=True)
+        response = supabase_query.execute()
         
         data = response.data
         if not data:
