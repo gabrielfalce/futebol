@@ -50,7 +50,6 @@ def login_required(f):
         # Verifica se há user_id na sessão
         if 'user_id' not in session:
             flash('Você precisa fazer login para acessar esta página.', 'danger')
-            # redireciona para login com next
             return redirect(url_for('login', next=request.path))
         # Valida existência do usuário no banco
         try:
@@ -84,7 +83,8 @@ def _jinja2_filter_strftime(date_str, fmt='%d/%m/%Y às %H:%M'):
 
 @app.route('/static/login/<path:filename>')
 def login_assets(filename):
-    directory = os.path.join(TEMPLATE_FOLDER, 'telaDeLogin')
+    # corrigido: arquivo de login está em TEMPLATE_FOLDER/ArquivosGerais/telaDeLogin
+    directory = os.path.join(TEMPLATE_FOLDER, 'ArquivosGerais', 'telaDeLogin')
     return send_from_directory(directory, filename)
 
 @app.route('/static/cadastro/<path:filename>')
@@ -180,7 +180,8 @@ def cadastro():
             else:
                 flash(message, 'danger')
 
-    return render_template("Cadastro/cadastrar.html", form_data=form_data)
+    # caminho corrigido para o template real
+    return render_template("Cadastrar_templates/cadastrar.html", form_data=form_data)
 
 @app.route("/esqueci_senha")
 def esqueci_senha():
