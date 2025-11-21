@@ -284,10 +284,11 @@ def api_chat_historico(destinatario_id):
     id2 = max(remetente_id, destinatario_id)
     
     try:
-        # CORREÇÃO FINAL: Cria a string de filtro e então a usa no método .or_() para isolar parsing da f-string.
+        # CORREÇÃO FINAL: Quebra a query em três passos para evitar erros de parsing do Gunicorn na linha de atribuição.
+        query_base = supabase.from('mensagens').select('*')
         filter_str = f'and(remetente_id.eq.{id1},destinatario_id.eq.{id2}),and(remetente_id.eq.{id2},destinatario_id.eq.{id1})'
-        
-        supabase_query = supabase.from('mensagens').select('*').or_(filter_str).order('created_at', asc=True)
+        supabase_query = query_base.or_(filter_str).order('created_at', asc=True)
+
         response = supabase_query.execute()
         
         data = response.data
