@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil de {{ user.nome or 'Usuário' }}</title>
-    <link rel="stylesheet" href="{{ url_for('user_assets', filename='stylesTest.css') }}">
+    
+<link rel="stylesheet" href="{{ url_for('user_assets', filename='TelaDeUsuario/stylesTest.css') }}">
 </head>
 <body>
     
     <div class="Wallpaper">
         <img class="imagemWallpaper" 
-             src="{{ user.foto_capa_url if user.foto_capa_url else url_for('user_assets', filename='imagens/hM94BRC.jpeg') }}" 
+        src="{{ user.foto_capa_url if user.foto_capa_url else url_for('user_assets', filename='TelaDeUsuario/imagens/WallpaperTest.jpg') }}"
              alt="Wallpaper de fundo">
     </div>
     
@@ -81,7 +82,7 @@
             <div class="floating-button-bar"></div>
             <a href="{{ url_for('pagina_inicial') }}" title="Tela Inicial">
                 <button class="floating-button">
-                    <img src="{{ url_for('user_assets', filename='home.png') }}" alt="Ir para tela inicial">
+<img src="{{ url_for('user_assets', filename='TelaDeUsuario/home.png') }}" alt="Ir para tela inicial">
                 </button>
             </a>
         </div>
@@ -109,6 +110,6 @@
         </div>
     </div>
 
-    <script src="{{ url_for('user_assets', filename='script.js') }}"></script>
+<script src="{{ url_for('user_assets', filename='TelaDeUsuario/script.js') }}"></script>
 </body>
 </html>
