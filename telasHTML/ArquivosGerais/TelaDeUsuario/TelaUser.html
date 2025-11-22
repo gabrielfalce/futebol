@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil de {{ user.nome or 'Usuário' }}</title>
+    <title>Perfil de {{ usuario.nome or 'Usuário' }}</title>
     <link rel="stylesheet" href="{{ url_for('user_assets', filename='stylesTest.css') }}">
     </head>
 <body>
     
     <div class="Wallpaper">
         <img class="imagemWallpaper" 
-             src="{{ user.foto_capa_url if user.foto_capa_url else url_for('user_assets', filename='imagens/hM94BRC.jpeg') }}" 
+             src="{{ usuario.foto_capa_url if usuario.foto_capa_url else url_for('user_assets', filename='imagens/hM94BRC.jpeg') }}" 
              alt="Wallpaper de fundo">
     </div>
     
     <div class="header-actions">
-        {% if is_current_user %}
+        {% if is_owner %}
         <a href="{{ url_for('editar_perfil') }}" class="edit-button" title="Editar Perfil">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
         </a>
@@ -26,30 +26,29 @@
         <div id="profileContainer">
             <div id="perfilImagemGeralCaixa">
                 <img class="profile-image" 
-                     src="{{ user.profile_image_url if user.profile_image_url else url_for('inicio_assets', filename='iconeUser.png' ) }}" 
+                     src="{{ usuario.profile_image_url if usuario.profile_image_url else url_for('inicio_assets', filename='iconeUser.png' ) }}" 
                      alt="Foto de Perfil">
             </div>
 
             <div class="profile-info-group">
-                <h2 class="nomeUsuario">{{ user.nome or 'Nome Não Definido' }}</h2>
-                <p class="posicaoUsuario">{{ 'Posição favorita: ' + user.posicao if user.posicao else 'Posição Não Definida' }}</p>
-                <p class="cidadeUsuario">{{ user.cidade or 'Cidade Não Definida' }}</p>
+                <h2 class="nomeUsuario">{{ usuario.nome or 'Nome Não Definido' }}</h2>
+                <p class="posicaoUsuario">{{ 'Posição favorita: ' + usuario.posicao if usuario.posicao else 'Posição Não Definida' }}</p>
+                <p class="cidadeUsuario">{{ usuario.cidade or 'Cidade Não Definida' }}</p>
             </div>
             
             <div class="profile-actions">
-                {% if not is_current_user %}
+                {% if not is_owner %}
                     <button class="action-button follow-button">Seguir</button>
-                    <a href="{{ url_for('chat', destinatario_id=user.id) }}" class="action-button message-button" style="text-decoration: none; color: white;">Mensagem</a>
-
+                    <a href="{{ url_for('chat_with_user', destinatario_id=usuario.id) }}" class="action-button message-button" style="text-decoration: none; color: white;">Mensagem</a>
                 {% endif %}
             </div>
         </div>
 
         <div id="publicacoesContainer">
-            {% if not posts %}
+            {% if not publicacoes %}
                 <p style="text-align: center; color: #aaa; padding-top: 30px;">Nenhuma publicação encontrada.</p>
             {% else %}
-                {% for post in posts %}
+                {% for post in publicacoes %}
                 <div class="post-card">
                     <div class="post-header">
                         <img class="post-author-img" 
@@ -85,7 +84,7 @@
             </a>
         </div>
 
-        {% if is_current_user %}
+        {% if is_owner %}
         <div class="floating-button-wrapper">
             <button id="createPostBtn" class="floating-button create-post-button" title="Criar nova publicação">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
