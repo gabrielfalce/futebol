@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Perfil</title>
-    <link rel="stylesheet" href="editarStyle.css">
-    <link rel="stylesheet" href="{{ url_for('user_assets', filename='editarStyle.css' ) }}">
+    <link rel="stylesheet" href="{{ url_for('user_assets', filename='TelaDeUsuario/editarStyle.css') }}">
   
 </head>
 <body>
@@ -48,7 +47,6 @@
             <div class="grupo-formulario">
                 <label for="posicao">Posição</label>
                 <input type="text" id="posicao favorita" name="posicao" required="false" value="{{ user.posicao or '' }}">
-                       value="{{ usuario.posicao or '' }}">
             </div>
             
             <div class="grupo-formulario">
