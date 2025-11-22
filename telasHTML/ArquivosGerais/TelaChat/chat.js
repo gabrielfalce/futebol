@@ -95,7 +95,8 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     async function loadMessages() {
         try {
-            const response = await fetch(`/api/chat/historico/${DESTINATARIO_ID}`);
+            const response = await fetch(`/chat/${DESTINATARIO_ID}`);
+
             const messages = await response.json();
             
             chatBody.innerHTML = ''; // Limpa "Carregando..."
