@@ -96,7 +96,7 @@ def cadastro_assets(filename):
     
 @app.route('/static/chat/<path:filename>')
 def chat_assets(filename):
-    directory = os.path.join(TEMPLATE_FOLDER, 'TelaChat')
+    directory = os.path.join(TEMPLATE_FOLDER, 'ArquivosGerais', 'TelaChat')
     return send_from_directory(directory, filename)
 
 @app.route('/static/user_assets/<path:filename>')
@@ -424,11 +424,6 @@ def send_message():
     else:
         return jsonify({'success': False, 'message': message_or_id}), 500
 
-# === ROTA DE ERRO 404 (OPCIONAL) ===
-@app.errorhandler(404)
-def page_not_found(e):
-    # Você pode criar um template 404.html
-    return render_template('404.html'), 404
 
 if __name__ == "__main__":
     # O Render usa Gunicorn, então esta parte é mais para desenvolvimento local
