@@ -375,6 +375,14 @@ def criar_post():
 
 # === ROTAS DE CHAT ===
 
+@app.route("/send_message/historico/<int:destinatario_id>")
+@login_required
+def chat_historico(destinatario_id):
+    remetente_id = session.get("user_id")
+    historico = get_chat_history(remetente_id, destinatario_id)
+    return jsonify(historico)
+
+
 @app.route("/api/chat/historico/<int:destinatario_id>")
 @login_required
 def api_chat_historico(destinatario_id):
