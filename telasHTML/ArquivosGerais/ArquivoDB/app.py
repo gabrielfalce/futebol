@@ -419,14 +419,18 @@ def chat(destinatario_id):
 @login_required
 def send_message():
     remetente_id = session.get('user_id')
-    data = request.get_json()
-destinatario_id = data.get('destinatario_id')
-content = data.get('content')
     
+    data = request.get_json()
+    destinatario_id = data.get('destinatario_id')
+    content = data.get('content')
+
     if not destinatario_id or not content:
         return jsonify({'success': False, 'message': 'Dados incompletos.'}), 400
-        
+
     success, message_or_id = create_message(remetente_id, destinatario_id, content)
+
+    return jsonify({'success': success, 'id': message_or_id})
+
     
     if success:
         # Retorna a mensagem recém-criada para ser adicionada dinamicamente
