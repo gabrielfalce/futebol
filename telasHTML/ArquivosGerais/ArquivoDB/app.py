@@ -390,11 +390,12 @@ def chat(destinatario_id):
     historico = get_chat_history(remetente_id, destinatario_id)
     
     return render_template(
-        "TelaChat/chat.html", 
-        destinatario=destinatario, 
-        historico=historico,
-        remetente_id=remetente_id
-    )
+    "ArquivosGerais/TelaChat/chat.html",
+    destinatario=destinatario,
+    historico=historico,
+    remetente_id=remetente_id
+)
+
 
 @app.route("/send_message", methods=['POST'])
 @login_required
