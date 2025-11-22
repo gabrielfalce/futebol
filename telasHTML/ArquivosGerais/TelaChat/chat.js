@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     async function loadMessages() {
         try {
-            const response = await fetch(`/chat/${DESTINATARIO_ID}`);
+            const response = await fetch(`/send_message/historico/${DESTINATARIO_ID}`);
 
             const messages = await response.json();
             
