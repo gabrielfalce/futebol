@@ -53,9 +53,9 @@
     
     <nav class="navigation-links">
         <!-- Feed: usando pagina_inicial (não existe pagina_feed no app.py) -->
-        <a href="{{ url_for('pagina_inicial') }}" title="Feed de Posts" class="nav-button feed-button">
+        <a href="{{ url_for('feed') }}" title="Feed de Posts" class="nav-button feed-button">
             Feed
-        </a> 
+        </a>
         
         <!-- Perfil: app.py usa 'perfil' como endpoint -->
         <a href="{{ url_for('perfil', user_id=session.user_id) }}" title="Meu Perfil" class="nav-button profile-button">
