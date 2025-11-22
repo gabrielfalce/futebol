@@ -89,7 +89,7 @@ def login_assets(filename):
 
 @app.route('/static/cadastro/<path:filename>')
 def cadastro_assets(filename):
-    # corrigido: cadastro está em TEMPLATE_FOLDER/ArquivosGerais/Cadastrar_templates
+    # apontar para ArquivosGerais/Cadastrar_templates (caminho real)
     directory = os.path.join(TEMPLATE_FOLDER, 'ArquivosGerais', 'Cadastrar_templates')
     return send_from_directory(directory, filename)
     
@@ -174,10 +174,24 @@ def cadastro():
         if len(senha) < 6:
             flash('A senha deve ter pelo menos 6 caracteres.', 'danger')
         else:
-            success, message = register_user(nome, email, senha, cidade, posicao, nascimento, numero_camisa, numero_telefone)
+            success, message, created_user = register_user(nome, email, senha, cidade, posicao, nascimento, numero_camisa, numero_telefone) if False else register_user(nome, email, senha, cidade, posicao, nascimento, numero_camisa, numero_telefone)
+            # Nota: register_user deve retornar (success, message) como antes.
+            # Se sua função register_user também retorna o usuário criado, adapte abaixo.
             if success:
                 flash(message, 'success')
-                return redirect(url_for('login'))
+                # alteração mínima: ao criar conta, autenticar automaticamente e redirecionar para pagina_inicial
+                # obter o usuário criado para popular sessão (tenta buscar pelo email)
+                try:
+                    new_user = get_user_by_email(email)
+                    if new_user:
+                        session['user_id'] = new_user.get('id')
+                        session['user_email'] = new_user.get('email')
+                        session['user_nome'] = new_user.get('nome')
+                        session.permanent = True  # opcionais: definir como permanente para "lembrar-me" padrão
+                except Exception:
+                    # se falhar ao buscar, simplesmente redireciona para login (com flash já aplicado)
+                    return redirect(url_for('login'))
+                return redirect(url_for('pagina_inicial'))
             else:
                 flash(message, 'danger')
 
