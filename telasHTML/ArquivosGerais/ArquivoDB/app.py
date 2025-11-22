@@ -244,6 +244,14 @@ def pagina_inicial():
 
     return render_template("ArquivosGerais/TelaInicial/TelaInicial.html", user=user, posts=posts, users=users)
 
+
+@app.route('/feed')
+@login_required
+def feed():
+    posts = get_all_posts()  # Use sua função do database.py
+    user = get_user_by_id(session['user_id'])
+    return render_template("ArquivosGerais/TelaFeed/feed.html", posts=posts, user=user)
+
 @app.route("/perfil/<int:user_id>")
 @login_required
 def perfil(user_id):
