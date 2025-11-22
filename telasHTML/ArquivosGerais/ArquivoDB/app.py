@@ -389,9 +389,8 @@ def chat(destinatario_id):
     # 2. Obter histórico de mensagens
     historico = get_chat_history(remetente_id, destinatario_id)
     
-    return render_template(
-    'chat.html',
-    destinatario=destinatario,
+    return render_template('ArquivosGerais/TelaChat/chat.html',
+     destinatario=destinatario,
     SUPABASE_URL=os.environ.get("SUPABASE_URL"),
     SUPABASE_KEY=os.environ.get("SUPABASE_KEY")
 )
