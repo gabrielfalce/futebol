@@ -244,8 +244,9 @@ def get_chat_history(user_a_id: int, user_b_id: int):
             .select('id, created_at, remetente_id, destinatario_id, conteudo, lida')
             # Busca onde (remetente=A E destinatário=B) OU (remetente=B E destinatário=A)
             # O or_() permite combinar duas condições AND
-            .or_(f"and(remetente_id.eq.{user_a_id},destinatario_id.eq.{user_b_id})",
-                 f"and(remetente_id.eq.{user_b_id},destinatario_id.eq.{user_a_id})")
+            .or_(
+    f"and(remetente_id.eq.{user_a_id},destinatario_id.eq.{user_b_id}),"
+    f"and(remetente_id.eq.{user_b_id},destinatario_id.eq.{user_a_id})")
             .order('created_at', desc=False) # Ordem ascendente (mais antiga primeiro)
             .execute()
         )
