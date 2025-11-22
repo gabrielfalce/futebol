@@ -392,7 +392,8 @@ def chat(destinatario_id):
     return render_template('ArquivosGerais/TelaChat/chat.html',
      destinatario=destinatario,
     SUPABASE_URL=os.environ.get("SUPABASE_URL"),
-    SUPABASE_KEY=os.environ.get("SUPABASE_KEY")
+    SUPABASE_ANON_KEY=os.environ.get("SUPABASE_KEY")
+
 )
 
 
