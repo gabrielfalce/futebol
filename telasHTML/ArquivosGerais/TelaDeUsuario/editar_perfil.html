@@ -13,7 +13,7 @@
     <div id="notificacao-toast" class="notificacao-toast"></div>
 
     <header>
-        <a href="{{ url_for('perfil', user_id=session.user_id) }}" class="botao-voltar">← Voltar</a>
+        <a href="{{ url_for('perfil', user_id=session.user_id) }}" class="botao-voltar">Voltar</a>
         <h1>Editar Perfil</h1>
     </header>
 
@@ -24,7 +24,7 @@
             <label for="profile_image" class="rotulo-upload-imagem-perfil">
                 <!-- ALTERAÇÃO: Trocado o placeholder inexistente por um que sabemos que existe ('BotaoUsuario.ico') -->
                 <img id="previa-imagem" 
-                     src="{{ url_for('serve_static_files', filename=usuario.profile_image_url) if usuario.profile_image_url else url_for('inicio_assets', filename='BotaoUsuario.ico') }}"
+                src="{{ user.profile_image_url if user.profile_image_url else url_for('inicio_assets', filename='BotaoUsuario.ico') }}"
                      alt="Pré-visualização da Imagem de Perfil" 
                      class="previa-imagem-perfil">
                 <div class="icone-upload">
