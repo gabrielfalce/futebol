@@ -89,7 +89,8 @@ def login_assets(filename):
 
 @app.route('/static/cadastro/<path:filename>')
 def cadastro_assets(filename):
-    directory = os.path.join(TEMPLATE_FOLDER, 'Cadastrar_templates')
+    # corrigido: cadastro está em TEMPLATE_FOLDER/ArquivosGerais/Cadastrar_templates
+    directory = os.path.join(TEMPLATE_FOLDER, 'ArquivosGerais', 'Cadastrar_templates')
     return send_from_directory(directory, filename)
     
 @app.route('/static/chat/<path:filename>')
@@ -181,7 +182,7 @@ def cadastro():
                 flash(message, 'danger')
 
     # caminho corrigido para o template real
-    return render_template("Cadastrar_templates/cadastrar.html", form_data=form_data)
+    return render_template("ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data=form_data)
 
 @app.route("/esqueci_senha")
 def esqueci_senha():
