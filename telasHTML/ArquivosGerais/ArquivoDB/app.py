@@ -20,6 +20,7 @@ load_dotenv()
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Definir template_folder para a pasta 'telasHTML' (dois níveis acima).
+# Se app.py está em /telasHTML/ArquivosGerais/ArquivoDB, o TEMPLATE_FOLDER será /telasHTML
 TEMPLATE_FOLDER = os.path.abspath(os.path.join(APP_DIR, '..', '..'))
 
 # Para uploads, o caminho para o projeto raiz
@@ -100,6 +101,8 @@ def chat_assets(filename):
 
 @app.route('/static/user_assets/<path:filename>')
 def user_assets(filename):
+    # Esta rota serve arquivos que estão diretamente em ArquivosGerais
+    # ou em subpastas de ArquivosGerais (como TelaDeUsuario, TelaInicial, etc.)
     directory = os.path.join(TEMPLATE_FOLDER, 'ArquivosGerais')
     return send_from_directory(directory, filename)
 
@@ -111,6 +114,7 @@ def inicio_assets(filename):
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
     """Rota para servir imagens de perfil."""
+    # BASE_DIR é o diretório raiz do projeto no Render
     upload_path = os.path.join(BASE_DIR, UPLOAD_FOLDER_RELATIVE)
     return send_from_directory(upload_path, filename)
 
@@ -174,9 +178,10 @@ def cadastro():
         if len(senha) < 6:
             flash('A senha deve ter pelo menos 6 caracteres.', 'danger')
         else:
-            success, message, created_user = register_user(nome, email, senha, cidade, posicao, nascimento, numero_camisa, numero_telefone) if False else register_user(nome, email, senha, cidade, posicao, nascimento, numero_camisa, numero_telefone)
-            # Nota: register_user deve retornar (success, message) como antes.
-            # Se sua função register_user também retorna o usuário criado, adapte abaixo.
+            # CORREÇÃO CRÍTICA: A função register_user retorna 2 valores, não 3.
+            # O código original (com o if False else) foi removido por ser redundante e a atribuição corrigida.
+            success, message = register_user(nome, email, senha, cidade, posicao, nascimento, numero_camisa, numero_telefone)
+            
             if success:
                 flash(message, 'success')
                 # alteração mínima: ao criar conta, autenticar automaticamente e redirecionar para pagina_inicial
@@ -275,144 +280,156 @@ def upload_profile_image():
         return redirect(url_for('perfil', user_id=user_id))
 
     if file and allowed_file(file.filename):
-        filename_base = str(uuid.uuid4())
-        extension = file.filename.rsplit('.', 1)[1].lower()
-        filename = secure_filename(f"{filename_base}.{extension}")
+        # 1. Salvar o arquivo localmente
+        filename = secure_filename(f"{uuid.uuid4()}_{file.filename}")
         
-        save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(save_path)
+        # Caminho absoluto para salvar o arquivo
+        upload_folder_abs = os.path.join(BASE_DIR, UPLOAD_FOLDER_RELATIVE)
+        os.makedirs(upload_folder_abs, exist_ok=True)
+        file_path = os.path.join(upload_folder_abs, filename)
+        file.save(file_path)
         
-        profile_image_url_path = f"uploads/{filename}" 
+        # 2. Atualizar o caminho no banco de dados
+        # O caminho salvo no banco é o caminho da rota do Flask para servir o arquivo
+        profile_image_url_path = url_for('uploaded_file', filename=filename)
         
         if update_user_profile_image(user_email, profile_image_url_path):
             flash('Foto de perfil atualizada com sucesso!', 'success')
         else:
-            flash('Falha ao salvar o caminho da imagem no banco de dados.', 'danger')
+            flash('Falha ao atualizar o banco de dados.', 'danger')
             
     else:
         flash('Tipo de arquivo não permitido.', 'danger')
         
     return redirect(url_for('perfil', user_id=user_id))
 
-@app.route("/editar_perfil", methods=['POST'])
+@app.route("/editar_perfil", methods=['GET', 'POST'])
 @login_required
 def editar_perfil():
     user_id = session.get('user_id')
-    nome = request.form.get('nome')
-    bio = request.form.get('bio') 
+    user = get_user_by_id(user_id)
     
-    if update_user_profile(user_id, nome, bio, None): 
-        flash('Perfil atualizado com sucesso!', 'success')
-    else:
-        flash('Falha ao atualizar o perfil.', 'danger')
+    if request.method == 'POST':
+        nome = request.form.get('nome')
+        bio = request.form.get('bio')
+        
+        # Lógica de upload de imagem (se houver)
+        profile_image_url = None
+        if 'profile_image' in request.files:
+            file = request.files['profile_image']
+            if file.filename != '' and allowed_file(file.filename):
+                # 1. Salvar o arquivo localmente
+                filename = secure_filename(f"{uuid.uuid4()}_{file.filename}")
+                upload_folder_abs = os.path.join(BASE_DIR, UPLOAD_FOLDER_RELATIVE)
+                os.makedirs(upload_folder_abs, exist_ok=True)
+                file_path = os.path.join(upload_folder_abs, filename)
+                file.save(file_path)
+                
+                # 2. Definir o caminho para o banco de dados
+                profile_image_url = url_for('uploaded_file', filename=filename)
+        
+        if update_user_profile(user_id, nome, bio, profile_image_url):
+            # Atualiza o nome na sessão se ele foi alterado
+            if nome:
+                session['user_nome'] = nome
+            flash('Perfil atualizado com sucesso!', 'success')
+            return redirect(url_for('perfil', user_id=user_id))
+        else:
+            flash('Falha ao atualizar o perfil.', 'danger')
+            
+    # GET
+    return render_template("ArquivosGerais/TelaDeUsuario/editar_perfil.html", user=user)
 
-    return redirect(url_for('perfil', user_id=user_id))
-
-# === ROTAS DE POSTS ===
-
-@app.route("/create_post", methods=['POST'])
+@app.route("/criar_post", methods=['POST'])
 @login_required
-def api_create_post():
-    autor_id = session.get('user_id')
-    legenda = request.form.get('legenda', '')
-    imagem_url = None
+def criar_post():
+    user_id = session.get('user_id')
+    legenda = request.form.get('legenda')
     
+    if not legenda and 'post_image' not in request.files:
+        flash('O post deve ter uma legenda ou uma imagem.', 'danger')
+        return redirect(url_for('pagina_inicial'))
+        
+    imagem_url = None
     if 'post_image' in request.files:
         file = request.files['post_image']
         if file.filename != '' and allowed_file(file.filename):
-            filename_base = str(uuid.uuid4())
-            extension = file.filename.rsplit('.', 1)[1].lower()
-            filename = secure_filename(f"{filename_base}.{extension}")
+            # 1. Salvar o arquivo localmente
+            filename = secure_filename(f"{uuid.uuid4()}_{file.filename}")
+            post_upload_folder_abs = os.path.join(BASE_DIR, POST_UPLOAD_FOLDER_RELATIVE)
+            os.makedirs(post_upload_folder_abs, exist_ok=True)
+            file_path = os.path.join(post_upload_folder_abs, filename)
+            file.save(file_path)
             
-            save_path = os.path.join(app.config['POST_UPLOAD_FOLDER'], filename)
-            file.save(save_path)
-            imagem_url = f"post_uploads/{filename}" 
-
-    success, result = create_post(autor_id, legenda, imagem_url)
+            # 2. Definir o caminho para o banco de dados
+            imagem_url = url_for('post_uploaded_file', filename=filename)
+            
+    success, message_or_id = create_post(user_id, legenda, imagem_url)
     
     if success:
         flash('Post criado com sucesso!', 'success')
-        return redirect(url_for('pagina_inicial'))
     else:
-        flash(f'Falha ao criar post: {result}', 'danger')
-        return redirect(url_for('pagina_inicial'))
-
+        flash(f'Falha ao criar post: {message_or_id}', 'danger')
+        
+    return redirect(url_for('pagina_inicial'))
 
 # === ROTAS DE CHAT ===
 
 @app.route("/chat/<int:destinatario_id>")
 @login_required
 def chat(destinatario_id):
-    destinatario = get_user_by_id(destinatario_id)
-    if not destinatario:
-        flash("Usuário de destino não encontrado.", 'danger')
-        return redirect(url_for('pagina_inicial'))
-
-    supabase_url = os.environ.get("SUPABASE_URL")
-    supabase_anon_key = os.environ.get("SUPABASE_KEY") 
-    
-    return render_template(
-        "ArquivosGerais/TelaChat/chat.html",
-        destinatario=destinatario,
-        SUPABASE_URL=supabase_url,
-        SUPABASE_ANON_KEY=supabase_anon_key, 
-    )
-
-@app.route("/api/chat/send_message", methods=['POST'])
-@login_required
-def api_send_message():
-    remetente_id = session.get('user_id') 
-    
-    data = request.get_json()
-    destinatario_id = data.get('destinatario_id')
-    content = data.get('content') 
-
-    if not all([remetente_id, destinatario_id, content]):
-        return jsonify({'success': False, 'error': 'Dados incompletos para envio.'}), 400
-
-    try:
-        destinatario_id = int(destinatario_id)
-        
-        success, result = create_message(remetente_id, destinatario_id, content)
-
-        if success:
-            return jsonify({'success': True, 'message_id': result}), 201
-        else:
-            return jsonify({'success': False, 'error': result}), 500
-            
-    except ValueError:
-        return jsonify({'success': False, 'error': 'ID de destinatário inválido.'}), 400
-    except Exception as e:
-        return jsonify({'success': False, 'error': f'Erro interno do servidor: {str(e)}'}), 500
-
-
-@app.route("/api/chat/historico/<int:destinatario_id>", methods=['GET'])
-@login_required
-def api_get_chat_history(destinatario_id):
     remetente_id = session.get('user_id')
     
-    if not remetente_id:
-        return jsonify({'success': False, 'error': 'Usuário não autenticado.'}), 401
-
-    try:
-        messages = get_chat_history(remetente_id, destinatario_id)
-        return jsonify(messages), 200
-
-    except Exception as e:
-        print(f"ERRO ao buscar histórico de chat: {e}")
-        return jsonify({'success': False, 'error': 'Falha ao buscar histórico de chat.'}), 500
-
-
-# === EXECUÇÃO DA APLICAÇÃO ===
-
-if __name__ == '__main__':
-    # Configuração para servir uploads localmente durante o desenvolvimento
-    app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, UPLOAD_FOLDER_RELATIVE)
-    app.config['POST_UPLOAD_FOLDER'] = os.path.join(BASE_DIR, POST_UPLOAD_FOLDER_RELATIVE)
-
-    # Cria diretórios se não existirem
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-    os.makedirs(app.config['POST_UPLOAD_FOLDER'], exist_ok=True)
+    # 1. Obter dados do destinatário
+    destinatario = get_user_by_id(destinatario_id)
+    if not destinatario:
+        flash("Usuário de chat não encontrado.", 'danger')
+        return redirect(url_for('pagina_inicial'))
+        
+    # 2. Obter histórico de mensagens
+    historico = get_chat_history(remetente_id, destinatario_id)
     
-    # Executa a aplicação Flask
+    return render_template(
+        "TelaChat/chat.html", 
+        destinatario=destinatario, 
+        historico=historico,
+        remetente_id=remetente_id
+    )
+
+@app.route("/send_message", methods=['POST'])
+@login_required
+def send_message():
+    remetente_id = session.get('user_id')
+    destinatario_id = request.form.get('destinatario_id', type=int)
+    content = request.form.get('content')
+    
+    if not destinatario_id or not content:
+        return jsonify({'success': False, 'message': 'Dados incompletos.'}), 400
+        
+    success, message_or_id = create_message(remetente_id, destinatario_id, content)
+    
+    if success:
+        # Retorna a mensagem recém-criada para ser adicionada dinamicamente
+        # Aqui você pode buscar a mensagem completa do banco se necessário, 
+        # mas para simplificar, retornamos o que foi enviado
+        return jsonify({
+            'success': True, 
+            'message': {
+                'id': message_or_id,
+                'remetente_id': remetente_id,
+                'conteudo': content,
+                'created_at': datetime.now().isoformat() # Usar hora do servidor
+            }
+        }), 200
+    else:
+        return jsonify({'success': False, 'message': message_or_id}), 500
+
+# === ROTA DE ERRO 404 (OPCIONAL) ===
+@app.errorhandler(404)
+def page_not_found(e):
+    # Você pode criar um template 404.html
+    return render_template('404.html'), 404
+
+if __name__ == "__main__":
+    # O Render usa Gunicorn, então esta parte é mais para desenvolvimento local
     app.run(debug=True)
