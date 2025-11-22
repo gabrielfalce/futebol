@@ -12,7 +12,7 @@
         <h1 class="titulo">publicações</h1>
         <nav class="navegacao">
             <a href="{{ url_for('pagina_inicial') }}">Usuários</a>
-            <a href="{{ url_for('pagina_usuario', user_id=session['user_id']) }}">Meu Perfil</a>
+            <a href="{{ url_for('perfil', user_id=session['user_id']) }}">Meu Perfil</a>
             <a href="{{ url_for('logout') }}">Sair</a>
         </nav>
     </header>

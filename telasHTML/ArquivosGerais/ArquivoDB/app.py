@@ -381,6 +381,13 @@ def criar_post():
         
     return redirect(url_for('pagina_inicial'))
 
+
+@app.route('/api/posts', methods=['GET'])
+@login_required
+def api_posts():
+    posts = get_all_posts()
+    return jsonify(posts)
+
 # === ROTAS DE CHAT ===
 
 @app.route("/send_message/historico/<int:destinatario_id>")
