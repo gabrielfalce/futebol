@@ -39,7 +39,8 @@
             <div class="profile-actions">
                 {% if not is_current_user %}
                     <button class="action-button follow-button">Seguir</button>
-                    <a href="{{ url_for('chat_with_user', destinatario_id=user.id) }}" class="action-button message-button" style="text-decoration: none; color: white;">Mensagem</a>
+                    <a href="{{ url_for('chat', destinatario_id=user.id) }}" class="action-button message-button" style="text-decoration: none; color: white;">Mensagem</a>
+
                 {% endif %}
             </div>
         </div>
