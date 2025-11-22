@@ -102,7 +102,7 @@
         <div class="modal-content">
             <button id="closePostModalBtn" class="close-button">×</button>
             <h2>Criar Publicação</h2>
-            <form id="postForm" enctype="multipart/form-data">
+            <form id="postForm" action="{{ url_for('criar_post') }}" method="POST" enctype="multipart/form-data">
                 <textarea id="postContent" name="legenda" placeholder="O que você está pensando?" required></textarea>
                 <input type="file" id="postImage" name="postImage" accept="image/*">
                 <button type="submit">Publicar</button>
