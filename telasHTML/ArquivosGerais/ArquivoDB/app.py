@@ -419,8 +419,9 @@ def chat(destinatario_id):
 @login_required
 def send_message():
     remetente_id = session.get('user_id')
-    destinatario_id = request.form.get('destinatario_id', type=int)
-    content = request.form.get('content')
+    data = request.get_json()
+destinatario_id = data.get('destinatario_id')
+content = data.get('content')
     
     if not destinatario_id or not content:
         return jsonify({'success': False, 'message': 'Dados incompletos.'}), 400
