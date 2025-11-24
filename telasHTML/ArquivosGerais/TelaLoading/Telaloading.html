@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carregando</title>
+    
+    <!-- ALTERAÇÃO: A linha '<link rel="stylesheet" href="style.css">' foi removida daqui. -->
+    <link rel="stylesheet" href="{{ url_for('loading_assets', filename='style.css') }}">
+
+    <style>
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid var(--cor-primaria);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Estilos básicos para o Toast */
+        .toast {
+            visibility: hidden; /* Oculto por padrão */
+            opacity: 0;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #333; /* Cor padrão, será sobrescrita */
+            color: #fff;
+            text-align: center;
+            border-radius: 2px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1; /* Abaixo do loader, mas visível */
+            right: 30px; /* Posicionado no canto */
+            top: 30px;
+            font-size: 17px;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body data-tempo-loading="3000"> 
+    
+    <img src="{{ url_for('loading_assets', filename='logoGeral.png') }}" alt="Bola Verde">
+    
+    <h1 class="titulo">Carregando</h1>
+    <div class="loader"></div>
+    <div id="toast-notification" class="toast"></div>
+
+    <script>
+        // Bloco de Mensagens Flasheadas e Toast
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                const message = "{{ messages[0][1] }}";
+                const toast = document.getElementById("toast-notification");
+                toast.textContent = message;
+                
+                // CORREÇÃO CRÍTICA: Sintaxe do Jinja2 dentro de aspas simples para ser um JS String válido.
+                toast.style.backgroundColor = '{{ "green" if messages[0][0] == "success" else "#f44336" }}';
+                
+                toast.classList.add("show");
+                setTimeout(() => toast.classList.remove("show"), 4000);
+            {% endif %}
+        {% endwith %}
+        
+        // CORREÇÃO CRÍTICA: Redirecionamento forçado após o tempo definido
+        const delay = parseInt(document.body.getAttribute('data-tempo-loading')) || 3000;
+
+        setTimeout(() => {
+            // Garante que a URL é resolvida corretamente pelo Jinja2
+            window.location.href = "{{ url_for('pagina_inicial') }}"; 
+        }, delay);
+    </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+Flask
+requests
+bcrypt
+supabase
+gunicorn
+python-dotenv
+email-validator
+flask_cors

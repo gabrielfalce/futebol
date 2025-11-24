@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Definir Nova Senha</title>
+    
+    <link rel="stylesheet" href="{{ url_for('recuperar-assets', filename='redefinir.css') }}">
+
+    <style>
+        .flash-message {
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .flash-message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .flash-message.danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Crie sua Nova Senha</h1>
+        <p>Digite sua nova senha abaixo. Ela deve ter no mínimo 6 caracteres.</p>
+        
+        <form action="{{ url_for('redefinir_senha') }}" method="POST">
+            <div class="form-group">
+                <label for="nova_senha">Nova Senha</label>
+                <input type="password" id="nova_senha" name="nova_senha" required minlength="6">
+            </div>
+            
+            <button type="submit" class="submit-button">Salvar Nova Senha</button>
+        </form>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-message {{ messages[0][0] }}">
+                    {{ messages[0][1] }}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        <a href="{{ url_for('login') }}" class="back-link">Voltar para Login</a>
+    </div>
+</body>
+</html>

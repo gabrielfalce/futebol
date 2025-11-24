@@ -1,0 +1,202 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #313131;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow-y: hidden; /* Impede a barra de rolagem horizontal */
+}
+input::placeholder {
+    color: black;
+}
+
+.logo{
+border-radius: 100000px;
+
+}
+
+.toast{
+display: none;
+position: absolute;
+align-items: center;
+justify-content: center;
+top: 20px;
+border-radius: 10px;
+padding: 12px 20px;
+margin: 20px 0;
+color: #ffffff;
+box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+h1 {
+    text-align: center;
+    margin-top: 10px;
+    color: rgb(255, 255, 255);
+}
+
+form {
+    max-width: 300px;
+    margin: 30px auto 20px; /* Adicionado 20px de margem inferior */
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+label {
+    display: block;
+    color: #ffffff;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"] {
+    width: 80%;
+    padding: 8px;
+    background-color: #909090;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    margin-left: 15px;
+    border: 1px solid #909090;
+    color: #ffffff;
+}
+/* Adiciona o efeito de borda e sombra quando o mouse está sobre o campo ou quando ele está selecionado (em foco) */
+input[type="text"]:hover,
+input[type="password"]:hover,
+input[type="email"]:hover,
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus {
+    outline: none;
+    border: 2px solid #2BBF90;
+    box-shadow: 0 0 500px #2BBF90;
+}
+
+.logo:hover {
+    transform: scale(1.05);
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 0 500px #2BBF90;
+    border-radius: 100000px;
+}
+
+.buttonLogin,
+button[type="submit"] {
+    width: 40%;
+    padding: 10px;
+    background-color: #909090;
+    color: black;
+    border: none;
+    border-radius: 80px;
+    cursor: pointer;
+    margin: 10px auto;
+    font-size: large;
+}
+button:focus {
+    outline: none;
+}
+
+button:hover,
+.buttonLogin:hover {
+    background-color: #2BBF90;
+    color: whitesmoke;
+    transform: scale(1.05);
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 0 10px #2BBF90;
+}
+
+img {
+    display: block;
+    margin: 0 auto;
+    max-width: 100px;
+}
+.ou{
+    /* Retornando ao fluxo normal do documento */
+    margin: 20px 0;
+    color: #0e0b0b;
+    font-size: large;
+}
+.criarNovaConta{
+    /* Retornando ao fluxo normal do documento */
+    display: inline-block; /* Permite aplicar margens e padding */
+    font-size: 13px;
+    text-decoration: none;
+    color: #ffffff;
+    background-color: #909090;
+    padding: 12px 25px; /* Padding para dar um bom espaçamento interno */
+    border-radius: 50px; /* Borda arredondada para um visual de "pílula" */
+    white-space: nowrap; /* Impede que o texto quebre em duas linhas */
+}
+.criarNovaConta:hover {
+    background-color: #7a807c; /* Cor de fundo ao passar o mouse */
+    color: black; /* Cor do texto ao passar o mouse */
+    transform: scale(1.055);
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 0 20px #2BBF90 inset;
+}
+
+.esqueceuSenha {
+    text-align: center;
+    font-size: 12px;
+    text-decoration: none;
+    margin-top: 10px;
+    color: #ffffff;
+    display: block;
+}
+.esqueceuSenha:hover {
+    color: #2bbf9083;
+    transform: scale(1.05);
+}
+
+/* Estilos da bola animada */
+.soccer-ball {
+    width: 20vw;
+    max-width: 120px;
+    min-width: 60px;
+    height: 20vw;
+    max-height: 120px;
+    min-height: 60px;
+    /* CORREÇÃO: mudado de 'bolaverde 3.png' para 'bolaverde_3.png' */
+    background: url('bolaverde_3.png') no-repeat center;
+    background-size: cover;
+    animation: spin 2s linear infinite;
+    margin-bottom: 20px; /* Espaço entre a bola e o formulário */
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Ajustes responsivos */
+@media (max-width: 400px) {
+    .soccer-ball {
+        width: 40vw;
+        height: 40vw;
+        min-width: 40px;
+        min-height: 40px;
+    }
+    form {
+        max-width: 90%;
+        margin: 20px auto;
+        padding: 15px;
+    }
+    input[type="text"],
+    input[type="password"],
+    input[type="email"] {
+        width: 90%;
+        margin-left: 5%;
+    }
+    .buttonLogin,
+    button[type="submit"] {
+        width: 50%;
+        margin: 5px auto;
+    }
+}

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat com {{ destinatario.nome }}</title>
+    
+    <link rel="stylesheet" href="{{ url_for('chat_assets', filename='chat.css') }}">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="chat-container">
+        <header class="chat-header">
+            <a href="{{ url_for('pagina_inicial') }}" class="back-button" aria-label="Voltar para a página anterior">&larr;</a>
+            
+            <img src="{{ destinatario.profile_image_url if destinatario.profile_image_url else url_for('user_assets', filename='imagens/bolaLogo.png') }}" alt="Avatar de {{ destinatario.nome }}" class="avatar">
+            
+            <div class="user-info">
+                </div>
+            <p id="nomeDestinatario">{{ destinatario.nome }}</p>
+        </header>
+
+        <main class="chat-body" id="chat-body">
+            <p style="text-align:center; color: #555;">Carregando mensagens...</p>
+            </main>
+
+        <footer class="chat-footer">
+            <form id="message-form" class="message-form">
+                <input class="CaixaTexto" type="text" id="message-input" placeholder="Digite uma mensagem..." autocomplete="off">
+                <button type="submit" aria-label="Enviar Mensagem">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13"/></svg>
+                </button>
+            </form>
+        </footer>
+    </div>
+    
+    <script>
+        // Variáveis globais necessárias para o chat.js
+        const SUPABASE_URL = "{{ SUPABASE_URL }}";
+        const SUPABASE_KEY = "{{ SUPABASE_ANON_KEY }}";
+        const REMETENTE_ID = {{ session['user_id'] }};
+        const DESTINATARIO_ID = {{ destinatario.id }};
+    </script>
+    
+    <script src="{{ url_for('chat_assets', filename='chat.js') }}"></script>
+</body>
+</html>

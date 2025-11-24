@@ -1,0 +1,91 @@
+/* Localização: telasHTML/ArquivosGerais/TelaLoading/style.css */
+
+/*
+  ALTERAÇÃO: A linha @import foi removida.
+  As variáveis globais foram copiadas aqui para manter a consistência do estilo
+  sem causar requisições de rede adicionais e quebradas.
+*/
+
+/* =======================
+   VARIÁVEIS CSS GLOBAIS
+   ======================= */
+   :root {
+    --cor-primaria: #2BBF90;
+    --cor-fundo: #1E1E1E;
+    /* A segunda definição de --cor-fundo foi removida para evitar ambiguidade, usando a primeira. */
+    --cor-texto: #FFFFFF;
+    --cor-card: #2C2C2C;
+    --cor-texto-card: #E0E0E0;
+    --sombra: -8px 8px 0px var(--cor-primaria);
+}
+
+/* =======================
+   ESTILOS BASE
+   ======================= */
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh; /* 100% da altura da tela */
+    width: 100vw;  /* 100% da largura da tela */
+    background-color: var(--cor-fundo, #1E1E1E); /* Usa variável global com fallback */
+    color: var(--cor-texto, #FFFFFF);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+    /* Centraliza todo o conteúdo na tela usando Flexbox */
+    display: flex;
+    flex-direction: column; /* Empilha os itens verticalmente */
+    justify-content: center;
+    align-items: center;
+
+    overflow: hidden; /* Esconde qualquer barra de rolagem */
+}
+
+/* =======================
+   ELEMENTOS DA TELA
+   ======================= */
+
+/* Estilo para a imagem do logo (tag <img>) */
+img {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    margin-bottom: 20px;
+}
+
+/* Estilo para o título "Carregando" */
+.titulo {
+    font-size: 1.8rem;
+    color: var(--cor-primaria, #2BBF90);
+    margin: 0 0 20px 0;
+    font-weight: 600;
+}
+
+/* Estilo e animação do spinner de carregamento */
+.loader {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid var(--cor-primaria, #2BBF90);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Estilo para a notificação (toast) - movido de TelaInicial/style.css para consistência */
+.toast {
+    /* A posição e visibilidade são controladas via JS e classes, mas definimos a aparência aqui */
+    background: var(--cor-primaria);
+    color: white;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-size: 1rem;
+    z-index: 999;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    max-width: 90vw;
+    text-align: center;
+    /* A posição 'fixed' e 'transform' são definidas no CSS da página que o exibe */
+}

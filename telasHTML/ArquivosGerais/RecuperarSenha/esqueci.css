@@ -1,0 +1,153 @@
+/* =======================
+   VARIÁVEIS CSS GLOBAIS
+   ======================= */
+:root {
+    --cor-primaria: #2BBF90;
+    --cor-fundo: #1E1E1E;
+    --cor-texto: #FFFFFF;
+    --cor-card: #2C2C2C;
+    --cor-texto-card: #E0E0E0;
+    --cor-sucesso: #28a745;
+    --cor-erro: #dc3545;
+    --cor-info: #17a2b8;
+}
+
+/* =======================
+   RESET E ESTILOS BASE
+   ======================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--cor-fundo);
+    color: var(--cor-texto);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    overflow-x: hidden; /* Impede a rolagem horizontal */
+}
+
+/* =======================
+   CONTAINER PRINCIPAL
+   ======================= */
+.container {
+    background-color: var(--cor-card);
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+}
+
+h1 {
+    color: var(--cor-primaria);
+    margin-bottom: 10px;
+    font-size: 1.8rem;
+}
+
+p {
+    color: var(--cor-texto-card);
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+/* =======================
+   FORMULÁRIO
+   ======================= */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-group {
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: var(--cor-texto-card);
+}
+
+input[type="email"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #444;
+    border-radius: 8px;
+    background-color: #3a3a3a;
+    color: var(--cor-texto);
+    font-size: 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+input[type="email"]:focus {
+    outline: none;
+    border-color: var(--cor-primaria);
+    box-shadow: 0 0 0 3px rgba(43, 191, 144, 0.3);
+}
+
+.submit-button {
+    background-color: var(--cor-primaria);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+    margin-top: 10px;
+}
+
+.submit-button:hover {
+    transform: scale(1.03);
+    background-color: #25a880;
+}
+
+/* =======================
+   LINKS E MENSAGENS
+   ======================= */
+.back-link {
+    display: inline-block;
+    margin-top: 25px;
+    color: var(--cor-primaria);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.back-link:hover {
+    color: #50d9ad;
+    text-decoration: underline;
+}
+
+.flash-message {
+    padding: 12px;
+    margin-top: 20px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.flash-message.success {
+    background-color: var(--cor-sucesso);
+    color: white;
+}
+
+.flash-message.danger {
+    background-color: var(--cor-erro);
+    color: white;
+}
+
+.flash-message.info {
+    background-color: var(--cor-info);
+    color: white;
+}

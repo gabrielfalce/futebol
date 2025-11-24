@@ -1,0 +1,413 @@
+/* =======================
+   VARIÁVEIS CSS GLOBAIS
+   ======================= */
+   :root {
+    --cor-primaria: #2BBF90;
+    --cor-fundo: #1E1E1E;
+    --cor-fundo: #313131;
+    --cor-texto: #FFFFFF;
+    --cor-card: #2C2C2C;
+    --cor-texto-card: #E0E0E0;
+    /* Sombra sólida deslocada para a esquerda e para baixo */
+    --sombra: -8px 8px 0px var(--cor-primaria);
+}
+
+.iconePg {
+max-width: 80%;
+}
+
+
+/* =======================
+   RESET E ESTILOS BASE
+   ======================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-image: url('bolaLogo.png') linear-gradient();
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--cor-fundo);
+    color: var(--cor-texto);
+     line-height: 1.6;
+    /* Aumenta o padding inferior para não esconder conteúdo atrás da navbar fixa */
+    padding-bottom: 80px; 
+}
+
+/* =======================
+   CABEÇALHO
+   ======================= */
+/* INÍCIO DA MODIFICAÇÃO: Comentar o estilo do cabeçalho que agora está vazio */
+/* .page-header {
+    text-align: center; 
+    padding: 0; 
+    margin-bottom: 0; 
+}
+*/
+/* FIM DA MODIFICAÇÃO */
+
+.logo-container img {
+    height: 60px;
+    margin-bottom: 15px;
+}
+
+.titulo {
+    font-size: 2.2rem;
+    margin: 0;
+    color: var(--cor-primaria);
+}
+
+/* =======================
+   CAMPO DE PESQUISA
+   ======================= */
+.search-container {
+    max-width: 2000px;
+    /* Reduz a margem superior para mover o campo de busca para cima */
+    margin: 10px 5px 30px;
+    position: relative;
+}
+
+#search-input {
+    width: 100%;
+    padding: 5px 500px 5px 20px;
+    border: 2px solid rgb(0, 0, 0);
+    border-radius: 30px;
+    font-size: 16px;
+    background-color: #ffffffa9;
+    color: var(--cor-texto);
+    transition: all 0.3s ease;
+}
+
+#search-input:focus {
+    outline: none;
+    background-color: rgba(214, 42, 42, 0.1);
+    border-color: var(--cor-primaria);
+}
+
+#search::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.search-icon {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    opacity: 0.7;
+}
+
+/* =======================
+   LISTA DE USUÁRIOS
+   ======================= */
+.user-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+    padding: 0 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.user-card-link {
+    text-decoration: none; /* Remove o sublinhado padrão do link */
+    color: inherit; /* Faz o texto dentro do link herdar a cor do pai */
+    display: block; /* Garante que o link ocupe o espaço do grid */
+}
+
+.user-card {
+    background: #ffffff; /* Cor do card alterada para branco */
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: var(--sombra);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: row; /* Alinha os itens (imagem e texto) lado a lado */
+    align-items: center; /* Centraliza verticalmente a imagem e o texto */
+}
+
+.user-card:hover {
+    transform: translateY(-5px);
+}
+
+.user-card img {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%; /* Deixa a imagem redonda */
+    object-fit: cover; /* Garante que a imagem preencha o círculo sem distorcer */
+    flex-shrink: 0; /* Impede que a imagem seja espremida */
+    margin-right: 15px; /* Adiciona mais espaço entre a imagem e o bloco de texto */
+    /* border: 3px solid var(--cor-primaria); */
+    /* background-color: #8f2d2d; Cor de fundo caso a imagem não carregue */
+    background-image: url(iconeUser.png);
+}
+
+.user-info {
+    display: flex; /* Transforma em flex container */
+    flex-direction: column; /* Empilha os itens verticalmente */
+    text-align: left; /* Alinha o texto à esquerda dentro do bloco */
+}
+
+.user-name {
+    color: #333333; /* Cor do texto alterada para escuro para ser legível em fundo branco */
+    font-size: 0.5rem; /* Tamanho da fonte para nome e posição */
+    font-weight: 600;
+    margin-bottom: 2px; /* Espaçamento entre nome/posição e o próximo item */
+}
+.user-posicao{
+    color: #008000; /* Cor do texto alterada para escuro para ser legível em fundo branco */
+    font-size: 1.0rem; /* Tamanho da fonte para nome e posição */
+    font-weight: 600;
+    margin-bottom: 2px; /* Espaçamento entre nome/posição e o próximo item */
+}
+.user-cidade{
+    color: #666666; /* Cor mais suave para a cidade */
+    font-size: 0.9rem; /* Tamanho da fonte um pouco menor */
+    margin-bottom: 2px; /* Espaçamento entre cidade e idade */
+}
+.user-idade{
+    color: #999999; /* Cor ainda mais suave para a idade */
+    font-size: 0.85rem; /* Tamanho da fonte menor */
+}
+
+/* =======================
+   MENSAGEM E BOTÃO
+   ======================= */
+.toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--cor-primaria);
+    color: white;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-size: 1rem;
+    z-index: 999;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: opacity 0.4s;
+    max-width: 90vw;
+}
+
+.toast.show {
+    opacity: 1;
+}
+
+/* =======================
+   RESPONSIVIDADE
+   ======================= */
+@media (max-width: 768px) {
+    .user-list {
+        grid-template-columns: 1fr;
+        padding: 0 15px;
+    }
+    
+    #search-input {
+        /* Reduz o padding vertical para deixar a barra mais fina no mobile */
+        padding: 10px 40px 10px 15px;
+    }
+    
+    .titulo {
+        font-size: 1.8rem;
+    }
+    
+    .logo-container img {
+        height: 50px;
+    }
+    .nome-user{
+        font-size: 0.1rem;
+    }
+}
+
+@media (min-width: 1080px) {
+    .user-list {
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+
+    }
+    
+}
+
+
+/* ESTILO PARA A NOVA BARRA DE NAVEGAÇÃO INFERIOR FIXA */
+   .navigation-links {
+    position: fixed; /* Fixa a barra na parte inferior */
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--cor-card); /* Fundo para destacar */
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.4); /* Sombra no topo */
+    z-index: 1000; /* Garante que fique sobre todo o conteúdo */
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Alinha verticalmente todos os botões */
+    gap: 15px; /* Espaço entre os botões */
+    padding: 10px 20px;
+    margin-top: 0; /* Remove a margem antiga */
+}
+
+.nav-button {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1rem;
+    text-align: center;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.nav-button:hover {
+    transform: scale(1.05);
+    box-shadow: #2BBF90 0px 0px 10px;
+}
+
+/* Estilo específico para o botão do Feed (VERDE, como solicitado) */
+.feed-button {
+    background-color: var(--cor-primaria);
+    color: white;
+}
+
+/* Estilo para os outros botões */
+.profile-button, .logout-button {
+    color: var(--cor-texto-card);
+    border: 1px solid var(--cor-card); /* Corrigido para usar cor do card */
+    background-color: var(--cor-card);
+}
+
+/* modal para configurações */
+.modal-Config{
+    display: none; /* Oculto por padrão */
+    position: fixed; 
+    z-index: 1001; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0, 0, 0, 0.5); 
+}
+
+
+
+/* Estilo específico para o botão de perfil com ícone */
+.profile-button {
+    padding: 0; /* Remove o padding para o ícone controlar o espaço */
+    width: 48px;  /* Define uma largura fixa */
+    height: 48px; /* Define uma altura fixa para criar um círculo */
+    border-radius: 50%; /* Deixa o botão redondo */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-button img { /* Estilo para a imagem dentro do botão de perfil */
+    width: 24px;  /* Define o tamanho do ícone */
+    height: 24px;
+    object-fit: contain; /* Garante que o ícone se ajuste sem cortar */
+    /* Remove qualquer estilo de fundo ou borda que possa vir de regras genéricas de img */
+    background-color: transparent;
+    border: none;
+}
+
+.avatar-fallback {
+    object-fit: contain;  
+    background-color: transparent; /* CORREÇÃO: Remove o fundo escuro que ofuscava o ícone */
+    padding: 0px; /* CORREÇÃO: Remove o padding excessivo que distorcia o tamanho */
+}
+
+/* 
+   ALTERAÇÃO: Adicionada uma regra de alta especificidade para forçar a exibição do ícone do botão de perfil.
+   Isso resolve o conflito com outras regras de imagem.
+*/
+body .navigation-links .profile-button img.avatar-fallback {
+    display: inline-block !important;
+    visibility: visible !important;
+    width: 28px !important;
+    height: 28px !important;
+    background-image: none !important;
+}
+
+/* parte que o augusto modificou e eu estou sem paciencia de arrumar  */
+
+        /* Estilos do Toast aprimorados, utilizando a classe 'show' */
+        .toast {
+            visibility: hidden; /* Inicialmente oculto */
+            opacity: 0;
+            min-width: 250px;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            z-index: 1000;
+            transition: opacity 0.5s, visibility 0.5s; /* Para uma transição suave */
+            text-align: center; /* Centraliza o texto */
+        }
+        
+        /* Classe que torna o toast visível */
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Estilo para a lista de usuários para melhor usabilidade */
+        .user-list {
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        /* Estilo para o link do card */
+        .user-card-link {
+            text-decoration: none; /* Remove o sublinhado */
+            color: inherit; /* Mantém a cor do texto */
+            display: block; /* Garante que o link ocupe o espaço do card */
+            width: 100%; /* Ocupa a largura total do item do grid/flex */
+            max-width: 300px; /* Limita a largura para melhor visualização */
+        }
+
+        /* Estilo do Card do Usuário */
+        .user-card {
+            background-color: #23272f; /* Cor de fundo escura */
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .user-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+            border: 3px solid #2BBF90; /* Cor primária */
+        }
+
+        .user-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .user-details {
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+    

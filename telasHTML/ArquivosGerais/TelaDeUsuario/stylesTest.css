@@ -1,0 +1,693 @@
+/* =======================
+   VARIÁVEIS GLOBAIS
+   ======================= */
+   :root {
+    --cor-primaria: #2BBF90; /* Verde principal para botões e destaque */
+    --cor-secundaria: #128c7e; /* Verde escuro para hover */
+    --cor-fundo: #1E1E1E; /* Fundo principal escuro */
+    --cor-texto: #fff; /* Cor do texto principal */
+    --cor-borda: rgba(0, 0, 0, 0.1);
+    --cor-card: #2C2C2C; /* Fundo principal do perfil e posts */
+    --cor-texto-card: #E0E0E0; /* Texto secundário claro */
+    --cor-sucesso: #28a745; 
+    --cor-erro: #dc3545; 
+    --cor-info: #17a2b8; 
+}
+
+/* =======================
+   ESTILOS BASE E WALLPAPER
+   ======================= */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: var(--cor-fundo);
+    margin: 0;
+    padding: 0;
+    color: var(--cor-texto);
+    overflow-x: hidden; 
+    /* Adicionado padding inferior para a barra de botões flutuante */
+    padding-bottom: 120px; 
+}
+
+.Wallpaper {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 30vh; /* Altura do wallpaper: 30% da altura da tela */
+    overflow: hidden;
+    position: relative;
+}
+
+.imagemWallpaper {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* =======================
+   AÇÕES DO CABEÇALHO (Botão de Edição)
+   ======================= */
+.header-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 30;
+}
+
+.edit-button {
+    /* Usando 'a' como botão */
+    background: rgba(0, 0, 0, 0.4);
+    color: var(--cor-texto);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+}
+
+.edit-button:hover {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.edit-button svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor; /* Garante que o SVG use a cor do texto do botão */
+}
+
+/* =======================
+   CONTEÚDO PRINCIPAL (Perfil e Posts)
+   ======================= */
+
+.main-content-wrapper {
+    /* Puxa o conteúdo para cima, sobrepondo o wallpaper */
+    margin-top: -10vh; 
+    padding: 0 20px;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    z-index: 20;
+}
+
+/* -------------------------------------- */
+/* SEÇÃO DE PERFIL (#profileContainer) */
+/* -------------------------------------- */
+#profileContainer {
+    background-color: var(--cor-card);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    margin-bottom: 40px; /* Espaço entre o perfil e as publicações */
+    
+    /* Layout para centralizar o conteúdo do perfil */
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+    text-align: center;
+}
+
+#perfilImagemGeralCaixa {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    overflow: hidden;
+    /* Ajuste a borda para sobrepor o fundo do profileContainer */
+    border: 5px solid var(--cor-fundo); 
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    /* Posiciona a imagem para sobrepor a parte de baixo do wallpaper */
+    margin-top: -80px; 
+    margin-bottom: 20px;
+}
+
+.profile-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Grupo de Informações (Nome, Posição, Cidade) */
+.profile-info-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px; 
+}
+
+.nomeUsuario {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--cor-primaria);
+    margin: 0;
+}
+
+.posicaoUsuario {
+    font-size: 1.1rem;
+    color: var(--cor-texto-card);
+    margin: 0;
+}
+
+.cidadeUsuario {
+    font-size: 0.9rem;
+    color: #aaa;
+    margin: 0;
+}
+
+/* Botões de Ação do Perfil (Seguir/Mensagem) */
+.profile-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.action-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none; /* Para o link de mensagem */
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.follow-button {
+    background-color: var(--cor-primaria);
+    color: white;
+}
+
+.follow-button:hover {
+    background-color: var(--cor-secundaria);
+}
+
+.message-button {
+    background-color: #555;
+    color: white;
+}
+
+.message-button:hover {
+    background-color: #666;
+}
+
+/* -------------------------------------- */
+/* SEÇÃO DE PUBLICAÇÕES (#publicacoesContainer) */
+/* -------------------------------------- */
+#publicacoesContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.post-card {
+    background-color: var(--cor-card);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.post-header {
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.post-author-img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.post-author-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.post-author-info strong {
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--cor-texto);
+}
+
+.post-author-info small {
+    font-size: 0.8rem;
+    color: #aaa;
+}
+
+.post-content {
+    padding: 0 20px 15px;
+    color: var(--cor-texto-card);
+}
+
+.post-content p {
+    margin: 0 0 15px 0;
+}
+
+.post-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    display: block;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.post-actions {
+    padding: 10px 20px 15px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: #aaa;
+}
+
+
+/* =======================
+   BOTÕES FLUTUANTES (Inferior Direito)
+   ======================= */
+.floating-buttons-group {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 15px;
+    z-index: 100;
+}
+
+.floating-button-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.floating-button-bar {
+    width: 0; 
+    height: 4px;
+    background-color: var(--cor-primaria);
+    border-radius: 2px;
+    position: absolute;
+    right: 50px; 
+    transition: width 0.3s ease;
+}
+
+.floating-button-wrapper:hover .floating-button-bar {
+    width: 30px; 
+}
+
+.floating-button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--cor-card);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.floating-button:hover {
+    transform: scale(1.1);
+}
+
+.floating-button img {
+    width: 60%;
+    height: 60%;
+    object-fit: contain;
+}
+
+.create-post-button {
+    background-color: var(--cor-primaria);
+}
+
+.create-post-button:hover {
+    background-color: var(--cor-secundaria);
+}
+
+.create-post-button svg {
+    width: 60%;
+    height: 60%;
+    fill: white;
+}
+
+/* -------------------------------------- */
+/* MODAL DE CRIAÇÃO DE POST */
+/* -------------------------------------- */
+.modal {
+    display: none; /* Controlado pelo JS */
+    position: fixed;
+    z-index: 200;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: var(--cor-card);
+    margin: auto;
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+.modal-content h2 {
+    color: var(--cor-primaria);
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.close-button {
+    color: var(--cor-texto-card);
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    background: none;
+    border: none;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    transition: color 0.2s;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: var(--cor-primaria);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#postForm textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #444;
+    border-radius: 8px;
+    background-color: #3a3a3a;
+    color: var(--cor-texto);
+    font-size: 1rem;
+    resize: vertical;
+}
+
+#postForm input[type="file"] {
+    display: block;
+    margin-bottom: 15px;
+    color: var(--cor-texto-card);
+}
+
+#postForm button[type="submit"] {
+    width: 100%;
+    background-color: var(--cor-primaria);
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+#postForm button[type="submit"]:hover {
+    background-color: var(--cor-secundaria);
+}
+
+/* =======================
+   RESPONSIVIDADE (Celular)
+   ======================= */
+@media (max-width: 768px) {
+    .Wallpaper {
+        height: 25vh; 
+    }
+
+    .main-content-wrapper {
+        margin-top: -10vh; 
+        padding: 0 15px; 
+    }
+    
+    #perfilImagemGeralCaixa {
+        width: 120px; 
+        height: 120px;
+        margin-top: -60px; 
+        border-width: 4px;
+    }
+
+    .nomeUsuario {
+        font-size: 1.5rem; 
+    }
+
+    .posicaoUsuario {
+        font-size: 1rem;
+    }
+    
+    .floating-buttons-group {
+        bottom: 15px;
+        right: 15px;
+        gap: 10px;
+    }
+
+    .floating-button {
+        width: 45px;
+        height: 45px;
+    }
+
+    .floating-button-wrapper:hover .floating-button-bar {
+        width: 20px; /* Reduz a barra no mobile */
+    }
+}
+
+/*
+================================================================
+STYLES FROM FEED.CSS APPENDED BELOW
+================================================================
+*/
+
+/*
+  Arquivo: feed.css
+  Estilos para a página de feed de publicações.
+*/
+
+/* 
+  ================================================================
+  VARIÁVEIS GLOBAIS
+  Inspirado no seu pedido de usar variáveis do "TelaInicial".
+  Altere estes valores para corresponder à identidade visual do seu projeto.
+  ================================================================
+*/
+:root {
+    /* Variáveis adaptadas do styleInicial.css para um tema escuro */
+    --cor-primaria: #2BBF90;
+    --cor-fundo: #1E1E1E;
+    --cor-card: #2C2C2C;
+    --cor-texto-principal: #FFFFFF;
+    --cor-texto-secundario: #E0E0E0;
+    --cor-borda: #444; /* Um cinza mais escuro para as bordas */
+    --cor-header: #2C2C2C; /* Fundo do cabeçalho igual ao dos cards */
+    --sombra-padrao: -4px 4px 0px var(--cor-primaria); /* Sombra sólida do tema */
+    --fonte-principal: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/*
+  ================================================================
+  ESTILOS GERAIS E RESET
+  ================================================================
+*/
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--fonte-principal);
+    background-color: var(--cor-fundo);
+    color: var(--cor-texto-principal);
+    line-height: 1.6;
+}
+
+/*
+  ================================================================
+  CABEÇALHO
+  ================================================================
+*/
+.cabecalho-pagina {
+    background-color: var(--cor-header);
+    padding: 1rem 5%; /* Usa porcentagem para ser mais fluido */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--cor-borda);
+    box-shadow: var(--sombra-padrao);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.titulo {
+    font-size: 1.5rem;
+    color: var(--cor-primaria);
+    text-transform: uppercase;
+}
+
+.navegacao a {
+    color: var(--cor-texto-secundario);
+    text-decoration: none;
+    margin-left: 1.5rem;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.navegacao a:hover {
+    color: var(--cor-primaria);
+}
+
+/*
+  ================================================================
+  CONTEÚDO PRINCIPAL (FEED)
+  ================================================================
+*/
+.container-feed {
+    max-width: 680px;
+    margin: 2rem auto;
+    padding: 0 1rem; /* Espaçamento lateral para telas menores */
+    /* Adiciona espaço no final para não ser coberto pela barra de navegação móvel */
+    /* O valor pode precisar de ajuste dependendo da altura final da barra */
+    padding-bottom: 80px; 
+}
+
+/* Mensagens de erro ou feed vazio */
+.container-feed > p {
+    text-align: center;
+    color: var(--cor-texto-secundario);
+    margin-top: 3rem;
+    font-size: 1.1rem;
+}
+
+/*
+  ================================================================
+  CARD DE POST
+  ================================================================
+*/
+.post-card {
+    background-color: var(--cor-card);
+    border-radius: 8px;
+    border: 1px solid var(--cor-borda);
+    margin-bottom: 1.5rem;
+    box-shadow: var(--sombra-padrao);
+    overflow: hidden; /* Garante que a imagem não vaze das bordas arredondadas */
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+}
+
+.author-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 0.75rem;
+}
+
+.author-info .author-name {
+    font-weight: 600;
+    color: var(--cor-texto-principal);
+}
+
+.author-info .post-timestamp {
+    font-size: 0.8rem;
+    color: var(--cor-texto-secundario);
+}
+
+.post-content {
+    padding: 0 1rem 1rem 1rem;
+}
+
+
+.post-image {
+    border-radius: 1rem;
+    margin: 0 auto 2rem auto;
+    width: 80%;
+    height: auto;
+    display: block; /* Remove espaço extra abaixo da imagem */
+}
+
+/*
+  ================================================================
+  SPINNER DE CARREGAMENTO
+  ================================================================
+*/
+.spinner-carregamento {
+    border: 5px solid var(--cor-fundo);
+    border-top: 5px solid var(--cor-primaria);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 5rem auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/*
+  ================================================================
+  RESPONSIVIDADE (MEDIA QUERIES)
+  ================================================================
+*/
+@media (max-width: 768px) {
+    .cabecalho-pagina {
+        /* Em telas pequenas, o cabeçalho conterá apenas o título */
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .titulo {
+        margin-bottom: 0;
+        font-size: 1.2rem; /* Um pouco menor para caber melhor */
+    }
+
+    .navegacao {
+        /* Transforma a navegação em uma barra fixa no rodapé */
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: var(--cor-card); /* Usa a cor do card para a barra inferior */
+        border-top: 1px solid var(--cor-borda);
+        display: flex;
+        justify-content: space-around;
+        padding: 0.5rem 0;
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.1); /* Sombra para dar profundidade */
+    }
+
+    .navegacao a {
+        margin: 0; /* Remove a margem lateral da versão desktop */
+    }
+}

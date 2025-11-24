@@ -1,0 +1,176 @@
+/* =======================
+   VARIÁVEIS GLOBAIS
+   ======================= */
+:root {
+    --cor-primaria: #2BBF90;
+    --cor-fundo: #1E1E1E;
+    --cor-form: #23272f;
+    --cor-input: #f4f4f4;
+    --cor-botao: #2BBF90;
+    --cor-botao-hover: #219e76;
+    --cor-texto: #fff;
+    --cor-placeholder: #888;
+    --sombra: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+/* =======================
+   RESET E BASE
+   ======================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    background: var(--cor-fundo);
+    color: var(--cor-texto);
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 40px;
+}
+
+/* =======================
+   LOGO E TÍTULO
+   ======================= */
+img[alt="Bola Verde"] {
+    
+    margin-bottom: 18px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.linksNone{
+    text-decoration: none;
+    color: var(--cor-texto);
+    margin-top: 10px;
+    display: block;
+    text-align: center;
+}
+
+.linksNone:hover {
+    transform: scale(1.25);
+    font-style: italic;
+}
+
+.titulo {
+    font-size: 2.1rem;
+    font-weight: 700;
+    margin-bottom: 28px;
+    text-align: center;
+    letter-spacing: 1px;
+    color: var(--cor-texto);
+    text-shadow: 0 2px 8px #0002;
+}
+
+/* =======================
+   FORMULÁRIO DE CADASTRO
+   ======================= */
+form {
+    background: var(--cor-form);
+    padding: 32px 28px 24px 28px;
+    border-radius: 18px;
+    box-shadow: var(--sombra);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 320px;
+    max-width: 350px;
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+form input {
+    padding: 12px 14px;
+    border: none;
+    border-radius: 8px;
+    background: var(--cor-input);
+    font-size: 1rem;
+    color: #222;
+    outline: none;
+    transition: box-shadow 0.2s;
+    box-shadow: 0 1px 3px #0001;
+}
+
+form input:focus {
+    box-shadow: 0 0 0 2px var(--cor-primaria);
+}
+
+form input::placeholder {
+    color: var(--cor-placeholder);
+    opacity: 1;
+}
+
+form button[type="submit"] {
+    margin-top: 10px;
+    padding: 12px 0;
+    background: var(--cor-botao);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    box-shadow: 0 2px 8px #0002;
+}
+
+form button[type="submit"]:hover {
+    background: var(--cor-botao-hover);
+    transform: scale(1.03);
+}
+
+/* =======================
+   NOTIFICAÇÃO TOAST
+   ======================= */
+.toast {
+    visibility: hidden;
+    min-width: 250px;
+    background-color: #f44336;
+    color: white;
+    text-align: center;
+    border-radius: 5px;
+    padding: 16px;
+    position: fixed;
+    z-index: 100;
+    right: 30px;
+    top: 30px;
+    font-size: 17px;
+    opacity: 0;
+    transition: opacity 0.5s, top 0.5s;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+}
+.toast.show {
+    visibility: visible;
+    opacity: 1;
+    top: 50px;
+}
+
+/* =======================
+   RESPONSIVO
+   ======================= */
+@media (max-width: 480px) {
+    form {
+        min-width: 90vw;
+        max-width: 98vw;
+        padding: 18px 6vw 16px 6vw;
+    }
+    .titulo {
+        font-size: 1.3rem;
+    }
+    .toast {
+        right: 10px;
+        left: 10px;
+        min-width: unset;
+        font-size: 1rem;
+    }
+    img{
+        right: 10px;
+        width: 10px;
+    }
+}
