@@ -203,9 +203,9 @@ def cadastro():
     # caminho corrigido para o template real
     return render_template("ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data=form_data)
 
-@app.route("/esqueci_senha")
+@app.route('/esqueci_senha')
 def esqueci_senha():
-    return render_template("RecuperarSenha/esqueci_senha.html")
+    return render_template("ArquivosGerais/RecuperarSenha/esqueci_senha.html")
 
 @app.route("/redefinir_senha", methods=['GET', 'POST'])
 def redefinir_senha():
