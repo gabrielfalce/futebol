@@ -213,7 +213,7 @@ def esqueci_senha():
 
         try:
             # Supabase Auth envia o e-mail de recuperação AUTOMÁTICO
-            supabase.auth.reset_password_for_email(email)
+            supabase_public.auth.reset_password_for_email(email, options={'redirect_to': 'https://futebol-1.onrender.com/login'})
             
             flash("Link de recuperação enviado! Verifique seu e-mail (inclusive spam).", "success")
         except Exception as e:
