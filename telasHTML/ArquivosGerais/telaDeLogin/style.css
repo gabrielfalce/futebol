@@ -35,6 +35,14 @@
     transition: background-color 0.3s ease, transform 0.2s ease; /* Transição suave */
 }
 
+#checkbox {
+    width: 15px;
+    height: 15px;
+    margin-right: 8px;
+    vertical-align: middle;
+  
+}
+
 /* Efeito ao passar o mouse por cima do botão "Criar Conta" */
 .CriarConta:hover {
     filter: brightness(90%); /* Escurece um pouco a cor primária */
