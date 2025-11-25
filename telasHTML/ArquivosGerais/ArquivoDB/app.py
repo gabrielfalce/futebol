@@ -205,32 +205,29 @@ def cadastro():
 
 @app.route('/esqueci_senha', methods=['GET', 'POST'])
 def esqueci_senha():
-    if request_method == request.method
-    
-    if request_method == 'POST':
+    if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
-        
+
         if not email:
-            flash('Digite um e-mail válido.', 'danger')
+            flash('Por favor, digite um e-mail.', 'danger')
             return redirect(url_for('esqueci_senha'))
 
         try:
-            # ESSA É A LINHA QUE FAZ TUDO FUNCIONAR AGORA
             supabase.auth.admin.generate_link({
                 'type': 'recovery',
                 'email': email,
                 'options': {
-                    'redirect_to': 'https://futebol-1.onrender.com/login'
+                    'redirect_to': 'https://futebol-1.onrender.com/login'  # muda se o teu domínio for outro
                 }
             })
-            flash('Link de recuperação enviado! Confira sua caixa de entrada e a pasta de spam.', 'success')
+            flash('Link de recuperação enviado! Cheque sua caixa de entrada e spam.', 'success')
         except Exception as e:
-            # nunca revela se o e-mail existe ou não (segurança)
-            flash('Se o e-mail estiver cadastrado, enviamos o link de recuperação.', 'success')
-        
+            # Nunca diz se o e-mail existe ou não (segurança)
+            flash('Se o e-mail estiver cadastrado, enviamos o link de recuperação.', 'info')
+
         return redirect(url_for('login'))
 
-    # GET – só mostra o formulário
+    # GET - mostra o formulário
     return render_template('ArquivosGerais/RecuperarSenha/esqueci_senha.html')
     
 @app.route("/redefinir_senha", methods=['GET', 'POST'])
