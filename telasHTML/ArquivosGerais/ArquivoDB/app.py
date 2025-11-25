@@ -205,7 +205,7 @@ def cadastro():
 
 @app.route('/esqueci_senha', methods=['GET', 'POST'])
 def esqueci_senha():
-    if request_method = request.method
+    if request_method == request.method
     
     if request_method == 'POST':
         email = request.form.get('email', '').strip().lower()
