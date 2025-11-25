@@ -1,3 +1,60 @@
+   :root {
+    --cor-primaria: #2BBF90;
+    --cor-fundo: #1E1E1E;
+    --cor-fundo: #313131;
+    --cor-texto: #FFFFFF;
+    --cor-card: #2C2C2C;
+    --cor-texto-card: #E0E0E0;
+    /* Sombra sólida deslocada para a esquerda e para baixo */
+    --sombra: -8px 8px 0px var(--cor-primaria);
+}
+    
+/* Estilo base para ambos os botões para remover padrões do navegador */
+.esqueci_senha,
+.CriarConta {
+    cursor: pointer; /* Muda o cursor para a "mãozinha" ao passar por cima */
+    background: none;
+    border-radius: 80rem;
+    border: none;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Use uma fonte moderna */
+    text-decoration: none; /* Remove o sublinhado padrão */
+    display: inline-block; /* Garante que se comportem bem no layout */
+}
+
+/* --- Estilo para o botão "Criar Conta" --- */
+/* Este é um botão mais proeminente, com fundo e bordas arredondadas. */
+.CriarConta {
+    background-color: var(--cor-primaria); /* Cor primária definida no root */
+    color: #ffffff; /* Texto branco para bom contraste */
+    padding: 12px 24px; /* Espaçamento interno para um toque mais confortável */
+    border-radius: 80px; /* Bordas arredondadas para um visual suave */
+    font-weight: bold; /* Texto em negrito para dar destaque */
+    font-size: 16px;
+    text-align: center;
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Transição suave */
+}
+
+/* Efeito ao passar o mouse por cima do botão "Criar Conta" */
+.CriarConta:hover {
+    filter: brightness(90%); /* Escurece um pouco a cor primária */
+    transform: translateY(-2px); /* Leve elevação para dar feedback */
+}
+
+/* --- Estilo para o link "Esqueci a Senha" --- */
+/* Este é um link simples e discreto. */
+.esqueci_senha {
+    color: #000000; /* Uma cor de texto sutil (cinza) */
+    font-size: 14px;
+    transition: color 0.3s ease; /* Transição suave da cor */
+}
+
+/* Efeito ao passar o mouse por cima do link "Esqueci a Senha" */
+.esqueci_senha:hover {
+    text-decoration-style: none;
+    color: #ffffff; /* Cor do texto fica mais escura */
+    text-decoration: underline; /* Adiciona sublinhado para indicar que é um link */
+}
 body {
     font-family: Arial, sans-serif;
     background-color: #313131;
@@ -86,7 +143,7 @@ input[type="email"]:focus {
 .buttonLogin,
 button[type="submit"] {
     width: 40%;
-    padding: 10px;
+    padding: 12px;
     background-color: #909090;
     color: black;
     border: none;
@@ -101,7 +158,7 @@ button:focus {
 
 button:hover,
 .buttonLogin:hover {
-    background-color: #2BBF90;
+    background-color: var(--cor-primaria);
     color: whitesmoke;
     transform: scale(1.05);
     transition: all 0.3s ease-in-out;
@@ -121,7 +178,7 @@ img {
 }
 .criarNovaConta{
     /* Retornando ao fluxo normal do documento */
-    display: inline-block; /* Permite aplicar margens e padding */
+    display: block; /* Alterado para block para ocupar a própria linha */
     font-size: 13px;
     text-decoration: none;
     color: #ffffff;
@@ -129,6 +186,8 @@ img {
     padding: 12px 25px; /* Padding para dar um bom espaçamento interno */
     border-radius: 50px; /* Borda arredondada para um visual de "pílula" */
     white-space: nowrap; /* Impede que o texto quebre em duas linhas */
+    margin: 0 auto; /* Centraliza o botão horizontalmente */
+    width: fit-content; /* Ajusta a largura ao conteúdo */
 }
 .criarNovaConta:hover {
     background-color: #7a807c; /* Cor de fundo ao passar o mouse */
@@ -138,16 +197,24 @@ img {
     box-shadow: 0 0 20px #2BBF90 inset;
 }
 
+/* Novo container para alinhar os botões do rodapé */
+#container-botoes-rodape {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px; /* Espaço entre o botão e o link */
+    margin-top: 20px; /* Espaço acima do grupo de botões */
+}
+
 .esqueceuSenha {
     text-align: center;
     font-size: 12px;
     text-decoration: none;
-    margin-top: 10px;
+    margin-top: 0; /* Removido para usar o 'gap' do container */
     color: #ffffff;
-    display: block;
 }
 .esqueceuSenha:hover {
-    color: #2bbf9083;
+    color: #ff000083;
     transform: scale(1.05);
 }
 
