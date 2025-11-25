@@ -207,11 +207,22 @@ def cadastro():
 def esqueci_senha():
     if request.method == 'POST':
         email = request.form.get('email')
-        if email:
-            flash("Link de recuperação enviado com sucesso! (em breve)", "success")
-        else:
-            flash("Por favor, digite um e-mail válido.", "danger")
-        return redirect(url_for('esqueci_senha'))
+        if not email:
+            flash("Digite um e-mail.", "danger")
+            return redirect(url_for('esqueci_senha'))
+
+        try:
+            # Supabase Auth envia o e-mail de recuperação AUTOMÁTICO
+            supabase.auth.reset_password_for_email(email)
+            
+            flash("Link de recuperação enviado! Verifique seu e-mail (inclusive spam).", "success")
+        except Exception as e:
+            # Mesmo se o e-mail não existir, a gente não revela (segurança)
+            flash("Se o e-mail estiver cadastrado, enviamos um link de recuperação.", "success")
+
+        return redirect(url_for('login'))
+
+    return render_template("ArquivosGerais/RecuperarSenha/esqueci_senha.html")
     
     return render_template("ArquivosGerais/RecuperarSenha/esqueci_senha.html")
 @app.route("/redefinir_senha", methods=['GET', 'POST'])
