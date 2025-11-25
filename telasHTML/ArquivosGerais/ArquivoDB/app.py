@@ -206,25 +206,28 @@ def cadastro():
 @app.route('/esqueci_senha', methods=['GET', 'POST'])
 def esqueci_senha():
     if request.method == 'POST':
-        email = request.form.get('email')
+        email = request.form.get('email', '').strip().lower()
         if not email:
-            flash("Digite um e-mail.", "danger")
+            flash('Digite um e-mail válido.', 'danger')
             return redirect(url_for('esqueci_senha'))
 
         try:
-            # Supabase Auth envia o e-mail de recuperação AUTOMÁTICO
-            supabase_public.auth.reset_password_for_email(email, options={'redirect_to': 'https://futebol-1.onrender.com/login'})
-            
-            flash("Link de recuperação enviado! Verifique seu e-mail (inclusive spam).", "success")
+            supabase.auth.admin.generate_link({
+                'type': 'recovery',
+                'email': email,
+                'options': {
+                    'redirect_to': 'https://futebol-1.onrender.com/login'  # volta pro seu site depois de trocar a senha
+                }
+            })
+            flash('Link enviado! Confira sua caixa de entrada e spam.', 'success')
         except Exception as e:
-            # Mesmo se o e-mail não existir, a gente não revela (segurança)
-            flash("Se o e-mail estiver cadastrado, enviamos um link de recuperação.", "success")
+            # Nunca revela se o e-mail existe ou não
+            flash('Se o e-mail estiver cadastrado, enviamos o link de recuperação.', 'success')
 
         return redirect(url_for('login'))
 
-    return render_template("ArquivosGerais/RecuperarSenha/esqueci_senha.html")
+    return render_template('ArquivosGerais/RecuperarSenha/esqueci_senha.html')
     
-    return render_template("ArquivosGerais/RecuperarSenha/esqueci_senha.html")
 @app.route("/redefinir_senha", methods=['GET', 'POST'])
 def redefinir_senha():
     if request.method == 'POST':
