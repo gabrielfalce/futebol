@@ -37,8 +37,8 @@ body {
 /* =======================
    LOGO E TÍTULO
    ======================= */
-img[alt="Bola Verde"] {
-    
+img {
+    max-width: 15rem;
     margin-bottom: 18px;
     display: block;
     margin-left: auto;
