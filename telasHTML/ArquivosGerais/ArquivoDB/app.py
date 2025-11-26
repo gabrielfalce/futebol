@@ -237,74 +237,56 @@ def esqueci_senha():
     return render_template('ArquivosGerais/RecuperarSenha/esqueci_senha.html')
 
 # ================== REDEFINIR SENHA COM TOKEN ==================
+# ================== REDEFINIR SENHA COM TOKEN ==================
 @app.route('/redefinir_senha/<token>', methods=['GET', 'POST'])
 def redefinir_senha(token):
-    # GET → mostra a tela
-    if request.method == 'GET':
-        # Verifica se o token existe e ainda é válido
-        resp = supabase.table('password_resets')\
-            .select('email', 'expires_at', 'used')\
-            .eq('token', token).single().execute()
-
-        if not resp.data:
-            flash('Link inválido.', 'danger')
-            return redirect(url_for('login'))
-
-        dados = resp.data
-        expires_at = datetime.fromisoformat(dados['expires_at'].replace('Z', '+00:00'))
-
-        if dados['used'] or datetime.utcnow() > expires_at:
-            flash('Este link expirou ou já foi usado.', 'danger')
-            return redirect(url_for('login'))
-
-        # Tudo ok → mostra a tela com o token na URL
-        return render_template(
-            'ArquivosGerais/RecuperarSenha/redefinir_senha.html',
-            token=token  # opcional, mas deixa caso queira usar no JS depois
-        )
-
-    # POST → salva a nova senha
-    nova_senha = request.form.get('nova_senha')
-
-    if not nova_senha or len(nova_senha) < 6:
-        flash('A senha deve ter pelo menos 6 caracteres.', 'danger')
-        return redirect(url_for('redefinir_senha', token=token))
-
-    # Busca o token
+    # Busca o token (válido ou não)
     resp = supabase.table('password_resets')\
         .select('email', 'expires_at', 'used')\
         .eq('token', token).single().execute()
 
     if not resp.data:
-        flash('Token inválido.', 'danger')
+        flash('Link inválido.', 'danger')
         return redirect(url_for('login'))
 
     dados = resp.data
-expires_at = datetime.fromisoformat(dados['expires_at'].replace('Z', '+00:00'))
-agora = datetime.now(timezone.utc)  # ← ESSA LINHA ERA O QUE FALTAVA, PORRA!
 
-if dados.get('used', False) or agora > expires_at:
-    flash('Este link já expirou ou foi usado.', 'danger')
-    return redirect(url_for('login'))
+    # CORREÇÃO FINAL DO TIMEZONE (a linha que matava tudo)
+    expires_at = datetime.fromisoformat(dados['expires_at'].replace('Z', '+00:00'))
+    agora = datetime.now(timezone.utc)  # ← AGORA TEM TIMEZONE, PORRA!
 
-    # Tudo certo → atualiza a senha
-    hashed = bcrypt.hashpw(nova_senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    if dados.get('used', False) or agora > expires_at:
+        flash('Este link já expirou ou foi usado.', 'danger')
+        return redirect(url_for('login'))
 
-    supabase.table('usuarios')\
-        .update({'senha': hashed})\
-        .eq('email', dados['email'])\
-        .execute()
+    # Se chegou até aqui, o token é válido
 
-    # Marca o token como usado
-    supabase.table('password_resets')\
-        .update({'used': True})\
-        .eq('token', token)\
-        .execute()
+    if request.method == 'POST':
+        nova_senha = request.form.get('nova_senha')
+        confirma = request.form.get('confirma_senha')
 
-    flash('Senha alterada com sucesso! Agora você pode fazer login com a nova senha.', 'success')
-    return redirect(url_for('login'))
+        if not nova_senha or len(nova_senha) < 6:
+            flash('A senha deve ter pelo menos 6 caracteres.', 'danger')
+            return redirect(url_for('redefinir_senha', token=token))
 
-@app.route('/logout')
+        if nova_senha != confirma:
+            flash('As senhas não coincidem.', 'danger')
+            return redirect(url_for('redefinir_senha', token=token))
+
+        # Atualiza a senha
+        hashed = bcrypt.hashpw(nova_senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        supabase.table('usuarios').update({'password': hashed})\
+            .eq('email', dados['email']).execute()
+
+        # Marca token como usado
+        supabase.table('password_resets').update({'used': True})\
+            .eq('token', token).execute()
+
+        flash('Senha alterada com sucesso! Faça login.', 'success')
+        return redirect(url_for('login'))
+
+    # GET → mostra o formulário
+    return render_template('ArquivosGerais/RecuperarSenha/redefinir_senha.html', token=token)@app.route('/logout')
 def logout():
     session.clear()
     flash('Você saiu da sua conta.', 'info')
