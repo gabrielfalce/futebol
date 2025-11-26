@@ -203,49 +203,85 @@ def cadastro():
     # caminho corrigido para o template real
     return render_template("ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data=form_data)
 
+# ================== ESQUECI SENHA (mostra link na tela) ==================
 @app.route('/esqueci_senha', methods=['GET', 'POST'])
 def esqueci_senha():
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
 
         if not email:
-            flash('Por favor, digite um e-mail.', 'danger')
+            flash('Digite um e-mail válido.', 'danger')
             return redirect(url_for('esqueci_senha'))
 
-        try:
-            supabase.auth.admin.generate_link({
-                'type': 'recovery',
-                'email': email,
-                'options': {
-                    'redirect_to': 'https://futebol-1.onrender.com/login'  # muda se o teu domínio for outro
-                }
-            })
-            flash('Link de recuperação enviado! Cheque sua caixa de entrada e spam.', 'success')
-        except Exception as e:
-            # Nunca diz se o e-mail existe ou não (segurança)
-            flash('Se o e-mail estiver cadastrado, enviamos o link de recuperação.', 'info')
+        # verifica se o e-mail existe na tua tabela usuarios
+        resposta = supabase.table('usuarios').select('email').eq('email', email).execute()
+        
+        if not resposta.data:
+            flash('Se o e-mail estiver cadastrado, o link foi gerado.', 'info')
+            return redirect(url_for('login'))
+
+        # gera token seguro sem precisar de secrets
+        import random
+        import string
+        token = ''.join(random.choices(string.ascii_letters + string.digits, k=40))
+        expires = (datetime.utcnow() + timedelta(hours=1)).isoformat()
+
+        # salva ou atualiza o token
+        supabase.table('password_resets').upsert({
+            'email': email,
+            'token': token,
+            'expires_at': expires,
+            'used': False
+        }, on_conflict='email').execute()
+
+        reset_link = f"https://futebol-1.onrender.com/redefinir_senha/{token}"
+
+        flash(Markup(f'''
+            <div style="background:#d4edda;padding:15px;border-radius:8px;margin:20px 0;">
+                <strong>Link de recuperação gerado!</strong><br><br>
+                Copie e cole no navegador:<br>
+                <a href="{reset_link}" style="font-size:18px;color:#155724;word-break:break-all;">
+                    {reset_link}
+                </a>
+            </div>
+        '''), 'success')
 
         return redirect(url_for('login'))
 
-    # GET - mostra o formulário
     return render_template('ArquivosGerais/RecuperarSenha/esqueci_senha.html')
-    
-@app.route("/redefinir_senha", methods=['GET', 'POST'])
-def redefinir_senha():
+
+
+# ================== REDEFINIR SENHA COM TOKEN ==================
+@app.route('/redefinir_senha/<token>', methods=['GET', 'POST'])
+def redefinir_senha(token):
+    # verifica token válido
+    reset = supabase.table('password_resets').select('*').eq('token', token).single().execute()
+
+    if not reset.data or reset.data['used'] or reset.data['expires_at'] < datetime.utcnow().isoformat():
+        flash('Link inválido ou expirado.', 'danger')
+        return redirect(url_for('login'))
+
     if request.method == 'POST':
-        nova_senha = request.form.get('nova_senha')
-        email = request.args.get('email') or request.form.get('email') 
-        
-        if email and nova_senha and len(nova_senha) >= 6:
-            if update_password(email, nova_senha):
-                flash('Sua senha foi redefinida com sucesso. Faça o login.', 'success')
-                return redirect(url_for('login'))
-            else:
-                flash('Falha ao redefinir a senha. Tente novamente.', 'danger')
-        else:
-            flash('Senha inválida ou falta de informações.', 'danger')
-            
-    return render_template("RecuperarSenha/redefinir_senha.html")
+        senha = request.form.get('senha')
+        confirmar = request.form.get('confirmar')
+
+        if not senha or not confirmar or senha != confirmar or len(senha) < 6:
+            flash('As senhas devem coincidir e ter no mínimo 6 caracteres.', 'danger')
+            return render_template('ArquivosGerais/RecuperarSenha/redefinir_senha.html')
+
+        # atualiza a senha do usuário
+        hashed = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt())
+        supabase.table('usuarios').update({
+            'senha_hash': hashed.decode('utf-8')
+        }).eq('email', reset.data['email']).execute()
+
+        # marca token como usado
+        supabase.table('password_resets').update({'used': True}).eq('token', token).execute()
+
+        flash('Senha alterada com sucesso! Faça login.', 'success')
+        return redirect(url_for('login'))
+
+    return render_template('ArquivosGerais/RecuperarSenha/redefinir_senha.html')
 
 @app.route('/logout')
 def logout():
