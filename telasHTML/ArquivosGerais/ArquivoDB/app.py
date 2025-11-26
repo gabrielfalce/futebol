@@ -280,11 +280,12 @@ def redefinir_senha(token):
         return redirect(url_for('login'))
 
     dados = resp.data
-    expires_at = datetime.fromisoformat(dados['expires_at'].replace('Z', '+00:00'))
+expires_at = datetime.fromisoformat(dados['expires_at'].replace('Z', '+00:00'))
+agora = datetime.now(timezone.utc)  # ← ESSA LINHA ERA O QUE FALTAVA, PORRA!
 
-    if dados['used'] or datetime.utcnow() > expires_at:
-        flash('Este link já expirou ou foi usado.', 'danger')
-        return redirect(url_for('login'))
+if dados.get('used', False) or agora > expires_at:
+    flash('Este link já expirou ou foi usado.', 'danger')
+    return redirect(url_for('login'))
 
     # Tudo certo → atualiza a senha
     hashed = bcrypt.hashpw(nova_senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
