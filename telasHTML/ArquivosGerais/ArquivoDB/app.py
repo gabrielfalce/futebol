@@ -9,8 +9,7 @@ from database import (
     get_chat_history
 )
 import bcrypt
-from datetime import datetime, timedelta
-from flask import Markup   
+from datetime import datetime, timedelta   
 from werkzeug.utils import secure_filename
 from functools import wraps
 import uuid
@@ -237,15 +236,7 @@ def esqueci_senha():
 
         reset_link = f"https://futebol-1.onrender.com/redefinir_senha/{token}"
 
-        flash(Markup(f'''
-            <div style="background:#d4edda;padding:15px;border-radius:8px;margin:20px 0;">
-                <strong>Link de recuperação gerado!</strong><br><br>
-                Copie e cole no navegador:<br>
-                <a href="{reset_link}" style="font-size:18px;color:#155724;word-break:break-all;">
-                    {reset_link}
-                </a>
-            </div>
-        '''), 'success')
+                flash(f'Link gerado com sucesso! Copie e cole no navegador:\n\n{reset_link}', 'success')
 
         return redirect(url_for('login'))
 
