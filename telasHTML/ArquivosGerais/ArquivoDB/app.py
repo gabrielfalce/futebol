@@ -211,7 +211,7 @@ def esqueci_senha():
 
         if not email:
             flash('Por favor, digite um e-mail.', 'danger')
-            return redirect(url_for('esqueci_senha')
+            return redirect(url_for('esqueci_senha'))
 
         # Verifica se o e-mail existe
         resposta = supabase.table('usuarios').select('id').eq('email', email).execute()
