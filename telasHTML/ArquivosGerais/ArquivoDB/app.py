@@ -204,6 +204,7 @@ def cadastro():
     return render_template("ArquivosGerais/Cadastrar_templates/cadastrar.html", form_data=form_data)
 
 # ================== ESQUECI SENHA (mostra link na tela) ==================
+# ================== ESQUECI SENHA (AGORA SEGURO COM SUPABASE AUTH) ==================
 @app.route('/esqueci_senha', methods=['GET', 'POST'])
 def esqueci_senha():
     if request.method == 'POST':
@@ -212,86 +213,102 @@ def esqueci_senha():
             flash('Digite um e-mail válido.', 'danger')
             return redirect(url_for('esqueci_senha'))
 
-        resposta = supabase.table('usuarios').select('email').eq('email', email).execute()
-        if not resposta.data:
-            flash('Se o e-mail estiver cadastrado, o link foi gerado.', 'info')
+        # ⚠️ CHAVE SECRETA DO BACKEND: Use a chave de serviço (service_role)
+        # se você estiver usando o método reset_password_for_email.
+        # Geralmente a função de reset é pública. Usaremos a chave padrão.
+        
+        # 1. Chamar a função nativa de redefinição de senha do Supabase
+        try:
+            # O Supabase Auth lida com a geração do token, o tempo de expiração 
+            # e o envio do e-mail.
+            # O URL de redirecionamento para onde o usuário será enviado após clicar 
+            # no e-mail deve ser configurado no painel do Supabase.
+            
+            # Se você quer que o usuário seja redirecionado para a rota /redefinir_senha
+            # após o clique, certifique-se de que o URL de redirecionamento do 
+            # "Password Recovery" no painel do Supabase esteja configurado corretamente.
+            
+            supabase.auth.reset_password_for_email(
+                email=email,
+                # NÂO é necessário passar o URL de redirecionamento aqui 
+                # se já estiver configurado no painel do Supabase.
+                # Se for preciso: options={"redirectTo": "SEU_REDIRECT_URL"}
+            )
+            
+            # Mensagem genérica para evitar que atacantes descubram se o e-mail existe.
+            flash('Se o e-mail estiver cadastrado, um link de redefinição foi enviado para sua caixa de entrada.', 'success')
             return redirect(url_for('login'))
 
-        # Gera token
-        import random
-        import string
-        token = ''.join(random.choices(string.ascii_letters + string.digits, k=40))
-        expires = (datetime.utcnow() + timedelta(hours=1)).isoformat()
-
-        supabase.table('password_resets').upsert({
-            'email': email,
-            'token': token,
-            'expires_at': expires,
-            'used': False
-        }, on_conflict='email').execute()
-
-        reset_link = f"https://futebol-1.onrender.com/redefinir_senha/{token}"
-        flash(f'Link gerado! Copie:\n{reset_link}', 'success')
-        return redirect(url_for('login'))
+        except Exception as e:
+            # Em caso de erro (ex: problema de rede, e-mail malformado), exibe um erro genérico.
+            print(f"Erro ao solicitar redefinição de senha: {e}")
+            flash('Não foi possível enviar o link de redefinição. Tente novamente.', 'danger')
+            return redirect(url_for('esqueci_senha'))
 
     return render_template('ArquivosGerais/RecuperarSenha/esqueci_senha.html')
-
 # ================== REDEFINIR SENHA COM TOKEN ==================
-# ================== REDEFINIR SENHA COM TOKEN ==================
-@app.route('/redefinir_senha/<token>', methods=['GET', 'POST'])
-def redefinir_senha(token):
-    # Busca o token (válido ou não)
-    resp = supabase.table('password_resets')\
-        .select('email', 'expires_at', 'used')\
-        .eq('token', token).single().execute()
+# ================== REDEFINIR SENHA COM TOKEN (AGORA SEGURO COM SUPABASE AUTH) ==================
+# O Supabase enviará o token na query string da URL.
+# Ex: https://futebol-1.onrender.com/redefinir_senha#access_token=...&refresh_token=...
+# Precisamos do 'access_token' para finalizar a redefinição.
 
-    if not resp.data:
-        flash('Link inválido.', 'danger')
-        return redirect(url_for('login'))
+# Seu código original usava /redefinir_senha/<token>, mas o Supabase usa fragmentos (#) na URL.
+# A melhor prática é que a rota GET receba a nova senha via POST.
 
-    dados = resp.data
-
-    # CORREÇÃO FINAL DO TIMEZONE (a linha que matava tudo)
-    expires_at = datetime.fromisoformat(dados['expires_at'].replace('Z', '+00:00'))
-    agora = datetime.now(timezone.utc)  # ← AGORA TEM TIMEZONE, PORRA!
-
-    if dados.get('used', False) or agora > expires_at:
-        flash('Este link já expirou ou foi usado.', 'danger')
-        return redirect(url_for('login'))
-
-    # Se chegou até aqui, o token é válido
-
+@app.route('/redefinir_senha', methods=['GET', 'POST'])
+def redefinir_senha():
+    # ⚠️ 1. A rota GET recebe o access_token e o refresh_token via URL Fragment (#),
+    #    que o Flask (servidor) não consegue ler diretamente.
+    #    Você precisará de JavaScript no template para ler o fragmento e colocá-lo 
+    #    em um campo oculto no formulário POST, ou usar uma API do Supabase no front-end.
+    #
+    #    Alternativa: Se você configurou o Supabase para enviar o token como query parameter (?token=...)
+    #    (O que é menos seguro, mas mais fácil com Flask/Jinja), a variável 'token' seria obtida aqui.
+    
+    # 2. Se o método é POST, é porque o usuário digitou a nova senha.
     if request.method == 'POST':
+        # O access_token deve vir de um campo oculto no seu formulário
+        access_token = request.form.get('access_token') 
         nova_senha = request.form.get('nova_senha')
         confirma = request.form.get('confirma_senha')
 
-        if not nova_senha or len(nova_senha) < 6:
-            flash('A senha deve ter pelo menos 6 caracteres.', 'danger')
-            return redirect(url_for('redefinir_senha', token=token))
+        if not access_token:
+            flash('Token de redefinição ausente. Tente novamente.', 'danger')
+            return redirect(url_for('login'))
 
         if nova_senha != confirma:
             flash('As senhas não coincidem.', 'danger')
-            return redirect(url_for('redefinir_senha', token=token))
+            return render_template('ArquivosGerais/RecuperarSenha/redefinir_senha.html', access_token=access_token)
+        
+        # 3. Chamar a função de atualização de senha do Supabase Auth
+        try:
+            # Define a sessão usando o access_token, e então atualiza a senha.
+            # Essa é a forma mais segura: você usa o token de recuperação para criar uma sessão temporária
+            # e então altera a senha dessa sessão.
+            
+            # O método `update_user` faz a alteração de senha após o usuário ser "autenticado" 
+            # pelo token de recuperação.
+            response = supabase.auth.api.update_user(access_token, {"password": nova_senha})
+            
+            if response.get('error'):
+                flash(f"Falha ao redefinir a senha: {response['error'].get('message')}", 'danger')
+            else:
+                flash('Senha alterada com sucesso! Faça login.', 'success')
+                return redirect(url_for('login'))
 
-        # Atualiza a senha
-        hashed = bcrypt.hashpw(nova_senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        supabase.table('usuarios').update({'password': hashed})\
-            .eq('email', dados['email']).execute()
+        except Exception as e:
+            flash(f'Erro interno ao redefinir: {e}', 'danger')
+            return redirect(url_for('login'))
 
-        # Marca token como usado
-        supabase.table('password_resets').update({'used': True})\
-            .eq('token', token).execute()
-
-        flash('Senha alterada com sucesso! Faça login.', 'success')
-        return redirect(url_for('login'))
-
-    # GET → mostra o formulário
-    return render_template('ArquivosGerais/RecuperarSenha/redefinir_senha.html', token=token)@app.route('/logout')
-def logout():
-    session.clear()
-    flash('Você saiu da sua conta.', 'info')
-    return redirect(url_for('login'))
-
+    # GET: Apenas renderiza o formulário. O access_token virá via JavaScript.
+    # Você precisará alterar o template redefinir_senha.html para ter um campo 'access_token'.
+    
+    # Se você optou por passar o token via query parameter (menos seguro):
+    # token = request.args.get('token')
+    # return render_template('ArquivosGerais/RecuperarSenha/redefinir_senha.html', token=token)
+    
+    # Caso contrário, apenas renderize:
+    return render_template('ArquivosGerais/RecuperarSenha/redefinir_senha.html')
 
 # === ROTAS DA APLICAÇÃO ===
 
