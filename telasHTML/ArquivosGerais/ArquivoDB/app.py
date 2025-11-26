@@ -215,7 +215,7 @@ def esqueci_senha():
 
         # verifica se o e-mail existe na tua tabela usuarios
         resposta = supabase.table('usuarios').select('email').eq('email', email).execute()
-        
+
         if not resposta.data:
             flash('Se o e-mail estiver cadastrado, o link foi gerado.', 'info')
             return redirect(url_for('login'))
@@ -236,8 +236,7 @@ def esqueci_senha():
 
         reset_link = f"https://futebol-1.onrender.com/redefinir_senha/{token}"
 
-                flash(f'Link gerado com sucesso! Copie e cole no navegador:\n\n{reset_link}', 'success')
-
+        flash(f'Link de recuperação gerado com sucesso! \n\nCopie e cole no navegador:\n\n{reset_link}', 'success')
         return redirect(url_for('login'))
 
     return render_template('ArquivosGerais/RecuperarSenha/esqueci_senha.html')
