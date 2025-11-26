@@ -208,19 +208,19 @@ def cadastro():
 def esqueci_senha():
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
-
         if not email:
-            flash('Por favor, digite um e-mail.', 'danger')
+            flash('Digite um e-mail válido.', 'danger')
             return redirect(url_for('esqueci_senha'))
 
-        # Verifica se o e-mail existe
-        resposta = supabase.table('usuarios').select('id').eq('email', email).execute()
+        resposta = supabase.table('usuarios').select('email').eq('email', email).execute()
+        if not resposta.data:
+            flash('Se o e-mail estiver cadastrado, o link foi gerado.', 'info')
+            return redirect(url_for('login'))
 
-        # Gera o token (mesmo que o e-mail não exista – segurança por obscurity OFF)
+        # Gera token
         import random
-        # já tá no topo, mas deixo aqui por segurança
         import string
-        token = ''.join(random.choices(string.ascii_letters + string.digits, k=48))
+        token = ''.join(random.choices(string.ascii_letters + string.digits, k=40))
         expires = (datetime.utcnow() + timedelta(hours=1)).isoformat()
 
         supabase.table('password_resets').upsert({
@@ -231,21 +231,10 @@ def esqueci_senha():
         }, on_conflict='email').execute()
 
         reset_link = f"https://futebol-1.onrender.com/redefinir_senha/{token}"
+        flash(f'Link gerado! Copie:\n{reset_link}', 'success')
+        return redirect(url_for('login'))
 
-        # Guarda o link na sessão temporária pra mostrar na mesma página
-        session['temp_reset_link'] = reset_link
-
-        flash('Link gerado com sucesso!', 'success')
-        return redirect(url_for('esqueci_senha'))  # fica na mesma página
-
-    # GET ou depois do POST
-    reset_link = session.pop('temp_reset_link', None)  # pega e já limpa
-
-    return render_template(
-        'ArquivosGerais/RecuperarSenha/esqueci_senha.html',
-        reset_link=reset_link
-    )
-
+    return render_template('ArquivosGerais/RecuperarSenha/esqueci_senha.html')
 
 # ================== REDEFINIR SENHA COM TOKEN ==================
 @app.route('/redefinir_senha/<token>', methods=['GET', 'POST'])
