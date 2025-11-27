@@ -125,7 +125,7 @@ def check_user(email, senha):
     try:
         user = get_user_by_email(email)
         
-        if user and user.get('senha_hash') and bcrypt.checkpw(senha.encode('utf-8'), user['senha_hash'].encode('utf-8')):
+        if user and user.get('senha_hash') and bcrypt.checkpw(senha.encode('utf-8'), user['senha_hash'].encode('latin-1')):
             return user
         return None
     except Exception as e:

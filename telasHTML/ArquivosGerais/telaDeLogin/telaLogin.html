@@ -15,8 +15,7 @@
         <form method="POST" action="{{ url_for('login') }}">
             <input type="hidden" name="next" value="{{ next or '' }}">
 
-            <input placeholder="Email" id="email" name="email" type="email" requiredvalue="{{ email or '' }}">
- 
+            <input placeholder="Email" id="email" name="email" type="email" required value="{{ email or '' }}">
             <input placeholder="Senha" id="senha" name="senha" type="password" required>
 
             <label class="remember">
