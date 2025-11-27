@@ -88,14 +88,6 @@ def login_assets(filename):
     directory = os.path.join(TEMPLATE_FOLDER, 'ArquivosGerais', 'telaDeLogin')
     return send_from_directory(directory, filename)
 
-@app.route("/logout")
-@login_required
-def logout():
-    #Rota para encerrar a sessão do usuário.
-    session.clear()
-    flash('Você foi desconectado com sucesso.', 'success')
-    return redirect(url_for('login'))
-
 
 @app.route('/static/cadastro/<path:filename>')
 def cadastro_assets(filename):
@@ -170,6 +162,14 @@ def login():
             return render_template("ArquivosGerais/telaDeLogin/telaLogin.html", email=email, next=next_url)
     # GET: renderiza a página de login (passando next para o template)
     return render_template("ArquivosGerais/telaDeLogin/telaLogin.html", next=next_url)
+
+@app.route("/logout")
+@login_required
+def logout():
+    #Rota para encerrar a sessão do usuário.
+    session.clear()
+    flash('Você foi desconectado com sucesso.', 'success')
+    return redirect(url_for('login'))
 
 @app.route("/cadastro", methods=['GET', 'POST'])
 def cadastro():
