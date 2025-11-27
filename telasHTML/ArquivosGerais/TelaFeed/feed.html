@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feed de Posts</title>
+    <link rel="stylesheet" href="feed.css">
     <link rel="stylesheet" href="{{ url_for('user_assets', filename='TelaFeed/feed.css') }}">
     </head>
 <body data-api-url="{{ url_for('api_posts') }}" 
@@ -19,10 +20,28 @@
 
 
     <main class="container-feed" id="container-feed">
+        <!-- Exemplo de uma publicação estática com legenda e imagem -->
+        <div class="post-card">
+            <div class="post-header">
+                <!-- Use o url_for para o avatar padrão ou um caminho direto -->
+                <img src="{{ url_for('inicio_assets', filename='iconeUser.png') }}" alt="Avatar do usuário" class="author-avatar">
+                <div class="author-info">
+                    <p class="author-name">Nome do Jogador</p>
+                    <p class="post-timestamp">{{created_at}}</p>
+                </div>
+            </div>
+            <div class="post-content">
+                <p>Um ótimo dia de treino hoje! Foco total no próximo jogo. ⚽️🔥</p>
+            </div>
+            <!-- Imagem da publicação -->
+            <img src="https://images.unsplash.com/photo-1551958214-2d5b2df42a89?q=80&w=680" alt="Jogador em campo" class="post-image">
+        </div>
+
+        <!-- O spinner será exibido enquanto o JavaScript carrega os outros posts -->
         <div class="spinner-carregamento" id="spinner-carregamento"></div>
 
-        </main>
+    </main>
 
-        <script src="{{ url_for('user_assets', filename='TelaFeed/feed.js') }}"></script>
+    <script src="{{ url_for('user_assets', filename='TelaFeed/feed.js') }}"></script>
 </body>
 </html>

@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro</title>
-    <link rel="stylesheet" href="estilo.css">
     <link rel="icon" href="{{url_for('cadastro_assets', filename='bolaverde.ico')}}" type="image/x-icon">
     <link rel="stylesheet" href="{{ url_for('cadastro_assets', filename='estilo.css') }}">
     <style>
@@ -32,7 +31,7 @@
     </style>
 </head>
 <body>
-    <img src="bolaverde.ico" alt="">
+    
     <img src="{{ url_for('login_assets', filename='logo.png') }}" alt="Logotipo">
     
     <h1 class="titulo">Cadastro</h1>
@@ -44,13 +43,13 @@
         <input placeholder="Email" type="email" name="email" value="{{ form_data.email or '' }}" required>
         <input placeholder="Senha" type="password" name="senha" required minlength="8">
         <input placeholder="Cidade" type="text" name="cidade" value="{{ form_data.cidade or '' }}" required>
-        <input placeholder="Posição em Campo" type="text" name="posicao" value="{{ form_data.posicao or '' }}" required>
+        <input placeholder="Posição em Campo" type="text" name="posicao" value="{{ form_data.posicao or '' }}" required="false">
         
         <input placeholder="Data de Nascimento (DD/MM/AAAA ou AAAA-MM-DD)" type="text" name="nascimento" value="{{ form_data.nascimento or '' }}" required>
         
-        <input placeholder="Número da Camisa (Opcional)" type="number" name="numero_camisa" value="{{ form_data.numero_camisa or '' }}" min="1" max="99">
+        <input placeholder="Número da Camisa (Opcional)" type="number" name="numero_camisa" value="{{ form_data.numero_camisa or '' }}"  required="false"  min="1" max="99">
 
-        <input placeholder="Número de Telefone" type="tel" name="numero_telefone" value="{{ form_data.numero_telefone or '' }}" required>
+        <input placeholder="Número de Telefone" type="tel" name="numero_telefone" value="{{ form_data.numero_telefone or '' }}" required="false">
 
         <button type="submit">Cadastrar</button>
         <a class="linksNone" href="{{ url_for('login') }}">Ir para Login</a>
